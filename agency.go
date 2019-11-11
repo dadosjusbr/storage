@@ -17,7 +17,7 @@ package storage
 
 import "time"
 
-// A Struct containing the main descriptions of each Agency.
+// Agency A Struct containing the main descriptions of each Agency.
 type Agency struct {
 	ID        interface{} `json:"id" bson:"_id,omitempty"`
 	ShortName string      `json:"short_name" bson:"short_name,omitempty"` // 'trt13'
@@ -27,7 +27,7 @@ type Agency struct {
 	UF        string      `json:"uf" bson:"uf,omitempty"`                 // Short code for federative unity.
 }
 
-//A Struct containing a snapshot of a agency in a month.
+// AgencyMonthlyInfo A Struct containing a snapshot of a agency in a month.
 type AgencyMonthlyInfo struct {
 	AgencyID string     `json:"id" bson:"_id,omitempty"`
 	Storage  []Metadata `json:"storage" bson:"storage,omitempty"`
@@ -38,20 +38,20 @@ type AgencyMonthlyInfo struct {
 	Metadata Metadata   `json:"metadata" bson:"metadata,omitempty"`
 }
 
-//A Struct containing metadatas about crawler commit
+// Metadata A Struct containing metadatas about crawler commit
 type Metadata struct {
 	Timestamp      time.Time `json:"metadata" bson:"metadata,omitempty"`     // Time the crawler sent it
-	CrawlerId      string    `json:"crawl_id" bson:"crawl_id,omitempty"`     // The directory of the collector's crawler
+	CrawlerID      string    `json:"crawl_id" bson:"crawl_id,omitempty"`     // The directory of the collector's crawler
 	CrawlerVersion string    `json:"crawl_vers" bson:"crawl_vers,omitempty"` // Last Commit of the repository
 }
 
-// A Struct containing URL to download a file and a hash to track if in the future will be changes in the file.
+// FileBackup A Struct containing URL to download a file and a hash to track if in the future will be changes in the file.
 type FileBackup struct {
 	URL  string `json:"url" bson:"url,omitempty"`
 	Hash string `json:"hash" bson:"hash,omitempty"`
 }
 
-// A Struct containing summarized  information about a agency/month stats
+// Summary A Struct containing summarized  information about a agency/month stats
 type Summary struct {
 	Count  int         `json:"count" bson:"count,omitempty"`   // Number of employees
 	Wage   DataSummary `json:"wage" bson:"wage,omitempty"`     //  Statistics (Max, Min, Median, Total)
@@ -59,7 +59,7 @@ type Summary struct {
 	Others DataSummary `json:"others" bson:"others,omitempty"` //  Statistics (Max, Min, Median, Total)
 }
 
-// Data Summary with statistics.
+// DataSummary A Struct containing data summary with statistics.
 type DataSummary struct {
 	Max   float64 `json:"max" bson:"max,omitempty"`
 	Min   float64 `json:"min" bson:"min,omitempty"`
@@ -67,7 +67,7 @@ type DataSummary struct {
 	Total float64 `json:"total" bson:"total,omitempty"`
 }
 
-// A Struct that reflets a employee snapshot, containing all relative data about a employee
+// Employee a Struct that reflets a employee snapshot, containing all relative data about a employee
 type Employee struct {
 	Reg       string         `json:"reg" bson:"reg,omitempty"` // Register number
 	Name      string         `json:"name" bson:"name,omitempty"`
@@ -79,7 +79,7 @@ type Employee struct {
 	Discounts *Discount      `json:"discounts" bson:"discounts,omitempty"`
 }
 
-// Struct that details an employee's income.
+// IncomeDetails a Struct that details an employee's income.
 type IncomeDetails struct {
 	Total float64  `json:"total" bson:"total,omitempty"`
 	Wage  *float64 `json:"wage" bson:"wage,omitempty"`
@@ -87,7 +87,7 @@ type IncomeDetails struct {
 	Other *Funds   `json:"other" bson:"other,omitempty"` // other funds that make up the total income of the employee. further details explained below
 }
 
-// Struct that details perks that complements an employee's wage.
+// Perks a Struct that details perks that complements an employee's wage.
 type Perks struct {
 	Total         float64            `json:"total" bson:"total,omitempty"`
 	Food          *float64           `json:"food" bson:"food,omitempty"` // Food Aid
@@ -100,7 +100,7 @@ type Perks struct {
 	Others        map[string]float64 `json:"others" bson:"others,omitempty"`           // Any other kind of perk that does not have a pattern among the Agencys.
 }
 
-// A Struct that details that make up the employee income.
+// Funds a Struct that details that make up the employee income.
 type Funds struct {
 	Total            float64            `json:"total" bson:"total,omitempty"`
 	PersonalBenefits *float64           `json:"person_benefits" bson:"person_benefits,omitempty"`     // Permanent Allowance, VPI, Benefits adquired thought judicial demand and others personal.
@@ -112,7 +112,7 @@ type Funds struct {
 	Others           map[string]float64 `json:"others" bson:"others,omitempty"`                       // Any other kind of income that does not have a pattern among the Agencys.
 }
 
-// A Struct that details all discounts that must be applied to the employee's income.
+// Discount a Struct that details all discounts that must be applied to the employee's income.
 type Discount struct {
 	Total            float64            `json:"total" bson:"total,omitempty"`
 	PrevContribution *float64           `json:"prev_contribution" bson:"prev_contribution,omitempty"` // 'Contribuição Previdenciária'
