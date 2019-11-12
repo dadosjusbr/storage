@@ -1,3 +1,5 @@
+package db
+
 // About used pointers.
 // All pointers are important to know if in the field has information and this information is 0 or if we do not have information about that field.
 // This is justified because of the use of omitempty. If a collected float64 is 0, it will not appear in the json fields, cause that's it's zero value.
@@ -13,8 +15,6 @@
 // perks: nil							   perks: 0
 // total: 0								   total: 0
 
-package storage
-
 import "time"
 
 // Agency A Struct containing the main descriptions of each Agency.
@@ -29,7 +29,7 @@ type Agency struct {
 
 // AgencyMonthlyInfo A Struct containing a snapshot of a agency in a month.
 type AgencyMonthlyInfo struct {
-	AgencyID string     `json:"id" bson:"_id,omitempty"`
+	AgencyID string     `json:"id" bson:"_id,omitempty"` //short_name
 	Storage  []Metadata `json:"storage" bson:"storage,omitempty"`
 	Month    int        `json:"month" bson:"month,omitempty"`
 	Year     int        `json:"year" bson:"year,omitempty"`
@@ -118,5 +118,5 @@ type Discount struct {
 	PrevContribution *float64           `json:"prev_contribution" bson:"prev_contribution,omitempty"` // 'Contribuição Previdenciária'
 	CeilRetention    *float64           `json:"ceil_retention" bson:"ceil_retention,omitempty"`       // 'Retenção de teto'
 	IncomeTax        *float64           `json:"income_tax" bson:"income_tax,omitempty"`               // 'Imposto de renda'
-	Others           map[string]float64 `json:"sundry" bson:"sundry,omitempty"`                       // 'Diversos'
+	Others           map[string]float64 `json:"others" bson:"others,omitempty"`                       // Any other kind of income that does not have a pattern among the Agencys.
 }

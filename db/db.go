@@ -1,4 +1,4 @@
-package storage
+package db
 
 import (
 	"context"
@@ -18,6 +18,7 @@ type Client struct {
 
 //NewClient returns an db connection instance that can be used for CRUD operations
 func NewClient(url, dbName string) (*Client, error) {
+
 	client, err := mongo.NewClient(options.Client().ApplyURI(url))
 	if err != nil {
 		return nil, err
@@ -48,7 +49,7 @@ func (db *Client) SaveAgency(ag Agency) error {
 	return nil
 }
 
-//SaveMonthResults save month results
+//SaveAgencyMonthInfo save month results
 func (db *Client) SaveAgencyMonthInfo(agMonth AgencyMonthlyInfo) error {
 	// Get a handle for your collection
 	collection := db.getCollection("AgencyMonthlyInfo")
