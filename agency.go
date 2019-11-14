@@ -1,5 +1,3 @@
-package db
-
 // About used pointers.
 // All pointers are important to know if in the field has information and this information is 0 or if we do not have information about that field.
 // This is justified because of the use of omitempty. If a collected float64 is 0, it will not appear in the json fields, cause that's it's zero value.
@@ -15,38 +13,50 @@ package db
 // perks: nil							   perks: 0
 // total: 0								   total: 0
 
+package storage
+
 import "time"
+
+// Crawler keeps information about the crawler.
+type Crawler struct {
+	CrawlerID      string `json:"id" bson:"id,omitempty"`           // Convention: crawler the directory
+	CrawlerVersion string `json:"version" bson:"version,omitempty"` // Convention: crawler commit id
+}
+
+// CrawlingResult stores the result of a crawler-parser ("coletor") run.
+type CrawlingResult struct {
+	AgencyID  string     `json:"aid"`
+	Month     int        `json:"month"`
+	Year      int        `json:"year"`
+	Crawler   Crawler    `json:"crawler"`
+	Files     []string   `json:"files"`
+	Employees []Employee `json:"employees"`
+	Timestamp time.Time  `json:"timestamp"`
+}
 
 // Agency A Struct containing the main descriptions of each Agency.
 type Agency struct {
-	ID        interface{} `json:"id" bson:"_id,omitempty"`
-	ShortName string      `json:"short_name" bson:"short_name,omitempty"` // 'trt13'
-	Name      string      `json:"name" bson:"name,omitempty"`             // 'Tribunal Regional do Trabalho 13° Região'
-	Type      string      `json:"type" bson:"type,omitempty"`             // "R" for Regional, "M" for Municipal, "F" for Federal, "E" for State.
-	Entity    string      `json:"entity" bson:"entity,omitempty"`         // "J" For Judiciário, "M" for Ministério Público, "P" for Procuradorias and "D" for Defensorias.
-	UF        string      `json:"uf" bson:"uf,omitempty"`                 // Short code for federative unity.
+	ID     string `json:"aid" bson:"aid,omitempty"`       // 'trt13'
+	Name   string `json:"name" bson:"name,omitempty"`     // 'Tribunal Regional do Trabalho 13° Região'
+	Type   string `json:"type" bson:"type,omitempty"`     // "R" for Regional, "M" for Municipal, "F" for Federal, "E" for State.
+	Entity string `json:"entity" bson:"entity,omitempty"` // "J" For Judiciário, "M" for Ministério Público, "P" for Procuradorias and "D" for Defensorias.
+	UF     string `json:"uf" bson:"uf,omitempty"`         // Short code for federative unity.
 }
 
 // AgencyMonthlyInfo A Struct containing a snapshot of a agency in a month.
 type AgencyMonthlyInfo struct {
-	AgencyID string     `json:"id" bson:"_id,omitempty"` //short_name
-	Storage  []Metadata `json:"storage" bson:"storage,omitempty"`
-	Month    int        `json:"month" bson:"month,omitempty"`
-	Year     int        `json:"year" bson:"year,omitempty"`
-	Summary  Summary    `json:"sumarry" bson:"summary,omitempty"`
-	Employee []Employee `json:"employee" bson:"employee,omitempty"`
-	Metadata Metadata   `json:"metadata" bson:"metadata,omitempty"`
+	AgencyID          string     `json:"aid" bson:"aid,omitempty"`
+	Month             int        `json:"month" bson:"month,omitempty"`
+	Year              int        `json:"year" bson:"year,omitempty"`
+	Backups           []Backup   `json:"backups" bson:"backups,omitempty"`
+	Summary           Summary    `json:"summary" bson:"summary,omitempty"`
+	Employee          []Employee `json:"employee" bson:"employee,omitempty"`
+	Crawler           Crawler    `json:"crawler" bson:"crawler,omitempty"`
+	CrawlingTimestamp time.Time  `json:"ts" bson:"ts,omitempty"` // Crawling moment (always UTC)
 }
 
-// Metadata A Struct containing metadatas about crawler commit
-type Metadata struct {
-	Timestamp      time.Time `json:"metadata" bson:"metadata,omitempty"`     // Time the crawler sent it
-	CrawlerID      string    `json:"crawl_id" bson:"crawl_id,omitempty"`     // The directory of the collector's crawler
-	CrawlerVersion string    `json:"crawl_vers" bson:"crawl_vers,omitempty"` // Last Commit of the repository
-}
-
-// FileBackup A Struct containing URL to download a file and a hash to track if in the future will be changes in the file.
-type FileBackup struct {
+// Backup contains the URL to download a file and a hash to track if in the future will be changes in the file.
+type Backup struct {
 	URL  string `json:"url" bson:"url,omitempty"`
 	Hash string `json:"hash" bson:"hash,omitempty"`
 }
@@ -61,10 +71,10 @@ type Summary struct {
 
 // DataSummary A Struct containing data summary with statistics.
 type DataSummary struct {
-	Max   float64 `json:"max" bson:"max,omitempty"`
-	Min   float64 `json:"min" bson:"min,omitempty"`
-	Mean  float64 `json:"mean" bson:"mean,omitempty"`
-	Total float64 `json:"total" bson:"total,omitempty"`
+	Max     float64 `json:"max" bson:"max,omitempty"`
+	Min     float64 `json:"min" bson:"min,omitempty"`
+	Average float64 `json:"avg" bson:"avg,omitempty"`
+	Total   float64 `json:"total" bson:"total,omitempty"`
 }
 
 // Employee a Struct that reflets a employee snapshot, containing all relative data about a employee
@@ -107,7 +117,7 @@ type Funds struct {
 	EventualBenefits *float64           `json:"eventual_benefits" bson:"eventual_benefits,omitempty"` // Holidays, Others Temporary Wage,  Christmas bonus and some others eventual.
 	PositionOfTrust  *float64           `json:"trust_position" bson:"trust_position,omitempty"`       // Income given for the importance of the position held.
 	Daily            *float64           `json:"daily" bson:"daily,omitempty"`                         // Employee reimbursement for eventual expenses when working in a different location than usual.
-	Gratification    *float64           `json:"gratific" bson:"gratific,omitempty"`                   //
+	Gratification    *float64           `json:"gratification" bson:"gratification,omitempty"`         //
 	OriginPosition   *float64           `json:"origin_pos" bson:"origin_pos,omitempty"`               // Wage received from other Agency, transfered employee.
 	Others           map[string]float64 `json:"others" bson:"others,omitempty"`                       // Any other kind of income that does not have a pattern among the Agencys.
 }
@@ -118,5 +128,5 @@ type Discount struct {
 	PrevContribution *float64           `json:"prev_contribution" bson:"prev_contribution,omitempty"` // 'Contribuição Previdenciária'
 	CeilRetention    *float64           `json:"ceil_retention" bson:"ceil_retention,omitempty"`       // 'Retenção de teto'
 	IncomeTax        *float64           `json:"income_tax" bson:"income_tax,omitempty"`               // 'Imposto de renda'
-	Others           map[string]float64 `json:"others" bson:"others,omitempty"`                       // Any other kind of income that does not have a pattern among the Agencys.
+	Others           map[string]float64 `json:"other" bson:"other,omitempty"`                         // Any other kind of discount that does not have a pattern among the Agencys.
 }
