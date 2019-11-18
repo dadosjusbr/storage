@@ -51,16 +51,36 @@ func (c *Client) Disconnect() error {
 // Store processes and stores the crawling results.
 func (c *Client) Store(cr CrawlingResult) error {
 
-	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees}
+	summary := Summary(cr.Employees)
+	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees, Summary: summary}
 
 	_, err := c.C.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: cr.AgencyID}, {Key: "year", Value: cr.Year}, {Key: "month", Value: cr.Month}}, agmi, options.Replace().SetUpsert(true))
 	if err != nil {
 		return err
 	}
+
 	// armazenar os empregados
 	// armazenar o sumário
+
 	// armazenar o backup
-	
+
 
 	return nil
+}
+
+func Summary(Employees []Employee) (int, int) {
+    max := 0
+	min := 3.40282346638528859811704183484516925440e+38
+	count := len(array)
+	total = 0
+    for _, value := range array {
+        if max < value {
+            max = value
+        }
+        if min > value {
+            min = value
+		}
+		total = total + value
+    }
+    return min, max
 }
