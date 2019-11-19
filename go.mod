@@ -1,6 +1,7 @@
 module github.com/dadosjusbr/storage
 
 go 1.13
+
 require (
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
