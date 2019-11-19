@@ -14,7 +14,7 @@ import (
 const (
 	dbName             = "db"
 	monthlyInfoColName = "mi"
-	maxValue           = 3.40282346638528859811704183484516925440e+38
+	maxValue           = math.MaxFloat64
 )
 
 type collection interface {
@@ -23,7 +23,7 @@ type collection interface {
 
 type Client struct {
 	mgoClient *mongo.Client
-	C         collection
+	c         collection
 }
 
 func NewClient(url string) (*Client, error) {
@@ -40,21 +40,25 @@ func (c *Client) Connect() error {
 	if err := c.mgoClient.Connect(ctx); err != nil {
 		return fmt.Errorf("error connection with mongo:%q", err)
 	}
-	c.C = c.mgoClient.Database(dbName).Collection(monthlyInfoColName)
+	c.c = c.mgoClient.Database(dbName).Collection(monthlyInfoColName)
 	return nil
 }
 
 func (c *Client) Disconnect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
+	c.c = nil
 	return c.mgoClient.Disconnect(ctx)
 }
 
 // Store processes and stores the crawling results.
 func (c *Client) Store(cr CrawlingResult) error {
-	summary := summary(cr.Employees)
-	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees, Summary: summary}
-	_, err := c.C.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: cr.AgencyID}, {Key: "year", Value: cr.Year}, {Key: "month", Value: cr.Month}}, agmi, options.Replace().SetUpsert(true))
+	if c.c == nil {
+		return fmt.Errorf("Collection is nil")
+	}
+	//summary := summary(cr.Employees)
+	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees}
+	_, err := c.c.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: cr.AgencyID}, {Key: "year", Value: cr.Year}, {Key: "month", Value: cr.Month}}, agmi, options.Replace().SetUpsert(true))
 	if err != nil {
 		return err
 	}
@@ -70,6 +74,11 @@ func summary(Employees []Employee) Summary {
 	others := DataSummary{Max: 0.0, Min: maxValue, Total: 0.0}
 	fmt.Println(len(Employees))
 	count := len(Employees)
+	if count == 0 {
+		wage.Min = 0
+		perks.Min = 0
+		others.Min = 0
+	}
 	for _, value := range Employees {
 		wage.Max = math.Max(wage.Max, *value.Income.Wage)
 		perks.Max = math.Max(perks.Max, value.Income.Perks.Total)
