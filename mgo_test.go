@@ -2,6 +2,8 @@ package storage
 
 import (
 	"context"
+	"encoding/json"
+	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -31,11 +33,17 @@ func (c *checkCollection) calledReplaceOne() bool {
 func TestClient_Store(t *testing.T) {
 	c, err := NewClient("mongodb://localhost:666")
 	assert.NoError(t, err)
+	file, err := ioutil.ReadFile("teste.json")
+	assert.NoError(t, err)
+	employee := []Employee{}
+	err = json.Unmarshal([]byte(file), &employee)
+	assert.NoError(t, err)
 
+	//Summary := Summary{Count: 2, Wage: {Max: }}
 	crawler := Crawler{CrawlerID: "123132", CrawlerVersion: "v.1"}
-	col := checkCollection{t: t, filter: bson.D{{Key: "aid", Value: "a"}, {Key: "year", Value: 2019}, {Key: "month", Value: 9}}, value: AgencyMonthlyInfo{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler}}
+	col := checkCollection{t: t, filter: bson.D{{Key: "aid", Value: "a"}, {Key: "year", Value: 2019}, {Key: "month", Value: 9}}, value: AgencyMonthlyInfo{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employee: employee}}
 	c.C = &col
 
-	assert.NoError(t, c.Store(CrawlingResult{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler}))
+	assert.NoError(t, c.Store(CrawlingResult{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employees: employee}))
 	assert.True(t, col.calledReplaceOne())
 }
