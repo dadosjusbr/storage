@@ -99,15 +99,15 @@ type IncomeDetails struct {
 
 // Perks a Struct that details perks that complements an employee's wage.
 type Perks struct {
-	Total         float64            `json:"total" bson:"total,omitempty"`
-	Food          *float64           `json:"food" bson:"food,omitempty"` // Food Aid
-	Tranportation *float64           `json:"transportation" bson:"transportation,omitempty"`
-	PreSchool     *float64           `json:"pre_school" bson:"pre_school,omitempty"` // Assistance provided before the child enters school.
-	Health        *float64           `json:"health" bson:"health,omitempty"`
-	BirthAid      *float64           `json:"birth_aid" bson:"birth_aid,omitempty"`     // 'Auxílio Natalidade'
-	HousingAid    *float64           `json:"housing_aid" bson:"housing_aid,omitempty"` // 'Auxílio Moradia'
-	Subsistence   *float64           `json:"subsistence" bson:"subsistence,omitempty"` // 'Ajuda de Custo'
-	Others        map[string]float64 `json:"others" bson:"others,omitempty"`           // Any other kind of perk that does not have a pattern among the Agencys.
+	Total          float64            `json:"total" bson:"total,omitempty"`
+	Food           *float64           `json:"food" bson:"food,omitempty"` // Food Aid
+	Transportation *float64           `json:"transportation" bson:"transportation,omitempty"`
+	PreSchool      *float64           `json:"pre_school" bson:"pre_school,omitempty"` // Assistance provided before the child enters school.
+	Health         *float64           `json:"health" bson:"health,omitempty"`
+	BirthAid       *float64           `json:"birth_aid" bson:"birth_aid,omitempty"`     // 'Auxílio Natalidade'
+	HousingAid     *float64           `json:"housing_aid" bson:"housing_aid,omitempty"` // 'Auxílio Moradia'
+	Subsistence    *float64           `json:"subsistence" bson:"subsistence,omitempty"` // 'Ajuda de Custo'
+	Others         map[string]float64 `json:"others" bson:"others,omitempty"`           // Any other kind of perk that does not have a pattern among the Agencys.
 }
 
 // Funds a Struct that details that make up the employee income.

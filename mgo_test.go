@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"testing"
@@ -13,7 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// checkCollection is a struct containing necessary tools to make tests and simulate mongoDb func
 type checkCollection struct {
 	t      *testing.T
 	filter bson.D
@@ -23,24 +21,77 @@ type checkCollection struct {
 	err    bool
 }
 
-// Samples to use for case tests, employee and summary's for 1 row and 1+ rows
-var (
-	employeeSample1 = []byte(`[{"reg": "","name": "Abiaci De Carvalho Silva","role": "Inativo","type": "","workplace": "inativo","active": false,"income": {
-	  "total": 30368.59,"wage": 7000,"perks": {"total": 600,"food": null,"transportation": null,"pre_school": null,"health": null,"birth_aid": null,"housing_aid": null,  
-	  "subsistence": null, "others": null}, "other": {"total": 100,"person_benefits": 7475.71,"eventual_benefits": 0,"trust_position": 5990.88,"daily": null,	  
-	  "gratific": 0, "origin_pos": 0, "others": null}}, "discounts": {"total": 8930.05,"prev_contribution": 2719.5,"ceil_retention": 0,"income_tax": 6210.55,	  
-	  "sundry": {"Sundry": 0}}}]`)
+func makePointer(x float64) *float64 {
+	return &x
+}
 
-	employeeSample2 = []byte(`[{"reg":"","name":"Abiaci De Carvalho Silva","role":"Inativo","type":"","workplace":"inativo","active":false,"income":
-	{"total":30368.59,"wage":7000,"perks":{"total":600,"food":null,"transportation":null,"pre_school":null,"health":null,"birth_aid":null,
-	"housing_aid":null,"subsistence":null,"others":null},"other":{"total":100,"person_benefits":7475.71,"eventual_benefits":0,"trust_position":5990.88,
-	"daily":null,"gratific":0,"origin_pos":0,"others":null}},"discounts":{"total":8930.05,"prev_contribution":2719.5,"ceil_retention":0,"income_tax":6210.55,
-	"sundry":{"Sundry":0}}},{"reg":"","name":"Abraao Falcao De Carvalho","role":"Promotor Eleitoral","type":"",
-	"workplace":"10ª zona eleitoral - guarabira/pb","active":true,"income":{"total":10000,"wage":5000,"perks":{"total":200,"food":null,
-	"transportation":null,"pre_school":null,"health":null,"birth_aid":null,"housing_aid":null,"subsistence":null,"others":null},
-	"other":{"total":500,"person_benefits":0,"eventual_benefits":0,"trust_position":4631.61,"daily":null,"gratific":0,"origin_pos":0,"others":null}},
-	"discounts":{"total":405.98,"prev_contribution":0,"ceil_retention":0,"income_tax":405.98,"sundry":{"Sundry":0}}}]
-	`)
+var (
+	emp2Row = []Employee{
+		Employee{
+			Reg:       "",
+			Name:      "Abiaci De Carvalho Silva",
+			Role:      "Inativo",
+			Type:      "",
+			Workplace: "inativo",
+			Active:    false,
+			Income: &IncomeDetails{
+				Total: 30368.59,
+				Wage:  makePointer(7000),
+				Perks: &Perks{
+					Total: 600,
+				},
+				Other: &Funds{
+					Total:            100,
+					PersonalBenefits: makePointer(7475.71),
+					EventualBenefits: makePointer(0),
+					PositionOfTrust:  makePointer(5990.88),
+					Gratification:    makePointer(0),
+					OriginPosition:   makePointer(0),
+				},
+			},
+			Discounts: &Discount{
+				Total:            8930.05,
+				PrevContribution: makePointer(2719.5),
+				CeilRetention:    makePointer(0),
+				IncomeTax:        makePointer(6210.55),
+				Others: map[string]float64{
+					"Sundry": 0,
+				},
+			},
+		},
+		Employee{
+			Reg:       "",
+			Name:      "Abraao Falcao De Carvalho",
+			Role:      "Promotor Eleitoral",
+			Type:      "",
+			Workplace: "10ª zona eleitoral - guarabira/pb",
+			Active:    true,
+			Income: &IncomeDetails{
+				Total: 10000,
+				Wage:  makePointer(5000),
+				Perks: &Perks{
+					Total: 200,
+				},
+				Other: &Funds{
+					Total:            500,
+					PersonalBenefits: makePointer(0),
+					EventualBenefits: makePointer(0),
+					PositionOfTrust:  makePointer(4631.61),
+					Gratification:    makePointer(0),
+					OriginPosition:   makePointer(0),
+				},
+			},
+			Discounts: &Discount{
+				Total:            405.98,
+				PrevContribution: makePointer(0),
+				CeilRetention:    makePointer(0),
+				IncomeTax:        makePointer(405.98),
+				Others: map[string]float64{
+					"Sundry": 0,
+				},
+			},
+		},
+	}
 
 	summFor1Row = Summary{
 		Count:  1,
@@ -57,7 +108,6 @@ var (
 )
 
 // ReplaceOne is a checkCollection func that use same signature of collection interface, which is the same as the method signature with the same name in mongoDb
-// We assert if filter, value and opts are the same in mongo, and turn into true c.check if ReplaceOne is called
 func (c *checkCollection) ReplaceOne(ctx context.Context, filter interface{}, replacement interface{}, opts ...*options.ReplaceOptions) (*mongo.UpdateResult, error) {
 	c.check = true
 	if c.err {
@@ -69,17 +119,11 @@ func (c *checkCollection) ReplaceOne(ctx context.Context, filter interface{}, re
 	return &mongo.UpdateResult{}, nil
 }
 
-// calledReplaceOne is a checkCollection func that returns a bool checking if ReplaceOne was called or not.
 func (c *checkCollection) calledReplaceOne() bool {
 	return c.check
 }
 
-//TestClient_Store test Store func if is everything is ok, if replaceOne method is called and if we can connect into a mongoDb and get collection,
-// if we cant get a collection, its because we cant be able to connect with mongo.
 func TestClient_Store(t *testing.T) {
-	emp2Row := []Employee{}
-	err := json.Unmarshal(employeeSample2, &emp2Row)
-	assert.NoError(t, err)
 	crawler := Crawler{CrawlerID: "123132", CrawlerVersion: "v.1"}
 	cr := CrawlingResult{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employees: emp2Row}
 	col := checkCollection{
@@ -103,8 +147,11 @@ func TestClient_Store(t *testing.T) {
 		wantErr        bool
 		wantReplaceOne bool
 	}{
+		//Test if everything is OK!
 		{name: "ok", col: &col, cr: cr, wantErr: false, wantReplaceOne: true},
+		// Test if the replaceOne function works!
 		{name: "replaceOne error", col: &colErr, cr: cr, wantErr: true, wantReplaceOne: true},
+		// Check if has some connection if mongoDb, if does the collection wont be nil.
 		{name: "missing collection error", cr: cr, wantErr: true, wantReplaceOne: false},
 	}
 	for _, tt := range tests {
@@ -123,13 +170,8 @@ func TestClient_Store(t *testing.T) {
 	}
 }
 
-// Test_summary func when we have no rows, one or more rows in employee slice.
 func Test_summary(t *testing.T) {
-	emp2Row := []Employee{}
-	err := json.Unmarshal(employeeSample2, &emp2Row)
 	emp1Row := emp2Row[:1]
-	assert.NoError(t, err)
-
 	tests := []struct {
 		name      string
 		Employees []Employee

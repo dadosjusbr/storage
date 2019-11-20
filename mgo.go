@@ -28,7 +28,7 @@ type Client struct {
 	col       collection
 }
 
-//NewClient create a client, apply in a url and return a mongo client
+//NewClient instantiates a new client, but will not connect to the specified URL. Please use Client.Connect before using the client.
 func NewClient(url string) (*Client, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(url))
 	if err != nil {
@@ -37,7 +37,7 @@ func NewClient(url string) (*Client, error) {
 	return &Client{mgoClient: client}, nil
 }
 
-//Connect a client to mongodb
+//Connect establishes a connection to MongoDB using the previously specified URL
 func (c *Client) Connect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
@@ -48,8 +48,11 @@ func (c *Client) Connect() error {
 	return nil
 }
 
-//Disconnect a client connection with mongodb
+//Disconnect closes the connections to MongoDB. It does nothing if the connection had already been closed.
 func (c *Client) Disconnect() error {
+	if c.col == nil {
+		return nil
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	c.col = nil
@@ -76,7 +79,6 @@ func summary(Employees []Employee) Summary {
 	wage := DataSummary{Max: 0.0, Min: maxValue, Total: 0.0}
 	perks := DataSummary{Max: 0.0, Min: maxValue, Total: 0.0}
 	others := DataSummary{Max: 0.0, Min: maxValue, Total: 0.0}
-	fmt.Println(len(Employees))
 	count := len(Employees)
 	if count == 0 {
 		return Summary{}
@@ -95,6 +97,10 @@ func summary(Employees []Employee) Summary {
 	wage.Average = wage.Total / float64(count)
 	perks.Average = perks.Total / float64(count)
 	others.Average = others.Total / float64(count)
-	summary := Summary{Count: count, Wage: wage, Perks: perks, Others: others}
-	return summary
+	return Summary{
+		Count:  count,
+		Wage:   wage,
+		Perks:  perks,
+		Others: others,
+	}
 }
