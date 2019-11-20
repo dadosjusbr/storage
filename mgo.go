@@ -17,15 +17,18 @@ const (
 	maxValue           = math.MaxFloat64
 )
 
+//collection is a private interface to create a mongo's ReplaceOne method and their signatures to be used and tested.
 type collection interface {
 	ReplaceOne(ctx context.Context, filter interface{}, replacement interface{}, opts ...*options.ReplaceOptions) (*mongo.UpdateResult, error)
 }
 
+//Client is a mongodb Client instance
 type Client struct {
 	mgoClient *mongo.Client
-	c         collection
+	col       collection
 }
 
+//NewClient create a client, apply in a url and return a mongo client
 func NewClient(url string) (*Client, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(url))
 	if err != nil {
@@ -34,40 +37,41 @@ func NewClient(url string) (*Client, error) {
 	return &Client{mgoClient: client}, nil
 }
 
+//Connect a client to mongodb
 func (c *Client) Connect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	if err := c.mgoClient.Connect(ctx); err != nil {
 		return fmt.Errorf("error connection with mongo:%q", err)
 	}
-	c.c = c.mgoClient.Database(dbName).Collection(monthlyInfoColName)
+	c.col = c.mgoClient.Database(dbName).Collection(monthlyInfoColName)
 	return nil
 }
 
+//Disconnect a client connection with mongodb
 func (c *Client) Disconnect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	c.c = nil
+	c.col = nil
 	return c.mgoClient.Disconnect(ctx)
 }
 
 // Store processes and stores the crawling results.
 func (c *Client) Store(cr CrawlingResult) error {
-	if c.c == nil {
+	if c.col == nil {
 		return fmt.Errorf("Collection is nil")
 	}
-	//summary := summary(cr.Employees)
-	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees}
-	_, err := c.c.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: cr.AgencyID}, {Key: "year", Value: cr.Year}, {Key: "month", Value: cr.Month}}, agmi, options.Replace().SetUpsert(true))
+	summary := summary(cr.Employees)
+	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees, Summary: summary}
+	_, err := c.col.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: cr.AgencyID}, {Key: "year", Value: cr.Year}, {Key: "month", Value: cr.Month}}, agmi, options.Replace().SetUpsert(true))
 	if err != nil {
 		return err
 	}
-	// armazenar os empregados
-	// armazenar o sumário
 	// armazenar o backup
 	return nil
 }
 
+// summary aux func to make all necessary calculations to DataSummary Struct
 func summary(Employees []Employee) Summary {
 	wage := DataSummary{Max: 0.0, Min: maxValue, Total: 0.0}
 	perks := DataSummary{Max: 0.0, Min: maxValue, Total: 0.0}
@@ -75,9 +79,7 @@ func summary(Employees []Employee) Summary {
 	fmt.Println(len(Employees))
 	count := len(Employees)
 	if count == 0 {
-		wage.Min = 0
-		perks.Min = 0
-		others.Min = 0
+		return Summary{}
 	}
 	for _, value := range Employees {
 		wage.Max = math.Max(wage.Max, *value.Income.Wage)
