@@ -111,8 +111,10 @@ var (
 func (c *checkCollection) ReplaceOne(ctx context.Context, filter interface{}, replacement interface{}, opts ...*options.ReplaceOptions) (*mongo.UpdateResult, error) {
 	c.check = true
 	if c.err {
+		fmt.Println("Passou aki")
 		return nil, fmt.Errorf("replace one error")
 	}
+
 	assert.Equal(c.t, c.filter, filter)
 	assert.Equal(c.t, c.value, replacement)
 	assert.Equal(c.t, c.opts, opts)
@@ -149,7 +151,7 @@ func TestClient_Store(t *testing.T) {
 	}{
 		//Test if everything is OK!
 		{name: "ok", col: &col, cr: cr, wantErr: false, wantReplaceOne: true},
-		// Test if the replaceOne function works!
+		// Test if the replaceOne error reflects in store error!
 		{name: "replaceOne error", col: &colErr, cr: cr, wantErr: true, wantReplaceOne: true},
 		// Check if has some connection if mongoDb, if does the collection wont be nil.
 		{name: "missing collection error", cr: cr, wantErr: true, wantReplaceOne: false},

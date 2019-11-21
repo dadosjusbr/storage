@@ -62,13 +62,13 @@ func (c *Client) Disconnect() error {
 // Store processes and stores the crawling results.
 func (c *Client) Store(cr CrawlingResult) error {
 	if c.col == nil {
-		return fmt.Errorf("Collection is nil")
+		return fmt.Errorf("Client is not connected")
 	}
 	summary := summary(cr.Employees)
 	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees, Summary: summary}
 	_, err := c.col.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: cr.AgencyID}, {Key: "year", Value: cr.Year}, {Key: "month", Value: cr.Month}}, agmi, options.Replace().SetUpsert(true))
 	if err != nil {
-		return err
+		return fmt.Errorf("error trying to update mongodb with value {%+v}: %q", agmi, err)
 	}
 	// armazenar o backup
 	return nil
@@ -76,9 +76,9 @@ func (c *Client) Store(cr CrawlingResult) error {
 
 // summary aux func to make all necessary calculations to DataSummary Struct
 func summary(Employees []Employee) Summary {
-	wage := DataSummary{Max: 0.0, Min: maxValue, Total: 0.0}
-	perks := DataSummary{Max: 0.0, Min: maxValue, Total: 0.0}
-	others := DataSummary{Max: 0.0, Min: maxValue, Total: 0.0}
+	wage := DataSummary{Min: maxValue}
+	perks := DataSummary{Min: maxValue}
+	others := DataSummary{Min: maxValue}
 	count := len(Employees)
 	if count == 0 {
 		return Summary{}
