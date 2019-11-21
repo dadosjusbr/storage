@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -113,8 +114,8 @@ var (
 		Others: DataSummary{Max: 500.00, Min: 100.00, Average: 300.00, Total: 600.00},
 	}
 
-	backup1 = Backup{URL: "https://cloud5.lsd.ufcg.edu.br:8080/swift/v1/DadosJusBr/teste.txt", Hash: "58a90af4e1fe7ddef717e923fe4bcf26"}
-	backup2 = Backup{URL: "https://cloud5.lsd.ufcg.edu.br:8080/swift/v1/DadosJusBr/outroTeste.txt", Hash: "58a90af4e1fe7ddef717e923fe4bcf26"}
+	backup1 = Backup{URL: "https://cloud5.lsd.ufcg.edu.br:8080/swift/v1/DadosJusBr/teste.txt", Hash: "0e30309b400c02246b6ac4f461c0fa96"}
+	backup2 = Backup{URL: "https://cloud5.lsd.ufcg.edu.br:8080/swift/v1/DadosJusBr/outroTeste.txt", Hash: "0e30309b400c02246b6ac4f461c0fa96"}
 )
 
 // ReplaceOne is a checkCollection func that use same signature of collection interface, which is the same as the method signature with the same name in mongoDb
@@ -207,27 +208,39 @@ func Test_backup(t *testing.T) {
 	cs.Authenticate()
 
 	tests := []struct {
-		name  string
-		Files []string
-		want  []Backup
+		name    string
+		Files   []string
+		want    []Backup
+		wantErr bool
+		errMsg  string
 	}{
 		{name: "OK", Files: []string{"teste.txt", "outroTeste.txt"}, want: []Backup{backup1, backup2}},
+		{name: "No Files", Files: []string{}, want: []Backup{}, wantErr: true, errMsg: "is no file"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			for _, f := range tt.Files {
 				fileNew, err := os.Create(f)
 				assert.NoError(t, err)
-				_, err = fileNew.Write([]byte("Fireman é meu pastor e nada me faltará"))
+				_, err = fileNew.Write([]byte("Lorem ipsum dolor sit amet consectetuer"))
 				assert.NoError(t, err)
 			}
-			got := backup(tt.Files)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("backup() = %v, want %v", got, tt.want)
+			got, err := backup(tt.Files)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if (err != nil) && !strings.Contains(err.Error(), tt.errMsg) {
+				t.Errorf("error = %v, errExpected = %v", err, tt.errMsg)
+			}
+
+			if fmt.Sprintf("%v", got) != fmt.Sprintf("%v", tt.want) {
+				t.Errorf("backup() = %v (%T), want %v (%T)", got, got, tt.want, tt.want)
 			}
 			for _, rem := range tt.Files {
-				cs.DeleteFile(rem)
-				os.Remove("./" + rem)
+				err = cs.DeleteFile(rem)
+				assert.NoError(t, err)
+				err = os.Remove("./" + rem)
+				assert.NoError(t, err)
 			}
 		})
 	}

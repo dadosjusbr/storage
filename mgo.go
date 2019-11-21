@@ -65,11 +65,14 @@ func (c *Client) Store(cr CrawlingResult) error {
 		return fmt.Errorf("Client is not connected")
 	}
 	summary := summary(cr.Employees)
-	backup := backup(cr.Files)
-	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees, Summary: summary, Backups: backup}
-	_, err := c.col.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: cr.AgencyID}, {Key: "year", Value: cr.Year}, {Key: "month", Value: cr.Month}}, agmi, options.Replace().SetUpsert(true))
+	backup, err := backup(cr.Files)
 	if err != nil {
-		return fmt.Errorf("error trying to update mongodb with value {%+v}: %q", agmi, err)
+		return fmt.Errorf("error trying to get Backup files: %v", err)
+	}
+	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees, Summary: summary, Backups: backup}
+	_, err = c.col.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: cr.AgencyID}, {Key: "year", Value: cr.Year}, {Key: "month", Value: cr.Month}}, agmi, options.Replace().SetUpsert(true))
+	if err != nil {
+		return fmt.Errorf("error trying to update mongodb with value {%v}: %q", agmi, err)
 	}
 	// armazenar o backup
 	return nil
@@ -106,11 +109,14 @@ func summary(Employees []Employee) Summary {
 	}
 }
 
-func backup(Files []string) []Backup {
+func backup(Files []string) ([]Backup, error) {
+	if len(Files) == 0 {
+		return nil, fmt.Errorf("There is no file to upload")
+	}
 	var backups []Backup
 	cs := NewStorageClient()
 	if err := cs.Authenticate(); err != nil {
-		panic(err)
+		return nil, fmt.Errorf("Authentication error: %q", err)
 	}
 
 	for _, value := range Files {
@@ -121,5 +127,5 @@ func backup(Files []string) []Backup {
 		backups = append(backups, *back)
 
 	}
-	return backups
+	return backups, nil
 }
