@@ -65,7 +65,8 @@ func (c *Client) Store(cr CrawlingResult) error {
 		return fmt.Errorf("Client is not connected")
 	}
 	summary := summary(cr.Employees)
-	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees, Summary: summary}
+	backup := backup(cr.Files)
+	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees, Summary: summary, Backups: backup}
 	_, err := c.col.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: cr.AgencyID}, {Key: "year", Value: cr.Year}, {Key: "month", Value: cr.Month}}, agmi, options.Replace().SetUpsert(true))
 	if err != nil {
 		return fmt.Errorf("error trying to update mongodb with value {%+v}: %q", agmi, err)
@@ -103,4 +104,22 @@ func summary(Employees []Employee) Summary {
 		Perks:  perks,
 		Others: others,
 	}
+}
+
+func backup(Files []string) []Backup {
+	var backups []Backup
+	cs := NewStorageClient()
+	if err := cs.Authenticate(); err != nil {
+		panic(err)
+	}
+
+	for _, value := range Files {
+		back, err := cs.UploadFile(value)
+		if err != nil {
+			panic(err)
+		}
+		backups = append(backups, *back)
+
+	}
+	return backups
 }

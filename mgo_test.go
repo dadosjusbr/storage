@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"os"
 	"reflect"
 	"testing"
 
@@ -19,6 +20,12 @@ type checkCollection struct {
 	opts   []*options.ReplaceOptions
 	check  bool
 	err    bool
+}
+
+type checkStorage struct {
+	t     *testing.T
+	check bool
+	err   bool
 }
 
 func makePointer(x float64) *float64 {
@@ -105,6 +112,9 @@ var (
 		Perks:  DataSummary{Max: 600.00, Min: 200.00, Average: 400.00, Total: 800.00},
 		Others: DataSummary{Max: 500.00, Min: 100.00, Average: 300.00, Total: 600.00},
 	}
+
+	backup1 = Backup{URL: "https://cloud5.lsd.ufcg.edu.br:8080/swift/v1/DadosJusBr/teste.txt", Hash: "58a90af4e1fe7ddef717e923fe4bcf26"}
+	backup2 = Backup{URL: "https://cloud5.lsd.ufcg.edu.br:8080/swift/v1/DadosJusBr/outroTeste.txt", Hash: "58a90af4e1fe7ddef717e923fe4bcf26"}
 )
 
 // ReplaceOne is a checkCollection func that use same signature of collection interface, which is the same as the method signature with the same name in mongoDb
@@ -187,6 +197,37 @@ func Test_summary(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := summary(tt.Employees); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("summary() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_backup(t *testing.T) {
+	cs := NewStorageClient()
+	cs.Authenticate()
+
+	tests := []struct {
+		name  string
+		Files []string
+		want  []Backup
+	}{
+		{name: "OK", Files: []string{"teste.txt", "outroTeste.txt"}, want: []Backup{backup1, backup2}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, f := range tt.Files {
+				fileNew, err := os.Create(f)
+				assert.NoError(t, err)
+				_, err = fileNew.Write([]byte("Fireman é meu pastor e nada me faltará"))
+				assert.NoError(t, err)
+			}
+			got := backup(tt.Files)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("backup() = %v, want %v", got, tt.want)
+			}
+			for _, rem := range tt.Files {
+				cs.DeleteFile(rem)
+				os.Remove("./" + rem)
 			}
 		})
 	}
