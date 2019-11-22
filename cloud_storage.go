@@ -19,12 +19,11 @@ type StorageClient struct {
 
 const (
 	jusContainer = "DadosJusBr"
-	endURL       = "https://cloud5.lsd.ufcg.edu.br:8080/swift/v1/DadosJusBr/"
 )
 
 // NewStorageClient Create a client connect with Cloud
-func NewStorageClient(userName, apiKey, authUrl, domain string) *StorageClient {
-	return &StorageClient{conn: swift.Connection{UserName: userName, ApiKey: apiKey, AuthUrl: authUrl, Domain: domain}}
+func NewStorageClient(userName, apiKey, authURL, domain string) *StorageClient {
+	return &StorageClient{conn: swift.Connection{UserName: userName, ApiKey: apiKey, AuthUrl: authURL, Domain: domain}}
 }
 
 //Authenticate Authenticate a client in Cloud Service
@@ -59,9 +58,7 @@ func (sc *StorageClient) UploadFile(path string) (*Backup, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error trying to upload file at %s to storage: %q\nHeaders: %v", path, err, headers)
 	}
-
-	fmt.Println(headers)
-	return &Backup{URL: endURL + filepath.Base(path), Hash: headers["Etag"]}, nil
+	return &Backup{URL: fmt.Sprintf("%s/%s/%s", sc.conn.StorageUrl, jusContainer, filepath.Base(path)), Hash: headers["Etag"]}, nil
 }
 
 //DeleteFile delete a file from cloud container.
