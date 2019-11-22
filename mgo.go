@@ -26,15 +26,16 @@ type collection interface {
 type Client struct {
 	mgoClient *mongo.Client
 	col       collection
+	sc        *StorageClient
 }
 
 //NewClient instantiates a new client, but will not connect to the specified URL. Please use Client.Connect before using the client.
-func NewClient(url string) (*Client, error) {
+func NewClient(url string, sc *StorageClient) (*Client, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(url))
 	if err != nil {
 		return nil, err
 	}
-	return &Client{mgoClient: client}, nil
+	return &Client{mgoClient: client, sc: sc}, nil
 }
 
 //Connect establishes a connection to MongoDB using the previously specified URL
@@ -65,7 +66,7 @@ func (c *Client) Store(cr CrawlingResult) error {
 		return fmt.Errorf("Client is not connected")
 	}
 	summary := summary(cr.Employees)
-	backup, err := backup(cr.Files)
+	backup, err := c.sc.backup(cr.Files)
 	if err != nil {
 		return fmt.Errorf("error trying to get Backup files: %v", err)
 	}
@@ -74,7 +75,6 @@ func (c *Client) Store(cr CrawlingResult) error {
 	if err != nil {
 		return fmt.Errorf("error trying to update mongodb with value {%v}: %q", agmi, err)
 	}
-	// armazenar o backup
 	return nil
 }
 
@@ -107,25 +107,4 @@ func summary(Employees []Employee) Summary {
 		Perks:  perks,
 		Others: others,
 	}
-}
-
-func backup(Files []string) ([]Backup, error) {
-	if len(Files) == 0 {
-		return nil, fmt.Errorf("There is no file to upload")
-	}
-	var backups []Backup
-	cs := NewStorageClient()
-	if err := cs.Authenticate(); err != nil {
-		return nil, fmt.Errorf("Authentication error: %q", err)
-	}
-
-	for _, value := range Files {
-		back, err := cs.UploadFile(value)
-		if err != nil {
-			panic(err)
-		}
-		backups = append(backups, *back)
-
-	}
-	return backups, nil
 }

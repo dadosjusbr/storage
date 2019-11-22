@@ -6,12 +6,9 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"log"
 	"os"
-	"strings"
+	"path/filepath"
 
-	"github.com/joho/godotenv"
 	"github.com/ncw/swift"
 )
 
@@ -20,12 +17,14 @@ type StorageClient struct {
 	conn swift.Connection
 }
 
+const (
+	jusContainer = "DadosJusBr"
+	endURL       = "https://cloud5.lsd.ufcg.edu.br:8080/swift/v1/DadosJusBr/"
+)
+
 // NewStorageClient Create a client connect with Cloud
-func NewStorageClient() *StorageClient {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
-	}
-	return &StorageClient{conn: swift.Connection{UserName: os.Getenv("USERNAME"), ApiKey: os.Getenv("APIKEY"), AuthUrl: os.Getenv("AUTHURL"), Domain: os.Getenv("DOMAIN")}}
+func NewStorageClient(userName, apiKey, authUrl, domain string) *StorageClient {
+	return &StorageClient{conn: swift.Connection{UserName: userName, ApiKey: apiKey, AuthUrl: authUrl, Domain: domain}}
 }
 
 //Authenticate Authenticate a client in Cloud Service
@@ -39,18 +38,11 @@ func (sc *StorageClient) Authenticate() error {
 
 //md5Hash calculate a md5Hasg for a file
 func md5Hash(content []byte) (string, error) {
-	f := bytes.NewReader(content)
 	hasher := md5.New()
-	if _, err := io.Copy(hasher, f); err != nil {
-		return "", fmt.Errorf("error copying file content to hash.Hash")
+	if _, err := io.Copy(hasher, bytes.NewReader(content)); err != nil {
+		return "", fmt.Errorf("error hashing file contents: %q", err)
 	}
-	value := hex.EncodeToString(hasher.Sum(nil)[:16])
-	return value, nil
-}
-
-func getFileName(path string) string {
-	split := strings.SplitAfter(path, "/")
-	return split[len(split)-1]
+	return hex.EncodeToString(hasher.Sum(nil)[:16]), nil
 }
 
 //UploadFile Store a file in cloud container and return a Backup file containing a URL and a Hash for that file.
@@ -58,33 +50,46 @@ func (sc *StorageClient) UploadFile(path string) (*Backup, error) {
 	if !sc.conn.Authenticated() {
 		return nil, fmt.Errorf("Not Authenticated")
 	}
-
-	content, err := ioutil.ReadFile(path)
+	f, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("error reading file at %s: %q", path, err)
+		return nil, fmt.Errorf("error Opening file at %s: %q", path, err)
 	}
 
-	hash, err := md5Hash(content)
-	if err != nil {
-		return nil, fmt.Errorf("error generating file hash at %s: %q", path, err)
-	}
-	fileName := getFileName(path)
-	headers, err := sc.conn.ObjectPut("DadosJusBr", fileName, bytes.NewReader(content), true, hash, "", nil)
+	headers, err := sc.conn.ObjectPut(jusContainer, filepath.Base(path), f, true, "", "", nil)
 	if err != nil {
 		return nil, fmt.Errorf("error trying to upload file at %s to storage: %q\nHeaders: %v", path, err, headers)
 	}
-	return &Backup{URL: os.Getenv("ENDURL") + fileName, Hash: hash}, nil
+	return &Backup{URL: endURL + filepath.Base(path), Hash: headers["Etag"]}, nil
 }
 
 //DeleteFile delete a file from cloud container.
-func (sc *StorageClient) DeleteFile(path string) error {
+func (sc *StorageClient) deleteFile(path string) error {
 	if !sc.conn.Authenticated() {
 		return fmt.Errorf("Not Authenticated")
 	}
-	fileName := getFileName(path)
-	err := sc.conn.ObjectDelete("DadosJusBr", fileName)
+	err := sc.conn.ObjectDelete("DadosJusBr", filepath.Base(path))
 	if err != nil {
 		return fmt.Errorf("error trying to delete file at %s to storage: %q\nHeaders", path, err)
 	}
 	return nil
+}
+
+func (sc *StorageClient) backup(Files []string) ([]Backup, error) {
+	if len(Files) == 0 {
+		return nil, fmt.Errorf("There is no file to upload")
+	}
+	var backups []Backup
+	if err := sc.Authenticate(); err != nil {
+		return nil, fmt.Errorf("Authentication error: %q", err)
+	}
+
+	for _, value := range Files {
+		back, err := sc.UploadFile(value)
+		if err != nil {
+			return nil, fmt.Errorf("Error no upload do arquivo %v", err)
+		}
+		backups = append(backups, *back)
+
+	}
+	return backups, nil
 }

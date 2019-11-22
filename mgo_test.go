@@ -137,19 +137,22 @@ func (c *checkCollection) calledReplaceOne() bool {
 }
 
 func TestClient_Store(t *testing.T) {
+	//sc := NewStorageClient(username, apikey, authurl, domain) Need this line to test
 	crawler := Crawler{CrawlerID: "123132", CrawlerVersion: "v.1"}
-	cr := CrawlingResult{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employees: emp2Row}
+	cr := CrawlingResult{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employees: emp2Row, Files: []string{"teste.txt", "outroTeste.txt"}}
+	err := createFiles(cr.Files)
+	assert.NoError(t, err)
 	col := checkCollection{
 		t:      t,
 		filter: bson.D{{Key: "aid", Value: "a"}, {Key: "year", Value: 2019}, {Key: "month", Value: 9}},
-		value:  AgencyMonthlyInfo{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employee: emp2Row, Summary: summFor2Row},
+		value:  AgencyMonthlyInfo{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employee: emp2Row, Summary: summFor2Row, Backups: []Backup{backup1, backup2}},
 		opts:   []*options.ReplaceOptions{options.Replace().SetUpsert(true)},
 		err:    false,
 	}
 	colErr := checkCollection{
 		t:      t,
 		filter: bson.D{{Key: "aid", Value: "a"}, {Key: "year", Value: 2019}, {Key: "month", Value: 9}},
-		value:  AgencyMonthlyInfo{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employee: emp2Row, Summary: summFor2Row},
+		value:  AgencyMonthlyInfo{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employee: emp2Row, Summary: summFor2Row, Backups: []Backup{backup1, backup2}},
 		opts:   []*options.ReplaceOptions{options.Replace().SetUpsert(true)},
 		err:    true,
 	}
@@ -169,7 +172,7 @@ func TestClient_Store(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Client{}
+			c := &Client{sc: sc}
 			if tt.col != nil {
 				c.col = tt.col
 			}
@@ -181,6 +184,8 @@ func TestClient_Store(t *testing.T) {
 			}
 		})
 	}
+	err = deleteFiles(cr.Files)
+	assert.NoError(t, err)
 }
 
 func Test_summary(t *testing.T) {
@@ -204,9 +209,7 @@ func Test_summary(t *testing.T) {
 }
 
 func Test_backup(t *testing.T) {
-	cs := NewStorageClient()
-	cs.Authenticate()
-
+	//sc := NewStorageClient(username, apikey, authurl, domain) Need this line to test
 	tests := []struct {
 		name    string
 		Files   []string
@@ -219,13 +222,9 @@ func Test_backup(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			for _, f := range tt.Files {
-				fileNew, err := os.Create(f)
-				assert.NoError(t, err)
-				_, err = fileNew.Write([]byte("Lorem ipsum dolor sit amet consectetuer"))
-				assert.NoError(t, err)
-			}
-			got, err := backup(tt.Files)
+			err := createFiles(tt.Files)
+			assert.NoError(t, err)
+			got, err := sc.backup(tt.Files)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -236,12 +235,40 @@ func Test_backup(t *testing.T) {
 			if fmt.Sprintf("%v", got) != fmt.Sprintf("%v", tt.want) {
 				t.Errorf("backup() = %v (%T), want %v (%T)", got, got, tt.want, tt.want)
 			}
-			for _, rem := range tt.Files {
-				err = cs.DeleteFile(rem)
-				assert.NoError(t, err)
-				err = os.Remove("./" + rem)
-				assert.NoError(t, err)
-			}
+			err = deleteFiles(tt.Files)
+			assert.NoError(t, err)
 		})
 	}
+}
+
+func createFiles(files []string) error {
+	for _, f := range files {
+		fileNew, err := os.Create(f)
+		if err != nil {
+			return fmt.Errorf("Error trying to create a file %v", err)
+		}
+		_, err = fileNew.Write([]byte("Lorem ipsum dolor sit amet consectetuer"))
+		if err != nil {
+			return fmt.Errorf("Error trying to write a file %v", err)
+		}
+	}
+	return nil
+}
+
+func deleteFiles(files []string) error {
+	//sc := NewStorageClient(username, apikey, authurl, domain) Need this line to test
+	//sc.Authenticate()
+
+	for _, rem := range files {
+		err := sc.deleteFile(rem)
+		if err != nil {
+			return fmt.Errorf("Error trying to delete a file from store cloud %v", err)
+		}
+		err = os.Remove("./" + rem)
+		if err != nil {
+			return fmt.Errorf("Error trying to delete a file from local %v", err)
+		}
+	}
+
+	return nil
 }
