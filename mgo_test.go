@@ -137,7 +137,8 @@ func (c *checkCollection) calledReplaceOne() bool {
 }
 
 func TestClient_Store(t *testing.T) {
-	//sc := NewStorageClient(username, apikey, authurl, domain) Need this line to test
+	//To test, uncomment line below and insert auth parameters.
+	//sc := NewStorageClient(userName, apiKey, authURL, Domain)
 	crawler := Crawler{CrawlerID: "123132", CrawlerVersion: "v.1"}
 	cr := CrawlingResult{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employees: emp2Row, Files: []string{"teste.txt", "outroTeste.txt"}}
 	err := createFiles(cr.Files)
@@ -209,7 +210,8 @@ func Test_summary(t *testing.T) {
 }
 
 func Test_backup(t *testing.T) {
-	//sc := NewStorageClient(username, apikey, authurl, domain) Need this line to test
+	//To test, uncomment line below and insert auth parameters.
+	//sc := NewStorageClient(userName, apiKey, authURL, Domain)
 	tests := []struct {
 		name    string
 		Files   []string
@@ -256,7 +258,8 @@ func createFiles(files []string) error {
 }
 
 func deleteFiles(files []string) error {
-	//sc := NewStorageClient(username, apikey, authurl, domain) Need this line to test
+	//To test, uncomment line below and insert auth parameters.
+	//sc := NewStorageClient(userName, apiKey, authURL, Domain)
 	//sc.Authenticate()
 
 	for _, rem := range files {

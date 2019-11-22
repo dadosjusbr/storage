@@ -59,6 +59,8 @@ func (sc *StorageClient) UploadFile(path string) (*Backup, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error trying to upload file at %s to storage: %q\nHeaders: %v", path, err, headers)
 	}
+
+	fmt.Println(headers)
 	return &Backup{URL: endURL + filepath.Base(path), Hash: headers["Etag"]}, nil
 }
 
