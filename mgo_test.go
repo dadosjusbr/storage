@@ -138,7 +138,6 @@ func (c *checkCollection) calledReplaceOne() bool {
 func TestClient_Store(t *testing.T) {
 	//To test, uncomment line below and insert auth parameters.
 	//sc := NewStorageClient(userName, apiKey, authURL, Domain)
-	sc := NewStorageClient("joeberth", "imp12345", "https://cloud5.lsd.ufcg.edu.br:5000/v3", "Geral")
 	crawler := Crawler{CrawlerID: "123132", CrawlerVersion: "v.1"}
 	cr := CrawlingResult{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employees: emp2Row, Files: []string{"teste.txt", "outroTeste.txt"}}
 	err := createFiles(cr.Files)
@@ -212,7 +211,6 @@ func Test_summary(t *testing.T) {
 func Test_backup(t *testing.T) {
 	//To test, uncomment line below and insert auth parameters.
 	//sc := NewStorageClient(userName, apiKey, authURL, Domain)
-	sc := NewStorageClient("joeberth", "imp12345", "https://cloud5.lsd.ufcg.edu.br:5000/v3", "Geral")
 	tests := []struct {
 		name    string
 		Files   []string
@@ -261,8 +259,7 @@ func createFiles(files []string) error {
 func deleteFiles(files []string) error {
 	//To test, uncomment line below and insert auth parameters.
 	//sc := NewStorageClient(userName, apiKey, authURL, Domain)
-	sc := NewStorageClient("joeberth", "imp12345", "https://cloud5.lsd.ufcg.edu.br:5000/v3", "Geral")
-	sc.Authenticate()
+	//	sc.Authenticate()
 
 	for _, rem := range files {
 		err := sc.deleteFile(rem)
