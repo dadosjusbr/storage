@@ -104,3 +104,22 @@ func summary(Employees []Employee) Summary {
 		Others: others,
 	}
 }
+
+func GetAgenciesOfStateByName(stateName string) []Agency {
+	return []Agency{
+		Agency{
+			ID:     "tjpb",
+			Name:   "Tribunal de Justiça da Paraíba",
+			Type:   "E",
+			Entity: "J",
+			UF:     "PB",
+		},
+		Agency{
+			ID:     "MPPB",
+			Name:   "Ministério Público da Paraíba",
+			Type:   "E",
+			Entity: "M",
+			UF:     "PB",
+		},
+	}
+}
