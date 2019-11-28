@@ -240,7 +240,7 @@ func Test_summary(t *testing.T) {
 	}
 }
 
-func Test_backup(t *testing.T) {
+func Test_Backup(t *testing.T) {
 	//To test, uncomment line below and insert auth parameters.
 	//bc := NewBackupClient(userName, apiKey, authURL, Domain)
 
@@ -286,7 +286,7 @@ func Test_backup(t *testing.T) {
 			err := createFiles(tt.Files)
 			assert.NoError(t, err)
 			bc := &BackupClient{conn: tt.cs}
-			got, err := bc.backup(tt.Files)
+			got, err := bc.Backup(tt.Files)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 			}

@@ -22,18 +22,19 @@ type collection interface {
 	ReplaceOne(ctx context.Context, filter interface{}, replacement interface{}, opts ...*options.ReplaceOptions) (*mongo.UpdateResult, error)
 }
 
-//Client is a mongodb Client instance
+//Client is composed by mongoDbClient and Cloud5 client (used for backup).
 type Client struct {
 	db *DBClient
 	bc *BackupClient
 }
 
+//DBClient is a mongodb Client instance
 type DBClient struct {
 	mgoClient *mongo.Client
 	col       collection
 }
 
-//NewClient instantiates a new client, but will not connect to the specified URL. Please use Client.Connect before using the client.
+//NewDBClient instantiates a mongo new client, but will not connect to the specified URL. Please use Client.Connect before using the client.
 func NewDBClient(url string) (*DBClient, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(url))
 	if err != nil {
@@ -42,6 +43,7 @@ func NewDBClient(url string) (*DBClient, error) {
 	return &DBClient{mgoClient: client}, nil
 }
 
+//NewClient Contain both clients to be used in the store process. (Mongo and Cloud5)
 func NewClient(db *DBClient, bc *BackupClient) *Client {
 	return &Client{db: db, bc: bc}
 }
@@ -74,7 +76,7 @@ func (c *Client) Store(cr CrawlingResult) error {
 		return fmt.Errorf("Client is not connected")
 	}
 	summary := summary(cr.Employees)
-	backup, err := c.bc.backup(cr.Files)
+	backup, err := c.bc.Backup(cr.Files)
 	if err != nil {
 		return fmt.Errorf("error trying to get Backup files: %v, error: %q", cr.Files, err)
 	}

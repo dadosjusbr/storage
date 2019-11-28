@@ -9,7 +9,7 @@ import (
 	"github.com/ncw/swift"
 )
 
-// StoreClient struct containing a conn with swift library
+// BackupClient struct containing a conn with swift library
 type BackupClient struct {
 	conn swiftConnection
 }
@@ -40,7 +40,6 @@ func (bc *BackupClient) uploadFile(path string) (*Backup, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error trying to upload file at %s to storage: %q\nHeaders: %v", path, err, headers)
 	}
-
 	return &Backup{URL: fmt.Sprintf("%s/%s/%s", bc.storageURL(), jusContainer, filepath.Base(path)), Hash: headers["Etag"]}, nil
 }
 
@@ -58,16 +57,15 @@ func (bc *BackupClient) deleteFile(path string) error {
 	if err != nil {
 		return fmt.Errorf("delete file error: 'BackupClient:deleteFile' %s to storage: %q\nHeaders", path, err)
 	}
-
 	return nil
 }
 
-func (bc *BackupClient) backup(Files []string) ([]Backup, error) {
+//Backup is the API to make URL and HASH files to be used in mgo store function
+func (bc *BackupClient) Backup(Files []string) ([]Backup, error) {
 	if len(Files) == 0 {
 		return nil, fmt.Errorf("There is no file to upload")
 	}
 	var backups []Backup
-
 	for _, value := range Files {
 		back, err := bc.uploadFile(value)
 		if err != nil {
