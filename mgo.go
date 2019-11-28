@@ -105,7 +105,7 @@ func summary(Employees []Employee) Summary {
 	}
 }
 
-func getAgenciesOfState(stateName string) []Agency {
+func GetAgenciesOfStateByName(stateName string) []Agency {
 	return []Agency{
 		Agency{
 			ID:     "tjpb",
@@ -115,10 +115,10 @@ func getAgenciesOfState(stateName string) []Agency {
 			UF:     "PB",
 		},
 		Agency{
-			ID:     "trepb",
-			Name:   "Tribunal Regional Eleitoral da Paraíba",
-			Type:   "R",
-			Entity: "J",
+			ID:     "MPPB",
+			Name:   "Ministério Público da Paraíba",
+			Type:   "E",
+			Entity: "M",
 			UF:     "PB",
 		},
 	}
