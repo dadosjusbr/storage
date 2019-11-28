@@ -12,7 +12,6 @@ import (
 )
 
 const (
-	dbName             = "db"
 	monthlyInfoColName = "mi"
 	maxValue           = math.MaxFloat64
 )
@@ -38,7 +37,7 @@ func NewClient(url string) (*Client, error) {
 }
 
 //Connect establishes a connection to MongoDB using the previously specified URL
-func (c *Client) Connect() error {
+func (c *Client) Connect(dbName string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	if err := c.mgoClient.Connect(ctx); err != nil {
