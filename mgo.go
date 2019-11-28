@@ -24,54 +24,62 @@ type collection interface {
 
 //Client is a mongodb Client instance
 type Client struct {
+	db *DBClient
+	bc *BackupClient
+}
+
+type DBClient struct {
 	mgoClient *mongo.Client
 	col       collection
-	sc        *StorageClient
 }
 
 //NewClient instantiates a new client, but will not connect to the specified URL. Please use Client.Connect before using the client.
-func NewClient(url string, sc *StorageClient) (*Client, error) {
+func NewDBClient(url string) (*DBClient, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(url))
 	if err != nil {
 		return nil, err
 	}
-	return &Client{mgoClient: client, sc: sc}, nil
+	return &DBClient{mgoClient: client}, nil
+}
+
+func NewClient(db *DBClient, bc *BackupClient) *Client {
+	return &Client{db: db, bc: bc}
 }
 
 //Connect establishes a connection to MongoDB using the previously specified URL
 func (c *Client) Connect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	if err := c.mgoClient.Connect(ctx); err != nil {
+	if err := c.db.mgoClient.Connect(ctx); err != nil {
 		return fmt.Errorf("error connection with mongo:%q", err)
 	}
-	c.col = c.mgoClient.Database(dbName).Collection(monthlyInfoColName)
+	c.db.col = c.db.mgoClient.Database(dbName).Collection(monthlyInfoColName)
 	return nil
 }
 
 //Disconnect closes the connections to MongoDB. It does nothing if the connection had already been closed.
 func (c *Client) Disconnect() error {
-	if c.col == nil {
+	if c.db.col == nil {
 		return nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	c.col = nil
-	return c.mgoClient.Disconnect(ctx)
+	c.db.col = nil
+	return c.db.mgoClient.Disconnect(ctx)
 }
 
 // Store processes and stores the crawling results.
 func (c *Client) Store(cr CrawlingResult) error {
-	if c.col == nil {
+	if c.db.col == nil {
 		return fmt.Errorf("Client is not connected")
 	}
 	summary := summary(cr.Employees)
-	backup, err := c.sc.backup(cr.Files)
+	backup, err := c.bc.backup(cr.Files)
 	if err != nil {
-		return fmt.Errorf("error trying to get Backup files: %v", err)
+		return fmt.Errorf("error trying to get Backup files: %v, error: %q", cr.Files, err)
 	}
 	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees, Summary: summary, Backups: backup}
-	_, err = c.col.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: cr.AgencyID}, {Key: "year", Value: cr.Year}, {Key: "month", Value: cr.Month}}, agmi, options.Replace().SetUpsert(true))
+	_, err = c.db.col.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: cr.AgencyID}, {Key: "year", Value: cr.Year}, {Key: "month", Value: cr.Month}}, agmi, options.Replace().SetUpsert(true))
 	if err != nil {
 		return fmt.Errorf("error trying to update mongodb with value {%v}: %q", agmi, err)
 	}

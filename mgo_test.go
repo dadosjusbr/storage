@@ -3,11 +3,13 @@ package storage
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"reflect"
 	"strings"
 	"testing"
 
+	"github.com/ncw/swift"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -24,9 +26,16 @@ type checkCollection struct {
 }
 
 type checkStorage struct {
-	t     *testing.T
-	check bool
-	err   bool
+	t           *testing.T
+	check       bool
+	err         bool
+	container   string
+	objectName  string
+	contents    io.Reader
+	checkHash   bool
+	Hash        string
+	contentType string
+	h           swift.Headers
 }
 
 func makePointer(x float64) *float64 {
@@ -114,8 +123,11 @@ var (
 		Others: DataSummary{Max: 500.00, Min: 100.00, Average: 300.00, Total: 600.00},
 	}
 
-	backup1 = Backup{URL: "https://cloud5.lsd.ufcg.edu.br:8080/swift/v1/DadosJusBr/teste.txt", Hash: "0e30309b400c02246b6ac4f461c0fa96"}
-	backup2 = Backup{URL: "https://cloud5.lsd.ufcg.edu.br:8080/swift/v1/DadosJusBr/outroTeste.txt", Hash: "0e30309b400c02246b6ac4f461c0fa96"}
+	crawler = Crawler{CrawlerID: "123132", CrawlerVersion: "v.1"}
+	cr      = CrawlingResult{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employees: emp2Row, Files: []string{"teste.txt", "outroTeste.txt"}}
+
+	backup1 = Backup{URL: "/dadosjusbr/teste.txt", Hash: "0e30309b400c02246b6ac4f461c0fa96"}
+	backup2 = Backup{URL: "/dadosjusbr/outroTeste.txt", Hash: "0e30309b400c02246b6ac4f461c0fa96"}
 )
 
 // ReplaceOne is a checkCollection func that use same signature of collection interface, which is the same as the method signature with the same name in mongoDb
@@ -135,13 +147,33 @@ func (c *checkCollection) calledReplaceOne() bool {
 	return c.check
 }
 
+func (cs *checkStorage) ObjectPut(container string, objectName string, contents io.Reader, checkHash bool, Hash string, contentType string, h swift.Headers) (headers swift.Headers, err error) {
+	if cs.check {
+		assert.Equal(cs.t, cs.container, container)
+		assert.Equal(cs.t, cs.objectName, objectName)
+		assert.Equal(cs.t, cs.checkHash, checkHash)
+		assert.Equal(cs.t, cs.Hash, Hash)
+		assert.Equal(cs.t, cs.contentType, contentType)
+		assert.Equal(cs.t, cs.h, h)
+	}
+
+	if cs.err {
+		return nil, fmt.Errorf("Object Put Error")
+	}
+
+	return swift.Headers{"Etag": "0e30309b400c02246b6ac4f461c0fa96"}, nil
+}
+
+func (cs *checkStorage) ObjectDelete(container string, objectName string) error {
+	return nil
+}
+
 func TestClient_Store(t *testing.T) {
 	//To test, uncomment line below and insert auth parameters.
-	//sc := NewStorageClient(userName, apiKey, authURL, Domain)
-	crawler := Crawler{CrawlerID: "123132", CrawlerVersion: "v.1"}
-	cr := CrawlingResult{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employees: emp2Row, Files: []string{"teste.txt", "outroTeste.txt"}}
+	//bc := NewBackupClient(userName, apiKey, authURL, Domain)
 	err := createFiles(cr.Files)
 	assert.NoError(t, err)
+	bc := &BackupClient{conn: &checkStorage{check: false}}
 	col := checkCollection{
 		t:      t,
 		filter: bson.D{{Key: "aid", Value: "a"}, {Key: "year", Value: 2019}, {Key: "month", Value: 9}},
@@ -172,9 +204,9 @@ func TestClient_Store(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Client{sc: sc}
+			c := &Client{bc: bc, db: &DBClient{}}
 			if tt.col != nil {
-				c.col = tt.col
+				c.db.col = tt.col
 			}
 			if err := c.Store(tt.cr); (err != nil) != tt.wantErr {
 				t.Errorf("Client.Store() error = %v, wantErr %v", err, tt.wantErr)
@@ -210,22 +242,51 @@ func Test_summary(t *testing.T) {
 
 func Test_backup(t *testing.T) {
 	//To test, uncomment line below and insert auth parameters.
-	//sc := NewStorageClient(userName, apiKey, authURL, Domain)
+	//bc := NewBackupClient(userName, apiKey, authURL, Domain)
+
+	cs1 := checkStorage{
+		t:           t,
+		container:   "dadosjusbr",
+		objectName:  "teste.txt",
+		checkHash:   true,
+		Hash:        "",
+		contentType: "",
+		h:           nil,
+		err:         false,
+		check:       true,
+	}
+
+	cs2Err := checkStorage{
+		t:           t,
+		container:   "dadosjusbr",
+		objectName:  "teste.txt",
+		contents:    strings.NewReader("teste.txt"),
+		checkHash:   true,
+		Hash:        "",
+		contentType: "",
+		h:           nil,
+		err:         true,
+		check:       true,
+	}
+
 	tests := []struct {
 		name    string
 		Files   []string
+		cs      *checkStorage
 		want    []Backup
 		wantErr bool
 		errMsg  string
 	}{
-		{name: "OK", Files: []string{"teste.txt", "outroTeste.txt"}, want: []Backup{backup1, backup2}},
+		{name: "OK", Files: []string{"teste.txt"}, want: []Backup{backup1}, cs: &cs1},
 		{name: "No Files", Files: []string{}, want: []Backup{}, wantErr: true, errMsg: "is no file"},
+		{name: "Object Put Error", Files: []string{"teste.txt"}, want: []Backup{}, wantErr: true, errMsg: "Object Put Error", cs: &cs2Err},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := createFiles(tt.Files)
 			assert.NoError(t, err)
-			got, err := sc.backup(tt.Files)
+			bc := &BackupClient{conn: tt.cs}
+			got, err := bc.backup(tt.Files)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -238,6 +299,7 @@ func Test_backup(t *testing.T) {
 			}
 			err = deleteFiles(tt.Files)
 			assert.NoError(t, err)
+
 		})
 	}
 }
@@ -258,15 +320,8 @@ func createFiles(files []string) error {
 
 func deleteFiles(files []string) error {
 	//To test, uncomment line below and insert auth parameters.
-	//sc := NewStorageClient(userName, apiKey, authURL, Domain)
-	//	sc.Authenticate()
-
 	for _, rem := range files {
-		err := sc.deleteFile(rem)
-		if err != nil {
-			return fmt.Errorf("Error trying to delete a file from store cloud %v", err)
-		}
-		err = os.Remove("./" + rem)
+		err := os.Remove("./" + rem)
 		if err != nil {
 			return fmt.Errorf("Error trying to delete a file from local %v", err)
 		}

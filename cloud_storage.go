@@ -1,9 +1,6 @@
 package storage
 
 import (
-	"bytes"
-	"crypto/md5"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
@@ -13,79 +10,68 @@ import (
 )
 
 // StoreClient struct containing a conn with swift library
-type StorageClient struct {
-	conn swift.Connection
+type BackupClient struct {
+	conn swiftConnection
 }
 
 const (
-	jusContainer = "DadosJusBr"
+	jusContainer = "dadosjusbr"
 )
 
-// NewStorageClient Create a client connect with Cloud
-func NewStorageClient(userName, apiKey, authURL, domain string) *StorageClient {
-	return &StorageClient{conn: swift.Connection{UserName: userName, ApiKey: apiKey, AuthUrl: authURL, Domain: domain}}
+type swiftConnection interface {
+	ObjectPut(container string, objectName string, contents io.Reader, checkHash bool, Hash string, contentType string, h swift.Headers) (headers swift.Headers, err error)
+	ObjectDelete(container string, objectName string) error
 }
 
-//Authenticate Authenticate a client in Cloud Service
-func (sc *StorageClient) Authenticate() error {
-	err := sc.conn.Authenticate()
-	if err != nil {
-		return fmt.Errorf("error creating swift.Connection: %q", err)
-	}
-	return nil
-}
-
-//md5Hash calculate a md5Hasg for a file
-func md5Hash(content []byte) (string, error) {
-	hasher := md5.New()
-	if _, err := io.Copy(hasher, bytes.NewReader(content)); err != nil {
-		return "", fmt.Errorf("error hashing file contents: %q", err)
-	}
-	return hex.EncodeToString(hasher.Sum(nil)[:16]), nil
+// NewBackupClient Create a client connect with Cloud
+func NewBackupClient(userName, apiKey, authURL, domain string) *BackupClient {
+	return &BackupClient{conn: &swift.Connection{UserName: userName, ApiKey: apiKey, AuthUrl: authURL, Domain: domain}}
 }
 
 //UploadFile Store a file in cloud container and return a Backup file containing a URL and a Hash for that file.
-func (sc *StorageClient) UploadFile(path string) (*Backup, error) {
-	if !sc.conn.Authenticated() {
-		return nil, fmt.Errorf("Not Authenticated")
-	}
+func (bc *BackupClient) uploadFile(path string) (*Backup, error) {
+
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("error Opening file at %s: %q", path, err)
 	}
-
-	headers, err := sc.conn.ObjectPut(jusContainer, filepath.Base(path), f, true, "", "", nil)
+	defer f.Close()
+	headers, err := bc.conn.ObjectPut(jusContainer, filepath.Base(path), f, true, "", "", nil)
 	if err != nil {
 		return nil, fmt.Errorf("error trying to upload file at %s to storage: %q\nHeaders: %v", path, err, headers)
 	}
-	return &Backup{URL: fmt.Sprintf("%s/%s/%s", sc.conn.StorageUrl, jusContainer, filepath.Base(path)), Hash: headers["Etag"]}, nil
+
+	return &Backup{URL: fmt.Sprintf("%s/%s/%s", bc.storageURL(), jusContainer, filepath.Base(path)), Hash: headers["Etag"]}, nil
+}
+
+func (bc *BackupClient) storageURL() string {
+	if v, ok := bc.conn.(*swift.Connection); ok {
+		return v.StorageUrl
+	}
+	return ""
 }
 
 //DeleteFile delete a file from cloud container.
-func (sc *StorageClient) deleteFile(path string) error {
-	if !sc.conn.Authenticated() {
-		return fmt.Errorf("Not Authenticated")
-	}
-	err := sc.conn.ObjectDelete("DadosJusBr", filepath.Base(path))
+func (bc *BackupClient) deleteFile(path string) error {
+
+	err := bc.conn.ObjectDelete(jusContainer, filepath.Base(path))
 	if err != nil {
-		return fmt.Errorf("error trying to delete file at %s to storage: %q\nHeaders", path, err)
+		return fmt.Errorf("delete file error: 'BackupClient:deleteFile' %s to storage: %q\nHeaders", path, err)
 	}
+
 	return nil
 }
 
-func (sc *StorageClient) backup(Files []string) ([]Backup, error) {
+func (bc *BackupClient) backup(Files []string) ([]Backup, error) {
 	if len(Files) == 0 {
 		return nil, fmt.Errorf("There is no file to upload")
 	}
 	var backups []Backup
-	if err := sc.Authenticate(); err != nil {
-		return nil, fmt.Errorf("Authentication error: %q", err)
-	}
 
 	for _, value := range Files {
-		back, err := sc.UploadFile(value)
+		back, err := bc.uploadFile(value)
 		if err != nil {
-			return nil, fmt.Errorf("Error no upload do arquivo %v", err)
+			return nil, fmt.Errorf("Error in BackupClient:backup upload file %v", err)
 		}
 		backups = append(backups, *back)
 
