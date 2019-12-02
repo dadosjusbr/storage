@@ -278,7 +278,7 @@ func Test_Backup(t *testing.T) {
 		errMsg  string
 	}{
 		{name: "OK", Files: []string{"teste.txt"}, want: []Backup{backup1}, cs: &cs1},
-		{name: "No Files", Files: []string{}, want: []Backup{}, wantErr: true, errMsg: "is no file"},
+		{name: "No Files", Files: []string{}, want: []Backup{}, wantErr: false, errMsg: "is no file"},
 		{name: "Object Put Error", Files: []string{"teste.txt"}, want: []Backup{}, wantErr: true, errMsg: "Object Put Error", cs: &cs2Err},
 	}
 	for _, tt := range tests {

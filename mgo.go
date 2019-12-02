@@ -43,11 +43,6 @@ func NewDBClient(url string) (*DBClient, error) {
 	return &DBClient{mgoClient: client}, nil
 }
 
-//NewClient Contain both clients to be used in the store process. (Mongo and Cloud5)
-func NewClient(db *DBClient, bc *BackupClient) *Client {
-	return &Client{db: db, bc: bc}
-}
-
 //Connect establishes a connection to MongoDB using the previously specified URL
 func (c *Client) Connect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
