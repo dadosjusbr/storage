@@ -45,14 +45,14 @@ type Agency struct {
 
 // AgencyMonthlyInfo A Struct containing a snapshot of a agency in a month.
 type AgencyMonthlyInfo struct {
-	AgencyID          string     `json:"aid" bson:"aid,omitempty"`
-	Month             int        `json:"month" bson:"month,omitempty"`
-	Year              int        `json:"year" bson:"year,omitempty"`
-	Backups           []Backup   `json:"backups" bson:"backups,omitempty"`
-	Summary           Summary    `json:"summary" bson:"summary,omitempty"`
-	Employee          []Employee `json:"employee" bson:"employee,omitempty"`
-	Crawler           Crawler    `json:"crawler" bson:"crawler,omitempty"`
-	CrawlingTimestamp time.Time  `json:"ts" bson:"ts,omitempty"` // Crawling moment (always UTC)
+	AgencyID          string     `json:"aid,omitempty" bson:"aid,omitempty"`
+	Month             int        `json:"month,omitempty" bson:"month,omitempty"`
+	Year              int        `json:"year,omitempty" bson:"year,omitempty"`
+	Backups           []Backup   `json:"backups,omitempty" bson:"backups,omitempty"`
+	Summary           Summary    `json:"summary,omitempty" bson:"summary,omitempty"`
+	Employee          []Employee `json:"employee,omitempty" bson:"employee,omitempty"`
+	Crawler           Crawler    `json:"crawler,omitempty" bson:"crawler,omitempty"`
+	CrawlingTimestamp time.Time  `json:"ts,omitempty" bson:"ts,omitempty"` // Crawling moment (always UTC)
 }
 
 // Backup contains the URL to download a file and a hash to track if in the future will be changes in the file.

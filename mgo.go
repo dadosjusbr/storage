@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"fmt"
-	"math"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,123 +10,72 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const (
-	monthlyInfoColName = "mi"
-	maxValue           = math.MaxFloat64
-)
-
 //collection is a private interface to create a mongo's ReplaceOne method and their signatures to be used and tested.
 type collection interface {
 	ReplaceOne(ctx context.Context, filter interface{}, replacement interface{}, opts ...*options.ReplaceOptions) (*mongo.UpdateResult, error)
-}
-
-//Client is composed by mongoDbClient and Cloud5 client (used for backup).
-type Client struct {
-	db *DBClient
-	bc *BackupClient
+	Find(ctx context.Context, filter interface{}, opts ...*options.FindOptions) (*mongo.Cursor, error)
 }
 
 //DBClient is a mongodb Client instance
 type DBClient struct {
-	mgoClient *mongo.Client
-	col       collection
+	mgoClient      *mongo.Client
+	dbName         string
+	monthlyInfoCol string
+	agencyCol      string
+	col            collection
 }
 
 //NewDBClient instantiates a mongo new client, but will not connect to the specified URL. Please use Client.Connect before using the client.
-func NewDBClient(url string) (*DBClient, error) {
+func NewDBClient(url, dbName, monthlyInfoCol, agencyCol string) (*DBClient, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(url))
 	if err != nil {
 		return nil, err
 	}
-	return &DBClient{mgoClient: client}, nil
+	return &DBClient{mgoClient: client, dbName: dbName, monthlyInfoCol: monthlyInfoCol, agencyCol: agencyCol}, nil
 }
 
 //Connect establishes a connection to MongoDB using the previously specified URL
-func (c *Client) Connect(dbName string) error {
+func (c *DBClient) Connect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	if err := c.db.mgoClient.Connect(ctx); err != nil {
+	if err := c.mgoClient.Connect(ctx); err != nil {
 		return fmt.Errorf("error connection with mongo:%q", err)
 	}
-	c.db.col = c.db.mgoClient.Database(dbName).Collection(monthlyInfoColName)
 	return nil
 }
 
 //Disconnect closes the connections to MongoDB. It does nothing if the connection had already been closed.
-func (c *Client) Disconnect() error {
-	if c.db.col == nil {
-		return nil
-	}
+func (c *DBClient) Disconnect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	c.db.col = nil
-	return c.db.mgoClient.Disconnect(ctx)
+	c.col = nil
+	return c.mgoClient.Disconnect(ctx)
 }
 
-// Store processes and stores the crawling results.
-func (c *Client) Store(cr CrawlingResult) error {
-	if c.db.col == nil {
-		return fmt.Errorf("Client is not connected")
+// GetDataForFirstScreen GetDataForFirstScreen
+func (c *DBClient) GetDataForFirstScreen(Uf string, Year int) ([]Agency, map[string][]AgencyMonthlyInfo, error) {
+	var result = make(map[string][]AgencyMonthlyInfo)
+	c.collection(c.agencyCol)
+	resultAgencies, _ := c.col.Find(context.TODO(), bson.D{{}}, nil)
+
+	var allAgencies []Agency
+	resultAgencies.All(context.TODO(), &allAgencies)
+	if err := resultAgencies.Err(); err != nil {
+		return nil, nil, fmt.Errorf("Error in result %v", err)
 	}
-	summary := summary(cr.Employees)
-	backup, err := c.bc.Backup(cr.Files)
-	if err != nil {
-		return fmt.Errorf("error trying to get Backup files: %v, error: %q", cr.Files, err)
+
+	c.collection(c.monthlyInfoCol)
+	findOptions := options.Find()
+	for _, agency := range allAgencies {
+		resultMonthly, _ := c.col.Find(context.TODO(), bson.D{{Key: "aid", Value: agency.ID}, {Key: "year", Value: Year}},
+			findOptions.SetProjection(bson.D{{Key: "aid", Value: ""}, {Key: "year", Value: ""}, {Key: "month", Value: ""}, {Key: "summary", Value: ""}}))
+		var mr []AgencyMonthlyInfo
+		resultMonthly.All(context.TODO(), &mr)
+		result[agency.ID] = mr
 	}
-	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees, Summary: summary, Backups: backup}
-	_, err = c.db.col.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: cr.AgencyID}, {Key: "year", Value: cr.Year}, {Key: "month", Value: cr.Month}}, agmi, options.Replace().SetUpsert(true))
-	if err != nil {
-		return fmt.Errorf("error trying to update mongodb with value {%v}: %q", agmi, err)
-	}
-	return nil
+	return allAgencies, result, nil
 }
 
-// summary aux func to make all necessary calculations to DataSummary Struct
-func summary(Employees []Employee) Summary {
-	wage := DataSummary{Min: maxValue}
-	perks := DataSummary{Min: maxValue}
-	others := DataSummary{Min: maxValue}
-	count := len(Employees)
-	if count == 0 {
-		return Summary{}
-	}
-	for _, value := range Employees {
-		wage.Max = math.Max(wage.Max, *value.Income.Wage)
-		perks.Max = math.Max(perks.Max, value.Income.Perks.Total)
-		others.Max = math.Max(others.Max, value.Income.Other.Total)
-		wage.Min = math.Min(wage.Min, *value.Income.Wage)
-		perks.Min = math.Min(perks.Min, value.Income.Perks.Total)
-		others.Min = math.Min(others.Min, value.Income.Other.Total)
-		wage.Total += *value.Income.Wage
-		perks.Total += value.Income.Perks.Total
-		others.Total += value.Income.Other.Total
-	}
-	wage.Average = wage.Total / float64(count)
-	perks.Average = perks.Total / float64(count)
-	others.Average = others.Total / float64(count)
-	return Summary{
-		Count:  count,
-		Wage:   wage,
-		Perks:  perks,
-		Others: others,
-	}
-}
-
-func GetAgenciesOfStateByName(stateName string) []Agency {
-	return []Agency{
-		Agency{
-			ID:     "tjpb",
-			Name:   "Tribunal de Justiça da Paraíba",
-			Type:   "E",
-			Entity: "J",
-			UF:     "PB",
-		},
-		Agency{
-			ID:     "MPPB",
-			Name:   "Ministério Público da Paraíba",
-			Type:   "E",
-			Entity: "M",
-			UF:     "PB",
-		},
-	}
+func (c *DBClient) collection(collectionName string) {
+	c.col = c.mgoClient.Database(c.dbName).Collection(collectionName)
 }
