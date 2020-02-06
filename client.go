@@ -36,6 +36,17 @@ func (c *Client) GetDataForFirstScreen(Uf string, Year int) ([]Agency, map[strin
 	return ags, agsMR, err
 }
 
+// GetDataForSecondScreen GetDataForSecondScreen
+func (c *Client) GetDataForSecondScreen(month int, year int, agency string) (AgencyMonthlyInfo, error) {
+	err := c.Db.Connect()
+	if err != nil {
+		// TODO
+	}
+	agsMR, err := c.Db.GetDataForSecondScreen(month, year, agency)
+	c.Db.Disconnect()
+	return agsMR, err
+}
+
 // Store processes and stores the crawling results.
 func (c *Client) Store(cr CrawlingResult) error {
 	if c.Db.col == nil {

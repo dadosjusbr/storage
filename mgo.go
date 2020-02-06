@@ -96,6 +96,16 @@ func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]Age
 	return result, nil
 }
 
+//GetDataForSecondScreen GetDataForSecondScreen
+func (c *DBClient) GetDataForSecondScreen(month int, year int, agency string) (AgencyMonthlyInfo, error) {
+	c.collection(c.monthlyInfoCol)
+	resultMonthly, _ := c.col.Find(context.TODO(), bson.D{{Key: "aid", Value: agency}, {Key: "year", Value: year}, {Key: "month", Value: month}})
+	var mr []AgencyMonthlyInfo
+	resultMonthly.All(context.TODO(), &mr)
+	return mr[0], nil
+
+}
+
 func (c *DBClient) collection(collectionName string) {
 	c.col = c.mgoClient.Database(c.dbName).Collection(collectionName)
 }
