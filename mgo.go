@@ -53,27 +53,47 @@ func (c *DBClient) Disconnect() error {
 }
 
 // GetDataForFirstScreen GetDataForFirstScreen
-func (c *DBClient) GetDataForFirstScreen(Uf string, Year int) ([]Agency, map[string][]AgencyMonthlyInfo, error) {
-	var result = make(map[string][]AgencyMonthlyInfo)
+func (c *DBClient) GetDataForFirstScreen(uf string, year int) ([]Agency, map[string][]AgencyMonthlyInfo, error) {
+	allAgencies, err := c.GetAgencies(uf)
+	if err != nil {
+		return nil, nil, fmt.Errorf("GetDataForFirstScreen() error: %q", err)
+	}
+	result, err := c.GetMonthlyInfo(allAgencies, year)
+	if err != nil {
+		return nil, nil, fmt.Errorf("GetDataForFirstScreen() error: %q", err)
+	}
+	return allAgencies, result, nil
+}
+
+//GetAgencies Return UF Agencies
+func (c *DBClient) GetAgencies(uf string) ([]Agency, error) {
 	c.collection(c.agencyCol)
-	resultAgencies, _ := c.col.Find(context.TODO(), bson.D{{}}, nil)
+	resultAgencies, err := c.col.Find(context.TODO(), bson.D{{Key: "uf", Value: uf}}, nil)
+	if err != nil {
+		return nil, fmt.Errorf("Find error in getAgencies %v", err)
+	}
 
 	var allAgencies []Agency
 	resultAgencies.All(context.TODO(), &allAgencies)
 	if err := resultAgencies.Err(); err != nil {
-		return nil, nil, fmt.Errorf("Error in result %v", err)
+		return nil, fmt.Errorf("Error in result %v", err)
 	}
+	return allAgencies, nil
+}
 
+//GetMonthlyInfo return summarized monthlyInfo for each agency in agencies in a specific year
+func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]AgencyMonthlyInfo, error) {
+	var result = make(map[string][]AgencyMonthlyInfo)
 	c.collection(c.monthlyInfoCol)
 	findOptions := options.Find()
-	for _, agency := range allAgencies {
-		resultMonthly, _ := c.col.Find(context.TODO(), bson.D{{Key: "aid", Value: agency.ID}, {Key: "year", Value: Year}},
+	for _, agency := range agencies {
+		resultMonthly, _ := c.col.Find(context.TODO(), bson.D{{Key: "aid", Value: agency.ID}, {Key: "year", Value: year}},
 			findOptions.SetProjection(bson.D{{Key: "aid", Value: ""}, {Key: "year", Value: ""}, {Key: "month", Value: ""}, {Key: "summary", Value: ""}}))
 		var mr []AgencyMonthlyInfo
 		resultMonthly.All(context.TODO(), &mr)
 		result[agency.ID] = mr
 	}
-	return allAgencies, result, nil
+	return result, nil
 }
 
 func (c *DBClient) collection(collectionName string) {
