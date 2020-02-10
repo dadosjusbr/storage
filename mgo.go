@@ -87,8 +87,11 @@ func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]Age
 	c.collection(c.monthlyInfoCol)
 	findOptions := options.Find()
 	for _, agency := range agencies {
-		resultMonthly, _ := c.col.Find(context.TODO(), bson.D{{Key: "aid", Value: agency.ID}, {Key: "year", Value: year}},
+		resultMonthly, err := c.col.Find(context.TODO(), bson.D{{Key: "aid", Value: agency.ID}, {Key: "year", Value: year}},
 			findOptions.SetProjection(bson.D{{Key: "aid", Value: ""}, {Key: "year", Value: ""}, {Key: "month", Value: ""}, {Key: "summary", Value: ""}}))
+		if err != nil {
+			return nil, fmt.Errorf("Error in GetMonthlyInfo %v", err)
+		}
 		var mr []AgencyMonthlyInfo
 		resultMonthly.All(context.TODO(), &mr)
 		result[agency.ID] = mr
@@ -103,7 +106,6 @@ func (c *DBClient) GetDataForSecondScreen(month int, year int, agency string) (A
 	var mr []AgencyMonthlyInfo
 	resultMonthly.All(context.TODO(), &mr)
 	return mr[0], nil
-
 }
 
 func (c *DBClient) collection(collectionName string) {

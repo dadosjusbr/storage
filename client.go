@@ -25,23 +25,23 @@ func NewClient(db *DBClient, bc *BackupClient) (*Client, error) {
 	return &c, nil
 }
 
-// GetDataForFirstScreen GetDataForFirstScreen
+// GetDataForFirstScreen Connect to db to collect data to build first screen
 func (c *Client) GetDataForFirstScreen(Uf string, Year int) ([]Agency, map[string][]AgencyMonthlyInfo, error) {
 	err := c.Db.Connect()
-	if err != nil {
-		// TODO
-	}
+	//if err != nil {
+	//	return nil, nil, fmt.Errorf("GetDataForFirstScreen() error: Unable to connect to DB")
+	//}
 	ags, agsMR, err := c.Db.GetDataForFirstScreen(Uf, Year)
 	c.Db.Disconnect()
 	return ags, agsMR, err
 }
 
-// GetDataForSecondScreen GetDataForSecondScreen
+// GetDataForSecondScreen Connect to db to collect data for a month including all employees
 func (c *Client) GetDataForSecondScreen(month int, year int, agency string) (AgencyMonthlyInfo, error) {
 	err := c.Db.Connect()
-	if err != nil {
-		// TODO
-	}
+	//if err != nil {
+	//	return nil, fmt.Errorf("GetDataForSecondScreen() error: Unable to connect to DB")
+	//}
 	agsMR, err := c.Db.GetDataForSecondScreen(month, year, agency)
 	c.Db.Disconnect()
 	return agsMR, err
