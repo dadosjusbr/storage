@@ -37,7 +37,7 @@ func (c *Client) GetDataForFirstScreen(Uf string, Year int) ([]Agency, map[strin
 }
 
 // GetDataForSecondScreen Connect to db to collect data for a month including all employees
-func (c *Client) GetDataForSecondScreen(month int, year int, agency string) (AgencyMonthlyInfo, error) {
+func (c *Client) GetDataForSecondScreen(month int, year int, agency string) (*AgencyMonthlyInfo, error) {
 	err := c.Db.Connect()
 	//if err != nil {
 	//	return nil, fmt.Errorf("GetDataForSecondScreen() error: Unable to connect to DB")
