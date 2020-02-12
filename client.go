@@ -18,8 +18,7 @@ type Client struct {
 // NewClient NewClient
 func NewClient(db *DBClient, bc *BackupClient) (*Client, error) {
 	c := Client{Db: db, Bc: bc}
-	err := c.Db.Connect()
-	if err != nil {
+	if err := c.Db.Connect(); err != nil {
 		return nil, err
 	}
 	return &c, nil
@@ -27,22 +26,20 @@ func NewClient(db *DBClient, bc *BackupClient) (*Client, error) {
 
 // GetDataForFirstScreen Connect to db to collect data to build first screen
 func (c *Client) GetDataForFirstScreen(Uf string, Year int) ([]Agency, map[string][]AgencyMonthlyInfo, error) {
-	err := c.Db.Connect()
-	//if err != nil {
-	//	return nil, nil, fmt.Errorf("GetDataForFirstScreen() error: Unable to connect to DB")
-	//}
 	ags, agsMR, err := c.Db.GetDataForFirstScreen(Uf, Year)
+	if err != nil {
+		return nil, nil, fmt.Errorf("GetDataForFirstScreen() error: %q", err)
+	}
 	c.Db.Disconnect()
 	return ags, agsMR, err
 }
 
 // GetDataForSecondScreen Connect to db to collect data for a month including all employees
 func (c *Client) GetDataForSecondScreen(month int, year int, agency string) (*AgencyMonthlyInfo, error) {
-	err := c.Db.Connect()
-	//if err != nil {
-	//	return nil, fmt.Errorf("GetDataForSecondScreen() error: Unable to connect to DB")
-	//}
 	agsMR, err := c.Db.GetDataForSecondScreen(month, year, agency)
+	if err != nil {
+		return nil, fmt.Errorf("GetDataForSecondScreen() error: %q", err)
+	}
 	c.Db.Disconnect()
 	return agsMR, err
 }
@@ -74,24 +71,22 @@ func summary(Employees []Employee) Summary {
 	if count == 0 {
 		return Summary{}
 	}
-	for _, value := range Employees {
-		wage.Max = math.Max(wage.Max, *value.Income.Wage)
-		perks.Max = math.Max(perks.Max, value.Income.Perks.Total)
-		others.Max = math.Max(others.Max, value.Income.Other.Total)
-		wage.Min = math.Min(wage.Min, *value.Income.Wage)
-		perks.Min = math.Min(perks.Min, value.Income.Perks.Total)
-		others.Min = math.Min(others.Min, value.Income.Other.Total)
-		wage.Total += *value.Income.Wage
-		perks.Total += value.Income.Perks.Total
-		others.Total += value.Income.Other.Total
+	for i, value := range Employees {
+		updateSummary(&wage, *value.Income.Wage, i)
+		updateSummary(&perks, value.Income.Perks.Total, i)
+		updateSummary(&others, value.Income.Other.Total, i)
 	}
-	wage.Average = wage.Total / float64(count)
-	perks.Average = perks.Total / float64(count)
-	others.Average = others.Total / float64(count)
 	return Summary{
 		Count:  count,
 		Wage:   wage,
 		Perks:  perks,
 		Others: others,
 	}
+}
+
+func updateSummary(d *DataSummary, value float64, entryIndex int) {
+	d.Max = math.Max(d.Max, value)
+	d.Min = math.Min(d.Min, value)
+	d.Total += value
+	d.Average = d.Total / float64(entryIndex+1)
 }

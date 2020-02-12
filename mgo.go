@@ -72,7 +72,6 @@ func (c *DBClient) GetAgencies(uf string) ([]Agency, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Find error in getAgencies %v", err)
 	}
-
 	var allAgencies []Agency
 	resultAgencies.All(context.TODO(), &allAgencies)
 	if err := resultAgencies.Err(); err != nil {
