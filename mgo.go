@@ -67,7 +67,7 @@ func (c *DBClient) GetDataForFirstScreen(uf string, year int) ([]Agency, map[str
 
 //GetAgencies Return UF Agencies
 func (c *DBClient) GetAgencies(uf string) ([]Agency, error) {
-	c.collection(c.agencyCol)
+	c.Collection(c.agencyCol)
 	resultAgencies, err := c.col.Find(context.TODO(), bson.D{{Key: "uf", Value: uf}}, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Find error in getAgencies %v", err)
@@ -83,7 +83,7 @@ func (c *DBClient) GetAgencies(uf string) ([]Agency, error) {
 //GetMonthlyInfo return summarized monthlyInfo for each agency in agencies in a specific year
 func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]AgencyMonthlyInfo, error) {
 	var result = make(map[string][]AgencyMonthlyInfo)
-	c.collection(c.monthlyInfoCol)
+	c.Collection(c.monthlyInfoCol)
 	findOptions := options.Find()
 	for _, agency := range agencies {
 		resultMonthly, err := c.col.Find(context.TODO(), bson.D{{Key: "aid", Value: agency.ID}, {Key: "year", Value: year}},
@@ -100,7 +100,7 @@ func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]Age
 
 //GetDataForSecondScreen GetDataForSecondScreen
 func (c *DBClient) GetDataForSecondScreen(month int, year int, agency string) (*AgencyMonthlyInfo, error) {
-	c.collection(c.monthlyInfoCol)
+	c.Collection(c.monthlyInfoCol)
 	resultMonthly, err := c.col.Find(context.TODO(), bson.D{{Key: "aid", Value: agency}, {Key: "year", Value: year}, {Key: "month", Value: month}})
 	if err != nil {
 		return nil, fmt.Errorf("Error in GetMonthlyInfo %v", err)
@@ -110,6 +110,7 @@ func (c *DBClient) GetDataForSecondScreen(month int, year int, agency string) (*
 	return &mr[0], nil
 }
 
-func (c *DBClient) collection(collectionName string) {
+//Collection Changes active collection
+func (c *DBClient) Collection(collectionName string) {
 	c.col = c.mgoClient.Database(c.dbName).Collection(collectionName)
 }
