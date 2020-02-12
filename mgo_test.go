@@ -147,6 +147,10 @@ func (c *checkCollection) calledReplaceOne() bool {
 	return c.check
 }
 
+func (c *checkCollection) Find(ctx context.Context, filter interface{}, opts ...*options.FindOptions) (*mongo.Cursor, error) {
+	return nil, nil
+}
+
 func (cs *checkStorage) ObjectPut(container string, objectName string, contents io.Reader, checkHash bool, Hash string, contentType string, h swift.Headers) (headers swift.Headers, err error) {
 	if cs.check {
 		assert.Equal(cs.t, cs.container, container)
@@ -169,11 +173,9 @@ func (cs *checkStorage) ObjectDelete(container string, objectName string) error 
 }
 
 func TestClient_Store(t *testing.T) {
-	//To test, uncomment line below and insert auth parameters.
-	//bc := NewBackupClient(userName, apiKey, authURL, Domain)
 	err := createFiles(cr.Files)
 	assert.NoError(t, err)
-	bc := &BackupClient{conn: &checkStorage{check: false}}
+	bc := &BackupClient{conn: &checkStorage{check: false}, container: "dadosjusbr"}
 	col := checkCollection{
 		t:      t,
 		filter: bson.D{{Key: "aid", Value: "a"}, {Key: "year", Value: 2019}, {Key: "month", Value: 9}},
@@ -204,9 +206,9 @@ func TestClient_Store(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Client{bc: bc, db: &DBClient{}}
+			c := &Client{Bc: bc, Db: &DBClient{}}
 			if tt.col != nil {
-				c.db.col = tt.col
+				c.Db.col = tt.col
 			}
 			if err := c.Store(tt.cr); (err != nil) != tt.wantErr {
 				t.Errorf("Client.Store() error = %v, wantErr %v", err, tt.wantErr)
@@ -241,9 +243,6 @@ func Test_summary(t *testing.T) {
 }
 
 func Test_Backup(t *testing.T) {
-	//To test, uncomment line below and insert auth parameters.
-	//bc := NewBackupClient(userName, apiKey, authURL, Domain)
-
 	cs1 := checkStorage{
 		t:           t,
 		container:   "dadosjusbr",
@@ -286,20 +285,21 @@ func Test_Backup(t *testing.T) {
 			err := createFiles(tt.Files)
 			assert.NoError(t, err)
 			bc := &BackupClient{conn: tt.cs}
-			got, err := bc.Backup(tt.Files)
+			if tt.cs != nil {
+				bc.container = tt.cs.container
+			}
+			got, err := bc.backup(tt.Files)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if (err != nil) && !strings.Contains(err.Error(), tt.errMsg) {
 				t.Errorf("error = %v, errExpected = %v", err, tt.errMsg)
 			}
-
 			if fmt.Sprintf("%v", got) != fmt.Sprintf("%v", tt.want) {
 				t.Errorf("backup() = %v (%T), want %v (%T)", got, got, tt.want, tt.want)
 			}
 			err = deleteFiles(tt.Files)
 			assert.NoError(t, err)
-
 		})
 	}
 }
