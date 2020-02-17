@@ -54,7 +54,7 @@ func (c *Client) Store(cr CrawlingResult) error {
 	if err != nil {
 		return fmt.Errorf("error trying to get Backup files: %v, error: %q", cr.Files, err)
 	}
-	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees, Summary: summary, Backups: backup}
+	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees, Summary: summary, Backups: backup, CrawlingTimestamp: cr.Timestamp}
 	_, err = c.Db.col.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: cr.AgencyID}, {Key: "year", Value: cr.Year}, {Key: "month", Value: cr.Month}}, agmi, options.Replace().SetUpsert(true))
 	if err != nil {
 		return fmt.Errorf("error trying to update mongodb with value {%v}: %q", agmi, err)
@@ -89,4 +89,31 @@ func updateSummary(d *DataSummary, value float64, entryIndex int) {
 	d.Min = math.Min(d.Min, value)
 	d.Total += value
 	d.Average = d.Total / float64(entryIndex+1)
+}
+
+func summary2(Employees []Employee) Summaries {
+
+	for i, value := range Employees {
+		switch value.Type 
+	}
+
+	wage := DataSummary{Min: math.MaxFloat64}
+	perks := DataSummary{Min: math.MaxFloat64}
+	others := DataSummary{Min: math.MaxFloat64}
+	count := len(Employees)
+	if count == 0 {
+		return Summary{}
+	}
+	for i, value := range Employees {
+		updateSummary(&wage, *value.Income.Wage, i)
+		updateSummary(&perks, value.Income.Perks.Total, i)
+		updateSummary(&others, value.Income.Other.Total, i)
+	}
+	return Summaries{
+		General: General,
+		MemberA: MemberA,
+		MemberI: MemberI,
+		ServerA: ServerA,
+		ServerI: ServerI,
+	}
 }

@@ -49,7 +49,7 @@ type AgencyMonthlyInfo struct {
 	Month             int        `json:"month,omitempty" bson:"month,omitempty"`
 	Year              int        `json:"year,omitempty" bson:"year,omitempty"`
 	Backups           []Backup   `json:"backups,omitempty" bson:"backups,omitempty"`
-	Summary           Summary    `json:"summary,omitempty" bson:"summary,omitempty"`
+	Summary           []Summary  `json:"summary,omitempty" bson:"summary,omitempty"`
 	Employee          []Employee `json:"employee,omitempty" bson:"employee,omitempty"`
 	Crawler           Crawler    `json:"crawler,omitempty" bson:"crawler,omitempty"`
 	CrawlingTimestamp time.Time  `json:"ts,omitempty" bson:"ts,omitempty"` // Crawling moment (always UTC)
@@ -59,6 +59,14 @@ type AgencyMonthlyInfo struct {
 type Backup struct {
 	URL  string `json:"url" bson:"url,omitempty"`
 	Hash string `json:"hash" bson:"hash,omitempty"`
+}
+
+type Summaries struct {
+	General Summary
+	MemberA	Summary
+	MemberI Summary
+	ServerA Summary
+	ServerI Summary
 }
 
 // Summary A Struct containing summarized  information about a agency/month stats
