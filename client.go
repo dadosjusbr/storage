@@ -72,9 +72,9 @@ func summary(Employees []Employee) Summary {
 		return Summary{}
 	}
 	for i, value := range Employees {
-		updateSummary(&wage, *value.Income.Wage, i)
-		updateSummary(&perks, value.Income.Perks.Total, i)
-		updateSummary(&others, value.Income.Other.Total, i)
+		updateDataSummary(&wage, *value.Income.Wage, i)
+		updateDataSummary(&perks, value.Income.Perks.Total, i)
+		updateDataSummary(&others, value.Income.Other.Total, i)
 	}
 	return Summary{
 		Count:  count,
@@ -84,36 +84,56 @@ func summary(Employees []Employee) Summary {
 	}
 }
 
-func updateSummary(d *DataSummary, value float64, entryIndex int) {
+func summary2(Employees []Employee) Summaries {
+	general := createSummary()
+	memberA := createSummary()
+	memberI := createSummary()
+	serverA := createSummary()
+	serverI := createSummary()
+	for _, emp := range Employees {
+		updateSummary(&general, emp)
+		switch {
+		case emp.Type == "membro" && emp.Active:
+			updateSummary(&memberA, emp)
+		case emp.Type == "membro" && !emp.Active:
+			updateSummary(&memberI, emp)
+		case emp.Type == "servidor" && emp.Active:
+			updateSummary(&serverA, emp)
+		case emp.Type == "servidor" && !emp.Active:
+			updateSummary(&serverI, emp)
+		}
+	}
+	if general.Count == 0 {
+		return Summaries{}
+	}
+	return Summaries{
+		General: general,
+		MemberA: memberA,
+		MemberI: memberI,
+		ServerA: serverA,
+		ServerI: serverI,
+	}
+}
+
+func updateDataSummary(d *DataSummary, value float64, count int) {
 	d.Max = math.Max(d.Max, value)
 	d.Min = math.Min(d.Min, value)
 	d.Total += value
-	d.Average = d.Total / float64(entryIndex+1)
+	d.Average = d.Total / float64(count)
 }
 
-func summary2(Employees []Employee) Summaries {
+func updateSummary(s *Summary, emp Employee) {
+	s.Count++
+	updateDataSummary(&s.Wage, *emp.Income.Wage, s.Count)
+	updateDataSummary(&s.Perks, emp.Income.Perks.Total, s.Count)
+	updateDataSummary(&s.Others, emp.Income.Other.Total, s.Count)
+}
 
-	for i, value := range Employees {
-		switch value.Type 
-	}
-
-	wage := DataSummary{Min: math.MaxFloat64}
-	perks := DataSummary{Min: math.MaxFloat64}
-	others := DataSummary{Min: math.MaxFloat64}
-	count := len(Employees)
-	if count == 0 {
-		return Summary{}
-	}
-	for i, value := range Employees {
-		updateSummary(&wage, *value.Income.Wage, i)
-		updateSummary(&perks, value.Income.Perks.Total, i)
-		updateSummary(&others, value.Income.Other.Total, i)
-	}
-	return Summaries{
-		General: General,
-		MemberA: MemberA,
-		MemberI: MemberI,
-		ServerA: ServerA,
-		ServerI: ServerI,
+func createSummary() Summary {
+	return Summary{
+		Count:  0,
+		Wage:   DataSummary{Min: math.MaxFloat64},
+		Perks:  DataSummary{Min: math.MaxFloat64},
+		Others: DataSummary{Min: math.MaxFloat64},
 	}
 }
