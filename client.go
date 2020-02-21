@@ -63,28 +63,7 @@ func (c *Client) Store(cr CrawlingResult) error {
 }
 
 // summary aux func to make all necessary calculations to DataSummary Struct
-func summary(Employees []Employee) Summary {
-	wage := DataSummary{Min: math.MaxFloat64}
-	perks := DataSummary{Min: math.MaxFloat64}
-	others := DataSummary{Min: math.MaxFloat64}
-	count := len(Employees)
-	if count == 0 {
-		return Summary{}
-	}
-	for i, value := range Employees {
-		updateDataSummary(&wage, *value.Income.Wage, i)
-		updateDataSummary(&perks, value.Income.Perks.Total, i)
-		updateDataSummary(&others, value.Income.Other.Total, i)
-	}
-	return Summary{
-		Count:  count,
-		Wage:   wage,
-		Perks:  perks,
-		Others: others,
-	}
-}
-
-func summary2(Employees []Employee) Summaries {
+func summary(Employees []Employee) Summaries {
 	general := createSummary()
 	memberA := createSummary()
 	memberI := createSummary()
@@ -103,9 +82,15 @@ func summary2(Employees []Employee) Summaries {
 			updateSummary(&serverI, emp)
 		}
 	}
+
 	if general.Count == 0 {
 		return Summaries{}
 	}
+	checkCountIsO(&memberA)
+	checkCountIsO(&memberI)
+	checkCountIsO(&serverA)
+	checkCountIsO(&serverI)
+
 	return Summaries{
 		General: general,
 		MemberA: memberA,
@@ -115,6 +100,16 @@ func summary2(Employees []Employee) Summaries {
 	}
 }
 
+//checkCOuntIsO check if the number of employees is 0 of each employee type
+func checkCountIsO(s *Summary) {
+	if s.Count == 0 {
+		s.Wage.Min = 0
+		s.Others.Min = 0
+		s.Perks.Min = 0
+	}
+}
+
+//updateDataSummary auxiliary function that updates the summary data at each employee value
 func updateDataSummary(d *DataSummary, value float64, count int) {
 	d.Max = math.Max(d.Max, value)
 	d.Min = math.Min(d.Min, value)
@@ -122,6 +117,7 @@ func updateDataSummary(d *DataSummary, value float64, count int) {
 	d.Average = d.Total / float64(count)
 }
 
+//updateSummary count number of employees
 func updateSummary(s *Summary, emp Employee) {
 	s.Count++
 	updateDataSummary(&s.Wage, *emp.Income.Wage, s.Count)
@@ -129,6 +125,7 @@ func updateSummary(s *Summary, emp Employee) {
 	updateDataSummary(&s.Others, emp.Income.Other.Total, s.Count)
 }
 
+//createSummary instanciates all employee group Type plus Active fields.
 func createSummary() Summary {
 	return Summary{
 		Count:  0,

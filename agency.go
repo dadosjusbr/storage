@@ -41,6 +41,7 @@ type Agency struct {
 	Type   string `json:"type" bson:"type,omitempty"`     // "R" for Regional, "M" for Municipal, "F" for Federal, "E" for State.
 	Entity string `json:"entity" bson:"entity,omitempty"` // "J" For Judiciário, "M" for Ministério Público, "P" for Procuradorias and "D" for Defensorias.
 	UF     string `json:"uf" bson:"uf,omitempty"`         // Short code for federative unity.
+	URL    string `json:"url" bson:"url,omitempty"`       //Link for state url
 }
 
 // AgencyMonthlyInfo A Struct containing a snapshot of a agency in a month.
@@ -49,7 +50,7 @@ type AgencyMonthlyInfo struct {
 	Month             int        `json:"month,omitempty" bson:"month,omitempty"`
 	Year              int        `json:"year,omitempty" bson:"year,omitempty"`
 	Backups           []Backup   `json:"backups,omitempty" bson:"backups,omitempty"`
-	Summary           Summary    `json:"summary,omitempty" bson:"summary,omitempty"`
+	Summary           Summaries  `json:"summary,omitempty" bson:"summary,omitempty"`
 	Employee          []Employee `json:"employee,omitempty" bson:"employee,omitempty"`
 	Crawler           Crawler    `json:"crawler,omitempty" bson:"crawler,omitempty"`
 	CrawlingTimestamp time.Time  `json:"ts,omitempty" bson:"ts,omitempty"` // Crawling moment (always UTC)
