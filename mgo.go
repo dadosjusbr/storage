@@ -106,7 +106,14 @@ func (c *DBClient) GetDataForSecondScreen(month int, year int, agency string) (*
 		return nil, fmt.Errorf("Error in GetMonthlyInfo %v", err)
 	}
 	var mr []AgencyMonthlyInfo
-	resultMonthly.All(context.TODO(), &mr)
+	err = resultMonthly.All(context.TODO(), &mr)
+	if err != nil {
+		return nil, fmt.Errorf("Error in GetResultMonthly %v", err)
+	}
+	if len(mr) == 0 {
+		return nil, fmt.Errorf("there is no match with these arguments")
+	}
+
 	return &mr[0], nil
 }
 
