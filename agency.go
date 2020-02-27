@@ -36,12 +36,12 @@ type CrawlingResult struct {
 
 // Agency A Struct containing the main descriptions of each Agency.
 type Agency struct {
-	ID     string `json:"aid" bson:"aid,omitempty"`       // 'trt13'
-	Name   string `json:"name" bson:"name,omitempty"`     // 'Tribunal Regional do Trabalho 13° Região'
-	Type   string `json:"type" bson:"type,omitempty"`     // "R" for Regional, "M" for Municipal, "F" for Federal, "E" for State.
-	Entity string `json:"entity" bson:"entity,omitempty"` // "J" For Judiciário, "M" for Ministério Público, "P" for Procuradorias and "D" for Defensorias.
-	UF     string `json:"uf" bson:"uf,omitempty"`         // Short code for federative unity.
-	URL    string `json:"url" bson:"url,omitempty"`       //Link for state url
+	ID      string `json:"aid" bson:"aid,omitempty"`       // 'trt13'
+	Name    string `json:"name" bson:"name,omitempty"`     // 'Tribunal Regional do Trabalho 13° Região'
+	Type    string `json:"type" bson:"type,omitempty"`     // "R" for Regional, "M" for Municipal, "F" for Federal, "E" for State.
+	Entity  string `json:"entity" bson:"entity,omitempty"` // "J" For Judiciário, "M" for Ministério Público, "P" for Procuradorias and "D" for Defensorias.
+	UF      string `json:"uf" bson:"uf,omitempty"`         // Short code for federative unity.
+	FlagURL string `json:"url" bson:"url,omitempty"`       //Link for state url
 }
 
 // AgencyMonthlyInfo A Struct containing a snapshot of a agency in a month.
@@ -64,11 +64,11 @@ type Backup struct {
 
 // Summaries contains all summary detailed information
 type Summaries struct {
-	General Summary
-	MemberA Summary
-	MemberI Summary
-	ServerA Summary
-	ServerI Summary
+	General         Summary
+	MemberActive    Summary
+	MemberInactive  Summary
+	ServantActive   Summary
+	ServantInactive Summary
 }
 
 // Summary A Struct containing summarized  information about a agency/month stats

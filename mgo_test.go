@@ -219,15 +219,15 @@ var (
 	}
 
 	summFor4Row = Summaries{
-		General: summFor4RowGeneral,
-		MemberA: summFor4RowMA,
-		MemberI: summFor4RowMI,
-		ServerA: summFor4RowSA,
-		ServerI: summFor4RowSI,
+		General:         summFor4RowGeneral,
+		MemberActive:    summFor4RowMA,
+		MemberInactive:  summFor4RowMI,
+		ServantActive:   summFor4RowSA,
+		ServantInactive: summFor4RowSI,
 	}
 	summFor1Row = Summaries{
-		General: summFor1RowGeneral,
-		ServerI: summFor1RowGeneral,
+		General:         summFor1RowGeneral,
+		ServantInactive: summFor1RowGeneral,
 	}
 
 	crawler = Crawler{CrawlerID: "123132", CrawlerVersion: "v.1"}
