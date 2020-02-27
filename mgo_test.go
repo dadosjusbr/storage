@@ -43,12 +43,12 @@ func makePointer(x float64) *float64 {
 }
 
 var (
-	emp2Row = []Employee{
+	emp4Row = []Employee{
 		Employee{
 			Reg:       "",
 			Name:      "Abiaci De Carvalho Silva",
 			Role:      "Inativo",
-			Type:      "",
+			Type:      "servidor",
 			Workplace: "inativo",
 			Active:    false,
 			Income: &IncomeDetails{
@@ -80,7 +80,71 @@ var (
 			Reg:       "",
 			Name:      "Abraao Falcao De Carvalho",
 			Role:      "Promotor Eleitoral",
-			Type:      "",
+			Type:      "servidor",
+			Workplace: "10ª zona eleitoral - guarabira/pb",
+			Active:    true,
+			Income: &IncomeDetails{
+				Total: 10000,
+				Wage:  makePointer(5000),
+				Perks: &Perks{
+					Total: 200,
+				},
+				Other: &Funds{
+					Total:            500,
+					PersonalBenefits: makePointer(0),
+					EventualBenefits: makePointer(0),
+					PositionOfTrust:  makePointer(4631.61),
+					Gratification:    makePointer(0),
+					OriginPosition:   makePointer(0),
+				},
+			},
+			Discounts: &Discount{
+				Total:            405.98,
+				PrevContribution: makePointer(0),
+				CeilRetention:    makePointer(0),
+				IncomeTax:        makePointer(405.98),
+				Others: map[string]float64{
+					"Sundry": 0,
+				},
+			},
+		},
+		Employee{
+			Reg:       "",
+			Name:      "Abraao Galcao",
+			Role:      "Promotor Eleitoral",
+			Type:      "membro",
+			Workplace: "10ª zona eleitoral - guarabira/pb",
+			Active:    false,
+			Income: &IncomeDetails{
+				Total: 10000,
+				Wage:  makePointer(5000),
+				Perks: &Perks{
+					Total: 200,
+				},
+				Other: &Funds{
+					Total:            500,
+					PersonalBenefits: makePointer(0),
+					EventualBenefits: makePointer(0),
+					PositionOfTrust:  makePointer(4631.61),
+					Gratification:    makePointer(0),
+					OriginPosition:   makePointer(0),
+				},
+			},
+			Discounts: &Discount{
+				Total:            405.98,
+				PrevContribution: makePointer(0),
+				CeilRetention:    makePointer(0),
+				IncomeTax:        makePointer(405.98),
+				Others: map[string]float64{
+					"Sundry": 0,
+				},
+			},
+		},
+		Employee{
+			Reg:       "",
+			Name:      "Abraao Halcao",
+			Role:      "Promotor Eleitoral",
+			Type:      "membro",
 			Workplace: "10ª zona eleitoral - guarabira/pb",
 			Active:    true,
 			Income: &IncomeDetails{
@@ -110,21 +174,64 @@ var (
 		},
 	}
 
-	summFor1Row = Summary{
+	summFor1RowGeneral = Summary{
 		Count:  1,
 		Wage:   DataSummary{Max: 7000.00, Min: 7000.00, Average: 7000.00, Total: 7000.00},
 		Perks:  DataSummary{Max: 600.00, Min: 600.00, Average: 600.00, Total: 600.00},
 		Others: DataSummary{Max: 100.00, Min: 100.00, Average: 100.00, Total: 100.00},
 	}
-	summFor2Row = Summary{
-		Count:  2,
-		Wage:   DataSummary{Max: 7000.00, Min: 5000.00, Average: 6000.00, Total: 12000.00},
-		Perks:  DataSummary{Max: 600.00, Min: 200.00, Average: 400.00, Total: 800.00},
-		Others: DataSummary{Max: 500.00, Min: 100.00, Average: 300.00, Total: 600.00},
+	summFor1RowNull = Summary{
+		Count:  1,
+		Wage:   DataSummary{Max: 0, Min: 0, Average: 0, Total: 0},
+		Perks:  DataSummary{Max: 0, Min: 0, Average: 0, Total: 0},
+		Others: DataSummary{Max: 0, Min: 0, Average: 0, Total: 0},
+	}
+
+	summFor4RowGeneral = Summary{
+		Count:  4,
+		Wage:   DataSummary{Max: 7000.00, Min: 5000.00, Average: 5500.00, Total: 22000.00},
+		Perks:  DataSummary{Max: 600.00, Min: 200.00, Average: 300.00, Total: 1200.00},
+		Others: DataSummary{Max: 500.00, Min: 100.00, Average: 400.00, Total: 1600.00},
+	}
+	summFor4RowSI = Summary{
+		Count:  1,
+		Wage:   DataSummary{Max: 7000.00, Min: 7000.00, Average: 7000.00, Total: 7000.00},
+		Perks:  DataSummary{Max: 600.00, Min: 600.00, Average: 600.00, Total: 600.00},
+		Others: DataSummary{Max: 100.00, Min: 100.00, Average: 100.00, Total: 100.00},
+	}
+	summFor4RowMI = Summary{
+		Count:  1,
+		Wage:   DataSummary{Max: 5000.00, Min: 5000.00, Average: 5000.00, Total: 5000.00},
+		Perks:  DataSummary{Max: 200.00, Min: 200.00, Average: 200.00, Total: 200.00},
+		Others: DataSummary{Max: 500.00, Min: 500.00, Average: 500.00, Total: 500.00},
+	}
+	summFor4RowSA = Summary{
+		Count:  1,
+		Wage:   DataSummary{Max: 5000.00, Min: 5000.00, Average: 5000.00, Total: 5000.00},
+		Perks:  DataSummary{Max: 200.00, Min: 200.00, Average: 200.00, Total: 200.00},
+		Others: DataSummary{Max: 500.00, Min: 500.00, Average: 500.00, Total: 500.00},
+	}
+	summFor4RowMA = Summary{
+		Count:  1,
+		Wage:   DataSummary{Max: 5000.00, Min: 5000.00, Average: 5000.00, Total: 5000.00},
+		Perks:  DataSummary{Max: 200.00, Min: 200.00, Average: 200.00, Total: 200.00},
+		Others: DataSummary{Max: 500.00, Min: 500.00, Average: 500.00, Total: 500.00},
+	}
+
+	summFor4Row = Summaries{
+		General:         summFor4RowGeneral,
+		MemberActive:    summFor4RowMA,
+		MemberInactive:  summFor4RowMI,
+		ServantActive:   summFor4RowSA,
+		ServantInactive: summFor4RowSI,
+	}
+	summFor1Row = Summaries{
+		General:         summFor1RowGeneral,
+		ServantInactive: summFor1RowGeneral,
 	}
 
 	crawler = Crawler{CrawlerID: "123132", CrawlerVersion: "v.1"}
-	cr      = CrawlingResult{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employees: emp2Row, Files: []string{"teste.txt", "outroTeste.txt"}}
+	cr      = CrawlingResult{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employees: emp4Row, Files: []string{"teste.txt", "outroTeste.txt"}}
 
 	backup1 = Backup{URL: "/dadosjusbr/teste.txt", Hash: "0e30309b400c02246b6ac4f461c0fa96"}
 	backup2 = Backup{URL: "/dadosjusbr/outroTeste.txt", Hash: "0e30309b400c02246b6ac4f461c0fa96"}
@@ -179,14 +286,14 @@ func TestClient_Store(t *testing.T) {
 	col := checkCollection{
 		t:      t,
 		filter: bson.D{{Key: "aid", Value: "a"}, {Key: "year", Value: 2019}, {Key: "month", Value: 9}},
-		value:  AgencyMonthlyInfo{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employee: emp2Row, Summary: summFor2Row, Backups: []Backup{backup1, backup2}},
+		value:  AgencyMonthlyInfo{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employee: emp4Row, Summary: summFor4Row, Backups: []Backup{backup1, backup2}},
 		opts:   []*options.ReplaceOptions{options.Replace().SetUpsert(true)},
 		err:    false,
 	}
 	colErr := checkCollection{
 		t:      t,
 		filter: bson.D{{Key: "aid", Value: "a"}, {Key: "year", Value: 2019}, {Key: "month", Value: 9}},
-		value:  AgencyMonthlyInfo{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employee: emp2Row, Summary: summFor2Row, Backups: []Backup{backup1, backup2}},
+		value:  AgencyMonthlyInfo{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employee: emp4Row, Summary: summFor4Row, Backups: []Backup{backup1, backup2}},
 		opts:   []*options.ReplaceOptions{options.Replace().SetUpsert(true)},
 		err:    true,
 	}
@@ -223,20 +330,21 @@ func TestClient_Store(t *testing.T) {
 }
 
 func Test_summary(t *testing.T) {
-	emp1Row := emp2Row[:1]
+	emp1Row := emp4Row[:1]
+
 	tests := []struct {
 		name      string
 		Employees []Employee
-		want      Summary
+		want      Summaries
 	}{
 		{name: "no employee"},
 		{name: "1 employee", Employees: emp1Row, want: summFor1Row},
-		{name: "1+ employee", Employees: emp2Row, want: summFor2Row},
+		{name: "1+ employee", Employees: emp4Row, want: summFor4Row},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := summary(tt.Employees); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("summary() = %v, want %v", got, tt.want)
+				t.Errorf("summaries() = %v, want %v", got, tt.want)
 			}
 		})
 	}

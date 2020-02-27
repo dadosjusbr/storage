@@ -95,10 +95,11 @@ func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]Age
 		resultMonthly.All(context.TODO(), &mr)
 		result[agency.ID] = mr
 	}
+
 	return result, nil
 }
 
-//GetDataForSecondScreen GetDataForSecondScreen
+//GetDataForSecondScreen return all documents in monthlyInfo collection that match with arguments.
 func (c *DBClient) GetDataForSecondScreen(month int, year int, agency string) (*AgencyMonthlyInfo, error) {
 	c.Collection(c.monthlyInfoCol)
 	resultMonthly, err := c.col.Find(context.TODO(), bson.D{{Key: "aid", Value: agency}, {Key: "year", Value: year}, {Key: "month", Value: month}})
