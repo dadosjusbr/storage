@@ -22,16 +22,17 @@ type DBClient struct {
 	dbName         string
 	monthlyInfoCol string
 	agencyCol      string
+	stateCol       string
 	col            collection
 }
 
 //NewDBClient instantiates a mongo new client, but will not connect to the specified URL. Please use Client.Connect before using the client.
-func NewDBClient(url, dbName, monthlyInfoCol, agencyCol string) (*DBClient, error) {
+func NewDBClient(url, dbName, monthlyInfoCol, agencyCol string, stateCol string) (*DBClient, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(url))
 	if err != nil {
 		return nil, err
 	}
-	return &DBClient{mgoClient: client, dbName: dbName, monthlyInfoCol: monthlyInfoCol, agencyCol: agencyCol}, nil
+	return &DBClient{mgoClient: client, dbName: dbName, monthlyInfoCol: monthlyInfoCol, agencyCol: agencyCol, stateCol: stateCol}, nil
 }
 
 //Connect establishes a connection to MongoDB using the previously specified URL
@@ -53,7 +54,11 @@ func (c *DBClient) Disconnect() error {
 }
 
 // GetDataForFirstScreen GetDataForFirstScreen
-func (c *DBClient) GetDataForFirstScreen(uf string, year int) ([]Agency, map[string][]AgencyMonthlyInfo, error) {
+func (c *DBClient) GetDataForFirstScreen(state string, year int) ([]Agency, map[string][]AgencyMonthlyInfo, error) {
+	uf, err := c.GetStateUf(state)
+	if err != nil {
+		return nil, nil, fmt.Errorf("GetDataForFirstScreen() error: %q", err)
+	}
 	allAgencies, err := c.GetAgencies(uf)
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetDataForFirstScreen() error: %q", err)
@@ -95,7 +100,18 @@ func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]Age
 		resultMonthly.All(context.TODO(), &mr)
 		result[agency.ID] = mr
 	}
+	return result, nil
+}
 
+//GetStateUf return normalized state name to search
+func (c *DBClient) GetStateUf(state string) (string, error) {
+	c.Collection(c.stateCol)
+	var result string
+	resultMonthly, err := c.col.Find(context.TODO(), bson.D{{Key: "name", Value: state}})
+	if err != nil {
+		return "", fmt.Errorf("Error in GetState %v", err)
+	}
+	resultMonthly.Decode(&result)
 	return result, nil
 }
 
