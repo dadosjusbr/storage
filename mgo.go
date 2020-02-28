@@ -17,6 +17,11 @@ type collection interface {
 	FindOne(ctx context.Context, filter interface{}, opts ...*options.FindOneOptions) *mongo.SingleResult
 }
 
+// Errors raised by package x.
+var (
+	ErrNothingFound = fmt.Errorf("There is no document with this parameters")
+)
+
 //DBClient is a mongodb Client instance
 type DBClient struct {
 	mgoClient      *mongo.Client
@@ -106,9 +111,7 @@ func (c *DBClient) GetDataForSecondScreen(month int, year int, agency string) (*
 	err := c.col.FindOne(context.TODO(), bson.D{{Key: "aid", Value: agency}, {Key: "year", Value: year}, {Key: "month", Value: month}}).Decode(&resultMonthly)
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
-		if err == mongo.ErrNoDocuments {
-			return nil, err
-		}
+		return nil, ErrNothingFound
 	}
 	return &resultMonthly, nil
 }
