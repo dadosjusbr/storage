@@ -14,7 +14,13 @@ import (
 type collection interface {
 	ReplaceOne(ctx context.Context, filter interface{}, replacement interface{}, opts ...*options.ReplaceOptions) (*mongo.UpdateResult, error)
 	Find(ctx context.Context, filter interface{}, opts ...*options.FindOptions) (*mongo.Cursor, error)
+	FindOne(ctx context.Context, filter interface{}, opts ...*options.FindOneOptions) *mongo.SingleResult
 }
+
+// Errors raised by package storage.
+var (
+	ErrNothingFound = fmt.Errorf("There is no document with this parameters")
+)
 
 //DBClient is a mongodb Client instance
 type DBClient struct {
@@ -99,16 +105,16 @@ func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]Age
 	return result, nil
 }
 
-//GetDataForSecondScreen return all documents in monthlyInfo collection that match with arguments.
+//GetDataForSecondScreen Search if DB has a match for filters
 func (c *DBClient) GetDataForSecondScreen(month int, year int, agency string) (*AgencyMonthlyInfo, error) {
 	c.Collection(c.monthlyInfoCol)
-	resultMonthly, err := c.col.Find(context.TODO(), bson.D{{Key: "aid", Value: agency}, {Key: "year", Value: year}, {Key: "month", Value: month}})
+	var resultMonthly AgencyMonthlyInfo
+	err := c.col.FindOne(context.TODO(), bson.D{{Key: "aid", Value: agency}, {Key: "year", Value: year}, {Key: "month", Value: month}}).Decode(&resultMonthly)
 	if err != nil {
-		return nil, fmt.Errorf("Error in GetMonthlyInfo %v", err)
+		// ErrNoDocuments means that the filter did not match any documents in the collection
+		return nil, ErrNothingFound
 	}
-	var mr []AgencyMonthlyInfo
-	resultMonthly.All(context.TODO(), &mr)
-	return &mr[0], nil
+	return &resultMonthly, nil
 }
 
 //Collection Changes active collection
