@@ -54,7 +54,16 @@ func (c *Client) Store(cr CrawlingResult) error {
 	if err != nil {
 		return fmt.Errorf("error trying to get Backup files: %v, error: %q", cr.Files, err)
 	}
-	agmi := AgencyMonthlyInfo{AgencyID: cr.AgencyID, Month: cr.Month, Year: cr.Year, Crawler: cr.Crawler, Employee: cr.Employees, Summary: summary, Backups: backup}
+	agmi := AgencyMonthlyInfo{
+		AgencyID:          cr.AgencyID,
+		Month:             cr.Month,
+		Year:              cr.Year,
+		Crawler:           cr.Crawler,
+		Employee:          cr.Employees,
+		Summary:           summary,
+		Backups:           backup,
+		CrawlingTimestamp: cr.Timestamp,
+	}
 	_, err = c.Db.col.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: cr.AgencyID}, {Key: "year", Value: cr.Year}, {Key: "month", Value: cr.Month}}, agmi, options.Replace().SetUpsert(true))
 	if err != nil {
 		return fmt.Errorf("error trying to update mongodb with value {%v}: %q", agmi, err)
@@ -63,30 +72,52 @@ func (c *Client) Store(cr CrawlingResult) error {
 }
 
 // summary aux func to make all necessary calculations to DataSummary Struct
-func summary(Employees []Employee) Summary {
-	wage := DataSummary{Min: math.MaxFloat64}
-	perks := DataSummary{Min: math.MaxFloat64}
-	others := DataSummary{Min: math.MaxFloat64}
-	count := len(Employees)
-	if count == 0 {
-		return Summary{}
+func summary(Employees []Employee) Summaries {
+	general := Summary{}
+	memberActive := Summary{}
+	memberInactive := Summary{}
+	servantActive := Summary{}
+	servantInactive := Summary{}
+	for _, emp := range Employees {
+		updateSummary(&general, emp)
+		switch {
+		case emp.Type == "membro" && emp.Active:
+			updateSummary(&memberActive, emp)
+		case emp.Type == "membro" && !emp.Active:
+			updateSummary(&memberInactive, emp)
+		case emp.Type == "servidor" && emp.Active:
+			updateSummary(&servantActive, emp)
+		case emp.Type == "servidor" && !emp.Active:
+			updateSummary(&servantInactive, emp)
+		}
 	}
-	for i, value := range Employees {
-		updateSummary(&wage, *value.Income.Wage, i)
-		updateSummary(&perks, value.Income.Perks.Total, i)
-		updateSummary(&others, value.Income.Other.Total, i)
+	if general.Count == 0 {
+		return Summaries{}
 	}
-	return Summary{
-		Count:  count,
-		Wage:   wage,
-		Perks:  perks,
-		Others: others,
+	return Summaries{
+		General:         general,
+		MemberActive:    memberActive,
+		MemberInactive:  memberInactive,
+		ServantActive:   servantActive,
+		ServantInactive: servantInactive,
 	}
 }
 
-func updateSummary(d *DataSummary, value float64, entryIndex int) {
-	d.Max = math.Max(d.Max, value)
-	d.Min = math.Min(d.Min, value)
-	d.Total += value
-	d.Average = d.Total / float64(entryIndex+1)
+//updateSummary auxiliary function that updates the summary data at each employee value
+func updateSummary(s *Summary, emp Employee) {
+	s.Count++
+	updateData := func(d *DataSummary, value float64, count int) {
+		if count == 1 {
+			d.Min = value
+			d.Max = value
+		} else {
+			d.Min = math.Min(d.Min, value)
+			d.Max = math.Max(d.Max, value)
+		}
+		d.Total += value
+		d.Average = d.Total / float64(count)
+	}
+	updateData(&s.Wage, *emp.Income.Wage, s.Count)
+	updateData(&s.Perks, emp.Income.Perks.Total, s.Count)
+	updateData(&s.Others, emp.Income.Other.Total, s.Count)
 }

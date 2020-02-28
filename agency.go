@@ -36,11 +36,12 @@ type CrawlingResult struct {
 
 // Agency A Struct containing the main descriptions of each Agency.
 type Agency struct {
-	ID     string `json:"aid" bson:"aid,omitempty"`       // 'trt13'
-	Name   string `json:"name" bson:"name,omitempty"`     // 'Tribunal Regional do Trabalho 13° Região'
-	Type   string `json:"type" bson:"type,omitempty"`     // "R" for Regional, "M" for Municipal, "F" for Federal, "E" for State.
-	Entity string `json:"entity" bson:"entity,omitempty"` // "J" For Judiciário, "M" for Ministério Público, "P" for Procuradorias and "D" for Defensorias.
-	UF     string `json:"uf" bson:"uf,omitempty"`         // Short code for federative unity.
+	ID      string `json:"aid" bson:"aid,omitempty"`       // 'trt13'
+	Name    string `json:"name" bson:"name,omitempty"`     // 'Tribunal Regional do Trabalho 13° Região'
+	Type    string `json:"type" bson:"type,omitempty"`     // "R" for Regional, "M" for Municipal, "F" for Federal, "E" for State.
+	Entity  string `json:"entity" bson:"entity,omitempty"` // "J" For Judiciário, "M" for Ministério Público, "P" for Procuradorias and "D" for Defensorias.
+	UF      string `json:"uf" bson:"uf,omitempty"`         // Short code for federative unity.
+	FlagURL string `json:"url" bson:"url,omitempty"`       //Link for state url
 }
 
 // AgencyMonthlyInfo A Struct containing a snapshot of a agency in a month.
@@ -49,7 +50,7 @@ type AgencyMonthlyInfo struct {
 	Month             int        `json:"month,omitempty" bson:"month,omitempty"`
 	Year              int        `json:"year,omitempty" bson:"year,omitempty"`
 	Backups           []Backup   `json:"backups,omitempty" bson:"backups,omitempty"`
-	Summary           Summary    `json:"summary,omitempty" bson:"summary,omitempty"`
+	Summary           Summaries  `json:"summary,omitempty" bson:"summary,omitempty"`
 	Employee          []Employee `json:"employee,omitempty" bson:"employee,omitempty"`
 	Crawler           Crawler    `json:"crawler,omitempty" bson:"crawler,omitempty"`
 	CrawlingTimestamp time.Time  `json:"ts,omitempty" bson:"ts,omitempty"` // Crawling moment (always UTC)
@@ -59,6 +60,15 @@ type AgencyMonthlyInfo struct {
 type Backup struct {
 	URL  string `json:"url" bson:"url,omitempty"`
 	Hash string `json:"hash" bson:"hash,omitempty"`
+}
+
+// Summaries contains all summary detailed information
+type Summaries struct {
+	General         Summary
+	MemberActive    Summary
+	MemberInactive  Summary
+	ServantActive   Summary
+	ServantInactive Summary
 }
 
 // Summary A Struct containing summarized  information about a agency/month stats
