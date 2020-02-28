@@ -151,6 +151,10 @@ func (c *checkCollection) Find(ctx context.Context, filter interface{}, opts ...
 	return nil, nil
 }
 
+func (c *checkCollection) FindOne(ctx context.Context, filter interface{}, opts ...*options.FindOneOptions) *mongo.SingleResult {
+	return nil
+}
+
 func (cs *checkStorage) ObjectPut(container string, objectName string, contents io.Reader, checkHash bool, Hash string, contentType string, h swift.Headers) (headers swift.Headers, err error) {
 	if cs.check {
 		assert.Equal(cs.t, cs.container, container)
