@@ -17,7 +17,7 @@ type collection interface {
 	FindOne(ctx context.Context, filter interface{}, opts ...*options.FindOneOptions) *mongo.SingleResult
 }
 
-// Errors raised by package x.
+// Errors raised by package storage.
 var (
 	ErrNothingFound = fmt.Errorf("There is no document with this parameters")
 )
