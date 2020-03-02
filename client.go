@@ -24,6 +24,11 @@ func NewClient(db *DBClient, bc *BackupClient) (*Client, error) {
 	return &c, nil
 }
 
+// Close Connection with DB
+func (c *Client) Close(db *DBClient, bc *BackupClient) error {
+	return c.Db.Disconnect()
+}
+
 // GetDataForFirstScreen Connect to db to collect data to build first screen
 func (c *Client) GetDataForFirstScreen(Uf string, Year int) ([]Agency, map[string][]AgencyMonthlyInfo, error) {
 	ags, agsMR, err := c.Db.GetDataForFirstScreen(Uf, Year)
