@@ -24,13 +24,17 @@ func NewClient(db *DBClient, bc *BackupClient) (*Client, error) {
 	return &c, nil
 }
 
+// Close Connection with DB
+func (c *Client) Close(db *DBClient, bc *BackupClient) error {
+	return c.Db.Disconnect()
+}
+
 // GetDataForFirstScreen Connect to db to collect data to build first screen
 func (c *Client) GetDataForFirstScreen(Uf string, Year int) ([]Agency, map[string][]AgencyMonthlyInfo, error) {
 	ags, agsMR, err := c.Db.GetDataForFirstScreen(Uf, Year)
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetDataForFirstScreen() error: %q", err)
 	}
-	c.Db.Disconnect()
 	return ags, agsMR, err
 }
 
@@ -40,7 +44,6 @@ func (c *Client) GetDataForSecondScreen(month int, year int, agency string) (*Ag
 	if err != nil {
 		return nil, fmt.Errorf("GetDataForSecondScreen() error: %q", err)
 	}
-	c.Db.Disconnect()
 	return agsMR, err
 }
 
