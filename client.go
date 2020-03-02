@@ -30,7 +30,6 @@ func (c *Client) GetDataForFirstScreen(Uf string, Year int) ([]Agency, map[strin
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetDataForFirstScreen() error: %q", err)
 	}
-	c.Db.Disconnect()
 	return ags, agsMR, err
 }
 
@@ -40,7 +39,6 @@ func (c *Client) GetDataForSecondScreen(month int, year int, agency string) (*Ag
 	if err != nil {
 		return nil, fmt.Errorf("GetDataForSecondScreen() error: %q", err)
 	}
-	c.Db.Disconnect()
 	return agsMR, err
 }
 
