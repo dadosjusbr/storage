@@ -35,7 +35,13 @@ type CrawlingResult struct {
 	ProcInfo  ProcInfo   `json:"procinfo,omitempty"`
 }
 
-// ProcInfo stores information about a process that has failed.
+// PackagingResult stores the result of the package step, which creates the datapackage.
+type PackagingResult struct {
+	ProcInfo ProcInfo `json:"procinfo,omitempty"` // Information about the process execution
+	Package  string   `json:"package"`            // Local file path of the package created by the step
+}
+
+// ProcInfo stores information about a process execution.
 //
 // NOTE 1: It could be used by any process in the data consolidation pipeline (i.e. validation) and should not contain information specific to a step.
 // NOTE 2: Due to storage restrictions, as of 04/2020, we are only going to store process information when there is a failure. That allow us to make the consolidation simpler by storing the full
@@ -68,8 +74,9 @@ type AgencyMonthlyInfo struct {
 	Summary           Summaries  `json:"summary,omitempty" bson:"summary,omitempty"`
 	Employee          []Employee `json:"employee,omitempty" bson:"employee,omitempty"`
 	Crawler           Crawler    `json:"crawler,omitempty" bson:"crawler,omitempty"`
-	CrawlingTimestamp time.Time  `json:"ts,omitempty" bson:"ts,omitempty"` // Crawling moment (always UTC)
-	ProcInfo          *ProcInfo  `json:"procinfo,omitempty"`               // Making this a pointer because it should be an optional field due to backwards compatibility.
+	CrawlingTimestamp time.Time  `json:"ts,omitempty" bson:"ts,omitempty"`             // Crawling moment (always UTC)
+	ProcInfo          *ProcInfo  `json:"procinfo,omitempty" bson:"procinfo,omitempty"` // Making this a pointer because it should be an optional field due to backwards compatibility.
+	Package           *Backup    `json:"package,omitempty" bson:"package,omitempty"`   // Making this a pointer because it should be an optional field due to backwards compatibility.
 }
 
 // Backup contains the URL to download a file and a hash to track if in the future will be changes in the file.
