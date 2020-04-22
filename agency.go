@@ -32,6 +32,21 @@ type CrawlingResult struct {
 	Files     []string   `json:"files"`
 	Employees []Employee `json:"employees"`
 	Timestamp time.Time  `json:"timestamp"`
+	ProcInfo  ProcInfo   `json:"procinfo,omitempty"`
+}
+
+// ProcInfo stores information about a process that has failed.
+//
+// NOTE 1: It could be used by any process in the data consolidation pipeline (i.e. validation) and should not contain information specific to a step.
+// NOTE 2: Due to storage restrictions, as of 04/2020, we are only going to store process information when there is a failure. That allow us to make the consolidation simpler by storing the full
+// stdout, stderr and env instead of backing everything up and storing links.
+type ProcInfo struct {
+	Stdout     string   `json:"stdout" bson:"stdout,omitempty"`           // String containing the standard output of the process.
+	Stderr     string   `json:"stdin" bson:"stderr,omitempty"`            // String containing the standard error of the process.
+	Cmd        string   `json:"cmd" bson:"cmd,omitempty"`                 // Command that has been executed
+	CmdDir     string   `json:"cmddir" bson:"cmdir,omitempty"`            // Local directory, in which the command has been executed
+	ExitStatus int      `json:"status,omitempty" bson:"status,omitempty"` // Exit code of the process executed
+	Env        []string `json:"env,omitempty" bson:"env,omitempty"`       // Copy of strings representing the environment variables in the form ke=value
 }
 
 // Agency A Struct containing the main descriptions of each Agency.
@@ -54,6 +69,7 @@ type AgencyMonthlyInfo struct {
 	Employee          []Employee `json:"employee,omitempty" bson:"employee,omitempty"`
 	Crawler           Crawler    `json:"crawler,omitempty" bson:"crawler,omitempty"`
 	CrawlingTimestamp time.Time  `json:"ts,omitempty" bson:"ts,omitempty"` // Crawling moment (always UTC)
+	ProcInfo          *ProcInfo  `json:"procinfo,omitempty"`               // Making this a pointer because it should be an optional field due to backwards compatibility.
 }
 
 // Backup contains the URL to download a file and a hash to track if in the future will be changes in the file.
