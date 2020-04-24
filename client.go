@@ -67,6 +67,9 @@ func (c *Client) Store(cr CrawlingResult) error {
 		Backups:           backup,
 		CrawlingTimestamp: cr.Timestamp,
 	}
+	if cr.ProcInfo.ExitStatus != 0 {
+		agmi.ProcInfo = &cr.ProcInfo
+	}
 	_, err = c.Db.col.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: cr.AgencyID}, {Key: "year", Value: cr.Year}, {Key: "month", Value: cr.Month}}, agmi, options.Replace().SetUpsert(true))
 	if err != nil {
 		return fmt.Errorf("error trying to update mongodb with value {%v}: %q", agmi, err)
