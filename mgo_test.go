@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"reflect"
 	"strings"
 	"testing"
 
@@ -44,7 +43,7 @@ func makePointer(x float64) *float64 {
 
 var (
 	emp4Row = []Employee{
-		Employee{
+		{
 			Reg:       "",
 			Name:      "Abiaci De Carvalho Silva",
 			Role:      "Inativo",
@@ -76,7 +75,7 @@ var (
 				},
 			},
 		},
-		Employee{
+		{
 			Reg:       "",
 			Name:      "Abraao Falcao De Carvalho",
 			Role:      "Promotor Eleitoral",
@@ -108,7 +107,7 @@ var (
 				},
 			},
 		},
-		Employee{
+		{
 			Reg:       "",
 			Name:      "Abraao Galcao",
 			Role:      "Promotor Eleitoral",
@@ -140,7 +139,7 @@ var (
 				},
 			},
 		},
-		Employee{
+		{
 			Reg:       "",
 			Name:      "Abraao Halcao",
 			Role:      "Promotor Eleitoral",
@@ -232,6 +231,7 @@ var (
 
 	crawler = Crawler{CrawlerID: "123132", CrawlerVersion: "v.1"}
 	cr      = CrawlingResult{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employees: emp4Row, Files: []string{"teste.txt", "outroTeste.txt"}}
+	agmi    AgencyMonthlyInfo
 
 	backup1 = Backup{URL: "/dadosjusbr/teste.txt", Hash: "0e30309b400c02246b6ac4f461c0fa96"}
 	backup2 = Backup{URL: "/dadosjusbr/outroTeste.txt", Hash: "0e30309b400c02246b6ac4f461c0fa96"}
@@ -286,7 +286,7 @@ func (cs *checkStorage) ObjectDelete(container string, objectName string) error 
 func TestClient_Store(t *testing.T) {
 	err := createFiles(cr.Files)
 	assert.NoError(t, err)
-	bc := &BackupClient{conn: &checkStorage{check: false}, container: "dadosjusbr"}
+	bc := &CloudClient{conn: &checkStorage{check: false}, container: "dadosjusbr"}
 	col := checkCollection{
 		t:      t,
 		filter: bson.D{{Key: "aid", Value: "a"}, {Key: "year", Value: 2019}, {Key: "month", Value: 9}},
@@ -304,24 +304,24 @@ func TestClient_Store(t *testing.T) {
 	tests := []struct {
 		name           string
 		col            *checkCollection
-		cr             CrawlingResult
+		agmi           AgencyMonthlyInfo
 		wantErr        bool
 		wantReplaceOne bool
 	}{
 		//Test if everything is OK!
-		{name: "ok", col: &col, cr: cr, wantErr: false, wantReplaceOne: true},
+		{name: "ok", col: &col, agmi: agmi, wantErr: false, wantReplaceOne: true},
 		// Test if the replaceOne error reflects in store error!
-		{name: "replaceOne error", col: &colErr, cr: cr, wantErr: true, wantReplaceOne: true},
+		{name: "replaceOne error", col: &colErr, agmi: agmi, wantErr: true, wantReplaceOne: true},
 		// Check if has some connection if mongoDb, if does the collection wont be nil.
-		{name: "missing collection error", cr: cr, wantErr: true, wantReplaceOne: false},
+		{name: "missing collection error", agmi: agmi, wantErr: true, wantReplaceOne: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Client{Bc: bc, Db: &DBClient{}}
+			c := &Client{Cloud: bc, Db: &DBClient{}}
 			if tt.col != nil {
 				c.Db.col = tt.col
 			}
-			if err := c.Store(tt.cr); (err != nil) != tt.wantErr {
+			if err := c.Store(tt.agmi); (err != nil) != tt.wantErr {
 				t.Errorf("Client.Store() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if tt.col != nil && (tt.wantReplaceOne != tt.col.calledReplaceOne()) {
@@ -331,27 +331,6 @@ func TestClient_Store(t *testing.T) {
 	}
 	err = deleteFiles(cr.Files)
 	assert.NoError(t, err)
-}
-
-func Test_summary(t *testing.T) {
-	emp1Row := emp4Row[:1]
-
-	tests := []struct {
-		name      string
-		Employees []Employee
-		want      Summaries
-	}{
-		{name: "no employee"},
-		{name: "1 employee", Employees: emp1Row, want: summFor1Row},
-		{name: "1+ employee", Employees: emp4Row, want: summFor4Row},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := summary(tt.Employees); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("summaries() = %v, want %v", got, tt.want)
-			}
-		})
-	}
 }
 
 func Test_Backup(t *testing.T) {
@@ -396,11 +375,11 @@ func Test_Backup(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			err := createFiles(tt.Files)
 			assert.NoError(t, err)
-			bc := &BackupClient{conn: tt.cs}
+			bc := &CloudClient{conn: tt.cs}
 			if tt.cs != nil {
 				bc.container = tt.cs.container
 			}
-			got, err := bc.backup(tt.Files)
+			got, err := bc.Backup(tt.Files)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 			}

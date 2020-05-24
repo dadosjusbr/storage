@@ -58,15 +58,15 @@ func (c *DBClient) Disconnect() error {
 	return c.mgoClient.Disconnect(ctx)
 }
 
-// GetDataForFirstScreen GetDataForFirstScreen
-func (c *DBClient) GetDataForFirstScreen(uf string, year int) ([]Agency, map[string][]AgencyMonthlyInfo, error) {
+// GetOPE return agmi info to build first screen
+func (c *DBClient) GetOPE(uf string, year int) ([]Agency, map[string][]AgencyMonthlyInfo, error) {
 	allAgencies, err := c.GetAgencies(uf)
 	if err != nil {
-		return nil, nil, fmt.Errorf("GetDataForFirstScreen() error: %q", err)
+		return nil, nil, fmt.Errorf("GetOPE() error: %q", err)
 	}
 	result, err := c.GetMonthlyInfo(allAgencies, year)
 	if err != nil {
-		return nil, nil, fmt.Errorf("GetDataForFirstScreen() error: %q", err)
+		return nil, nil, fmt.Errorf("GetOPE() error: %q", err)
 	}
 	return allAgencies, result, nil
 }
@@ -105,8 +105,8 @@ func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]Age
 	return result, nil
 }
 
-//GetDataForSecondScreen Search if DB has a match for filters
-func (c *DBClient) GetDataForSecondScreen(month int, year int, agency string) (*AgencyMonthlyInfo, error) {
+//GetOMA Search if DB has a match for filters
+func (c *DBClient) GetOMA(month int, year int, agency string) (*AgencyMonthlyInfo, error) {
 	c.Collection(c.monthlyInfoCol)
 	var resultMonthly AgencyMonthlyInfo
 	err := c.col.FindOne(context.TODO(), bson.D{{Key: "aid", Value: agency}, {Key: "year", Value: year}, {Key: "month", Value: month}}).Decode(&resultMonthly)
