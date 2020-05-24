@@ -48,7 +48,7 @@ type PackagingResult struct {
 // stdout, stderr and env instead of backing everything up and storing links.
 type ProcInfo struct {
 	Stdout     string   `json:"stdout" bson:"stdout,omitempty"`           // String containing the standard output of the process.
-	Stderr     string   `json:"stderr" bson:"stderr,omitempty"`            // String containing the standard error of the process.
+	Stderr     string   `json:"stderr" bson:"stderr,omitempty"`           // String containing the standard error of the process.
 	Cmd        string   `json:"cmd" bson:"cmd,omitempty"`                 // Command that has been executed
 	CmdDir     string   `json:"cmddir" bson:"cmdir,omitempty"`            // Local directory, in which the command has been executed
 	ExitStatus int      `json:"status,omitempty" bson:"status,omitempty"` // Exit code of the process executed

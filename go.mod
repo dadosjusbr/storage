@@ -1,12 +1,11 @@
 module github.com/dadosjusbr/storage
 
-go 1.13
+go 1.14
 
 require (
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
-	github.com/joho/godotenv v1.3.0
 	github.com/ncw/swift v1.0.49
 	github.com/stretchr/testify v1.4.0
 	github.com/tidwall/pretty v1.0.0 // indirect
