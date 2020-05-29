@@ -30,12 +30,12 @@ func (cloud *CloudClient) UploadFile(path string) (*Backup, error) {
 
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("error Opening file at %s: %q", path, err)
+		return nil, fmt.Errorf("error Opening file at %s: %v", path, err)
 	}
 	defer f.Close()
 	headers, err := cloud.conn.ObjectPut(cloud.container, filepath.Base(path), f, true, "", "", nil)
 	if err != nil {
-		return nil, fmt.Errorf("error trying to upload file at %s to storage: %q\nHeaders: %v", path, err, headers)
+		return nil, fmt.Errorf("error trying to upload file at %s to storage: %v\nHeaders: %v", path, err, headers)
 	}
 	return &Backup{URL: fmt.Sprintf("%s/%s/%s", cloud.storageURL(), cloud.container, filepath.Base(path)), Hash: headers["Etag"]}, nil
 }
