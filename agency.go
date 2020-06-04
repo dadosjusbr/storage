@@ -47,6 +47,7 @@ type PackagingResult struct {
 // NOTE 2: Due to storage restrictions, as of 04/2020, we are only going to store process information when there is a failure. That allow us to make the consolidation simpler by storing the full
 // stdout, stderr and env instead of backing everything up and storing links.
 type ProcInfo struct {
+	Stdin      string   `json:"stdin" bson:"stdin,omitempty"`             // String containing the standard input of the process.
 	Stdout     string   `json:"stdout" bson:"stdout,omitempty"`           // String containing the standard output of the process.
 	Stderr     string   `json:"stderr" bson:"stderr,omitempty"`           // String containing the standard error of the process.
 	Cmd        string   `json:"cmd" bson:"cmd,omitempty"`                 // Command that has been executed
