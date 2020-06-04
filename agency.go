@@ -68,7 +68,6 @@ type Agency struct {
 // AgencyMonthlyInfo A Struct containing a snapshot of a agency in a month.
 type AgencyMonthlyInfo struct {
 	AgencyID          string     `json:"aid,omitempty" bson:"aid,omitempty"`
-	AgencyName        string     `json:"name" bson:"name,omitempty"` // 'Tribunal Regional do Trabalho 13° Região'
 	Month             int        `json:"month,omitempty" bson:"month,omitempty"`
 	Year              int        `json:"year,omitempty" bson:"year,omitempty"`
 	Backups           []Backup   `json:"backups,omitempty" bson:"backups,omitempty"`

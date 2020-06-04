@@ -86,6 +86,16 @@ func (c *DBClient) GetAgencies(uf string) ([]Agency, error) {
 	return allAgencies, nil
 }
 
+//GetAgency Return Agency that match ID.
+func (c *DBClient) GetAgency(aid string) (*Agency, error) {
+	c.Collection(c.agencyCol)
+	var Ag Agency
+	if err := c.col.FindOne(context.TODO(), bson.D{{Key: "aid", Value: aid}}).Decode(&Ag); err != nil {
+		return nil, fmt.Errorf("Error searching for agency id \"%s\":%q", aid, err)
+	}
+	return &Ag, nil
+}
+
 //GetMonthlyInfo return summarized monthlyInfo for each agency in agencies in a specific year
 func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]AgencyMonthlyInfo, error) {
 	var result = make(map[string][]AgencyMonthlyInfo)
