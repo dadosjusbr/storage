@@ -116,15 +116,16 @@ func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]Age
 }
 
 //GetOMA Search if DB has a match for filters
-func (c *DBClient) GetOMA(month int, year int, agency string) (*AgencyMonthlyInfo, error) {
+func (c *DBClient) GetOMA(month int, year int, agency string) (*AgencyMonthlyInfo, string, error) {
 	c.Collection(c.monthlyInfoCol)
 	var resultMonthly AgencyMonthlyInfo
 	err := c.col.FindOne(context.TODO(), bson.D{{Key: "aid", Value: agency}, {Key: "year", Value: year}, {Key: "month", Value: month}}).Decode(&resultMonthly)
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
-		return nil, ErrNothingFound
+		return nil, "", ErrNothingFound
 	}
-	return &resultMonthly, nil
+	agencyObject, _ := c.GetAgency(agency)
+	return &resultMonthly, agencyObject.Name, nil
 }
 
 //Collection Changes active collection
