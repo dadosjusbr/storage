@@ -38,12 +38,12 @@ func (c *Client) GetOPE(Uf string, Year int) ([]Agency, map[string][]AgencyMonth
 }
 
 // GetOMA Connect to db to collect data for a month including all employees
-func (c *Client) GetOMA(month int, year int, agency string) (*AgencyMonthlyInfo, error) {
-	agsMR, _, err := c.Db.GetOMA(month, year, agency)
+func (c *Client) GetOMA(month int, year int, agency string) (*AgencyMonthlyInfo, *Agency, error) {
+	agsMR, agencyObj, err := c.Db.GetOMA(month, year, agency)
 	if err != nil {
-		return nil, fmt.Errorf("GetOMA() error: %q", err)
+		return nil, nil, fmt.Errorf("GetOMA() error: %q", err)
 	}
-	return agsMR, err
+	return agsMR, agencyObj, err
 }
 
 // Store stores the Agency Monthly Info stats.
