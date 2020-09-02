@@ -113,54 +113,57 @@ type DataSummary struct {
 
 // Employee a Struct that reflets a employee snapshot, containing all relative data about a employee
 type Employee struct {
-	Reg       string         `json:"reg" bson:"reg,omitempty"` // Register number
-	Name      string         `json:"name" bson:"name,omitempty"`
-	Role      string         `json:"role" bson:"role,omitempty"`
-	Type      string         `json:"type" bson:"type,omitempty"`           // servidor, membro, pensionista or indefinido
-	Workplace string         `json:"workplace" bson:"workplace,omitempty"` // 'Lotacao' Like '10° Zona eleitoral'
-	Active    bool           `json:"active" bson:"active,omitempty"`       // 'Active' Or 'Inactive'
-	Income    *IncomeDetails `json:"income" bson:"income,omitempty"`
-	Discounts *Discount      `json:"discounts" bson:"discounts,omitempty"`
+	Reg       string         `json:"reg" bson:"reg,omitempty" tableheader:"reg" csv:"reg"` // Register number
+	Name      string         `json:"name" bson:"name,omitempty" tableheader:"name" csv:"name"`
+	Role      string         `json:"role" bson:"role,omitempty" tableheader:"role" csv:"role"`
+	Type      string         `json:"type" bson:"type,omitempty" tableheader:"type" csv:"type"`                     // servidor, membro, pensionista or indefinido
+	Workplace string         `json:"workplace" bson:"workplace,omitempty" tableheader:"workplace" csv:"workplace"` // 'Lotacao' Like '10° Zona eleitoral'
+	Active    bool           `json:"active" bson:"active,omitempty" tableheader:"active" csv:"active"`             // 'Active' Or 'Inactive'
+	Income    *IncomeDetails `json:"income" bson:"income,omitempty" csv:"-"`
+	Discounts *Discount      `json:"discounts" bson:"discounts,omitempty" csv:"-"`
 }
 
 // IncomeDetails a Struct that details an employee's income.
 type IncomeDetails struct {
-	Total float64  `json:"total" bson:"total,omitempty"`
-	Wage  *float64 `json:"wage" bson:"wage,omitempty"`
-	Perks *Perks   `json:"perks" bson:"perks,omitempty"`
-	Other *Funds   `json:"other" bson:"other,omitempty"` // other funds that make up the total income of the employee. further details explained below
+	Total float64  `json:"total" bson:"total,omitempty" tableheader:"income_total" csv:"income_total"`
+	Wage  *float64 `json:"wage" bson:"wage,omitempty" tableheader:"wage" csv:"wage"`
+	Perks *Perks   `json:"perks" bson:"perks,omitempty" csv:"-"`
+	Other *Funds   `json:"other" bson:"other,omitempty" csv:"-"` // other funds that make up the total income of the employee. further details explained below
 }
 
 // Perks a Struct that details perks that complements an employee's wage.
 type Perks struct {
-	Total          float64            `json:"total" bson:"total,omitempty"`
-	Food           *float64           `json:"food" bson:"food,omitempty"` // Food Aid
-	Transportation *float64           `json:"transportation" bson:"transportation,omitempty"`
-	PreSchool      *float64           `json:"pre_school" bson:"pre_school,omitempty"` // Assistance provided before the child enters school.
-	Health         *float64           `json:"health" bson:"health,omitempty"`
-	BirthAid       *float64           `json:"birth_aid" bson:"birth_aid,omitempty"`     // 'Auxílio Natalidade'
-	HousingAid     *float64           `json:"housing_aid" bson:"housing_aid,omitempty"` // 'Auxílio Moradia'
-	Subsistence    *float64           `json:"subsistence" bson:"subsistence,omitempty"` // 'Ajuda de Custo'
-	Others         map[string]float64 `json:"others" bson:"others,omitempty"`           // Any other kind of perk that does not have a pattern among the Agencys.
+	Total           float64            `json:"total" bson:"total,omitempty" tableheader:"perks_total" csv:"perks_total"`
+	Food            *float64           `json:"food" bson:"food,omitempty" tableheader:"perks_food" csv:"perks_food"` // Food Aid
+	Transportation  *float64           `json:"transportation" bson:"transportation,omitempty" tableheader:"perks_transportation" csv:"perks_transportation"`
+	PreSchool       *float64           `json:"pre_school" bson:"pre_school,omitempty" tableheader:"perks_pre_school" csv:"perks_pre_school"` // Assistance provided before the child enters school.
+	Health          *float64           `json:"health" bson:"health,omitempty" tableheader:"perks_health" csv:"perks_health"`
+	BirthAid        *float64           `json:"birth_aid" bson:"birth_aid,omitempty" tableheader:"perks_birth" csv:"perks_birth"`                     // 'Auxílio Natalidade'
+	HousingAid      *float64           `json:"housing_aid" bson:"housing_aid,omitempty" tableheader:"perks_housing" csv:"perks_housing"`             // 'Auxílio Moradia'
+	Subsistence     *float64           `json:"subsistence" bson:"subsistence,omitempty" tableheader:"perks_subsistence" csv:"perks_subsistence"`     // 'Ajuda de Custo'
+	OtherPerksTotal *float64           `json:"others_total" bson:"others_total,omitempty" tableheader:"perks_others_total" csv:"perks_others_total"` // Total de outras ajudas (descritas no mapa Others)
+	Others          map[string]float64 `json:"others" bson:"others,omitempty" csv:"-"`                                                               // Any other kind of perk that does not have a pattern among the Agencys.
 }
 
 // Funds a Struct that details that make up the employee income.
 type Funds struct {
-	Total            float64            `json:"total" bson:"total,omitempty"`
-	PersonalBenefits *float64           `json:"person_benefits" bson:"person_benefits,omitempty"`     // Permanent Allowance, VPI, Benefits adquired thought judicial demand and others personal.
-	EventualBenefits *float64           `json:"eventual_benefits" bson:"eventual_benefits,omitempty"` // Holidays, Others Temporary Wage,  Christmas bonus and some others eventual.
-	PositionOfTrust  *float64           `json:"trust_position" bson:"trust_position,omitempty"`       // Income given for the importance of the position held.
-	Daily            *float64           `json:"daily" bson:"daily,omitempty"`                         // Employee reimbursement for eventual expenses when working in a different location than usual.
-	Gratification    *float64           `json:"gratification" bson:"gratification,omitempty"`         //
-	OriginPosition   *float64           `json:"origin_pos" bson:"origin_pos,omitempty"`               // Wage received from other Agency, transfered employee.
-	Others           map[string]float64 `json:"others" bson:"others,omitempty"`                       // Any other kind of income that does not have a pattern among the Agencys.
+	Total            float64            `json:"total" bson:"total,omitempty" tableheader:"funds_total" csv:"funds_total"`
+	PersonalBenefits *float64           `json:"personal_benefits" bson:"personal_benefits,omitempty" tableheader:"funds_personal_benefits" csv:"funds_personal_benefits"` // Permanent Allowance, VPI, Benefits adquired thought judicial demand and others personal.
+	EventualBenefits *float64           `json:"eventual_benefits" bson:"eventual_benefits,omitempty" tableheader:"funds_eventual_benefits" csv:"funds_eventual_benefits"` // Holidays, Others Temporary Wage,  Christmas bonus and some others eventual.
+	PositionOfTrust  *float64           `json:"trust_position" bson:"trust_position,omitempty" tableheader:"funds_trust_position" csv:"funds_trust_position"`             // Income given for the importance of the position held.
+	Daily            *float64           `json:"daily" bson:"daily,omitempty" tableheader:"funds_daily" csv:"funds_daily"`                                                 // Employee reimbursement for eventual expenses when working in a different location than usual.
+	Gratification    *float64           `json:"gratification" bson:"gratification,omitempty" tableheader:"funds_gratification" csv:"funds_gratification"`                 //
+	OriginPosition   *float64           `json:"origin_pos" bson:"origin_pos,omitempty"  tableheader:"funds_origin_pos" csv:"funds_origin_pos"`                            // Wage received from other Agency, transfered employee.
+	OtherFundsTotal  *float64           `json:"others_total" bson:"others_total,omitempty" tableheader:"funds_others_total" csv:"funds_others_total"`                     // Total of Any other kind of income that does not have a pattern among the Agencys.
+	Others           map[string]float64 `json:"others" bson:"others,omitempty" csv:"-"`                                                                                   // Any other kind of income that does not have a pattern among the Agencys.
 }
 
 // Discount a Struct that details all discounts that must be applied to the employee's income.
 type Discount struct {
-	Total            float64            `json:"total" bson:"total,omitempty"`
-	PrevContribution *float64           `json:"prev_contribution" bson:"prev_contribution,omitempty"` // 'Contribuição Previdenciária'
-	CeilRetention    *float64           `json:"ceil_retention" bson:"ceil_retention,omitempty"`       // 'Retenção de teto'
-	IncomeTax        *float64           `json:"income_tax" bson:"income_tax,omitempty"`               // 'Imposto de renda'
-	Others           map[string]float64 `json:"other" bson:"other,omitempty"`                         // Any other kind of discount that does not have a pattern among the Agencys.
+	Total               float64            `json:"total" bson:"total,omitempty" tableheader:"discounts_total" csv:"discounts_total"`
+	PrevContribution    *float64           `json:"prev_contribution" bson:"prev_contribution,omitempty" tableheader:"discounts_prev_contribution" csv:"discount_prev_contribution"` // 'Contribuição Previdenciária'
+	CeilRetention       *float64           `json:"ceil_retention" bson:"ceil_retention,omitempty" tableheader:"discounts_ceil_retention" csv:"discounts_ceil_retention"`            // 'Retenção de teto'
+	IncomeTax           *float64           `json:"income_tax" bson:"income_tax,omitempty" tableheader:"discounts_income_tax" csv:"discounts_income_tax"`                            // 'Imposto de renda'
+	OtherDiscountsTotal *float64           `json:"others_total" bson:"others_total,omitempty" tableheader:"discounts_others_total" csv:"discounts_others_total"`                    // Total of Any other kind of income that does not have a pattern among the Agencys.
+	Others              map[string]float64 `json:"other" bson:"other,omitempty" csv:"-"`                                                                                            // Any other kind of discount that does not have a pattern among the Agencys.
 }
