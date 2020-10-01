@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dadosjusbr/coletores"
 	"github.com/ncw/swift"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
@@ -42,7 +43,7 @@ func makePointer(x float64) *float64 {
 }
 
 var (
-	emp4Row = []Employee{
+	emp4Row = []coletores.Employee{
 		{
 			Reg:       "",
 			Name:      "Abiaci De Carvalho Silva",
@@ -50,13 +51,13 @@ var (
 			Type:      "servidor",
 			Workplace: "inativo",
 			Active:    false,
-			Income: &IncomeDetails{
+			Income: &coletores.IncomeDetails{
 				Total: 30368.59,
 				Wage:  makePointer(7000),
-				Perks: &Perks{
+				Perks: &coletores.Perks{
 					Total: 600,
 				},
-				Other: &Funds{
+				Other: &coletores.Funds{
 					Total:            100,
 					PersonalBenefits: makePointer(7475.71),
 					EventualBenefits: makePointer(0),
@@ -65,7 +66,7 @@ var (
 					OriginPosition:   makePointer(0),
 				},
 			},
-			Discounts: &Discount{
+			Discounts: &coletores.Discount{
 				Total:            8930.05,
 				PrevContribution: makePointer(2719.5),
 				CeilRetention:    makePointer(0),
@@ -82,13 +83,13 @@ var (
 			Type:      "servidor",
 			Workplace: "10ª zona eleitoral - guarabira/pb",
 			Active:    true,
-			Income: &IncomeDetails{
+			Income: &coletores.IncomeDetails{
 				Total: 10000,
 				Wage:  makePointer(5000),
-				Perks: &Perks{
+				Perks: &coletores.Perks{
 					Total: 200,
 				},
-				Other: &Funds{
+				Other: &coletores.Funds{
 					Total:            500,
 					PersonalBenefits: makePointer(0),
 					EventualBenefits: makePointer(0),
@@ -97,7 +98,7 @@ var (
 					OriginPosition:   makePointer(0),
 				},
 			},
-			Discounts: &Discount{
+			Discounts: &coletores.Discount{
 				Total:            405.98,
 				PrevContribution: makePointer(0),
 				CeilRetention:    makePointer(0),
@@ -114,13 +115,13 @@ var (
 			Type:      "membro",
 			Workplace: "10ª zona eleitoral - guarabira/pb",
 			Active:    false,
-			Income: &IncomeDetails{
+			Income: &coletores.IncomeDetails{
 				Total: 10000,
 				Wage:  makePointer(5000),
-				Perks: &Perks{
+				Perks: &coletores.Perks{
 					Total: 200,
 				},
-				Other: &Funds{
+				Other: &coletores.Funds{
 					Total:            500,
 					PersonalBenefits: makePointer(0),
 					EventualBenefits: makePointer(0),
@@ -129,7 +130,7 @@ var (
 					OriginPosition:   makePointer(0),
 				},
 			},
-			Discounts: &Discount{
+			Discounts: &coletores.Discount{
 				Total:            405.98,
 				PrevContribution: makePointer(0),
 				CeilRetention:    makePointer(0),
@@ -146,13 +147,13 @@ var (
 			Type:      "membro",
 			Workplace: "10ª zona eleitoral - guarabira/pb",
 			Active:    true,
-			Income: &IncomeDetails{
+			Income: &coletores.IncomeDetails{
 				Total: 10000,
 				Wage:  makePointer(5000),
-				Perks: &Perks{
+				Perks: &coletores.Perks{
 					Total: 200,
 				},
-				Other: &Funds{
+				Other: &coletores.Funds{
 					Total:            500,
 					PersonalBenefits: makePointer(0),
 					EventualBenefits: makePointer(0),
@@ -161,7 +162,7 @@ var (
 					OriginPosition:   makePointer(0),
 				},
 			},
-			Discounts: &Discount{
+			Discounts: &coletores.Discount{
 				Total:            405.98,
 				PrevContribution: makePointer(0),
 				CeilRetention:    makePointer(0),
@@ -229,8 +230,8 @@ var (
 		ServantInactive: summFor1RowGeneral,
 	}
 
-	crawler = Crawler{CrawlerID: "123132", CrawlerVersion: "v.1"}
-	cr      = CrawlingResult{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employees: emp4Row, Files: []string{"teste.txt", "outroTeste.txt"}}
+	crawler = coletores.Crawler{CrawlerID: "123132", CrawlerVersion: "v.1"}
+	cr      = coletores.CrawlingResult{AgencyID: "a", Year: 2019, Month: 9, Crawler: crawler, Employees: emp4Row, Files: []string{"teste.txt", "outroTeste.txt"}}
 	agmi    AgencyMonthlyInfo
 
 	backup1 = Backup{URL: "/dadosjusbr/teste.txt", Hash: "0e30309b400c02246b6ac4f461c0fa96"}

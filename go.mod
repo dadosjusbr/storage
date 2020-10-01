@@ -3,6 +3,7 @@ module github.com/dadosjusbr/storage
 go 1.14
 
 require (
+	github.com/dadosjusbr/coletores v0.0.0-20200924004729-f94cbbc5b0d5
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
