@@ -26,18 +26,18 @@ func NewCloudClient(userName, apiKey, authURL, domain, containerName string) *Cl
 }
 
 //UploadFile Store a file in cloud container and return a Backup file containing a URL and a Hash for that file.
-func (cloud *CloudClient) UploadFile(path string) (*Backup, error) {
-
-	f, err := os.Open(path)
+func (cloud *CloudClient) UploadFile(srcPath string, dstFolder string) (*Backup, error) {
+	f, err := os.Open(srcPath)
 	if err != nil {
-		return nil, fmt.Errorf("error Opening file at %s: %v", path, err)
+		return nil, fmt.Errorf("error Opening file at %s: %v", f.Name, err)
 	}
 	defer f.Close()
-	headers, err := cloud.conn.ObjectPut(cloud.container, filepath.Base(path), f, true, "", "", nil)
+	dstPath := filepath.Join(dstFolder, filepath.Base(srcPath))
+	headers, err := cloud.conn.ObjectPut(cloud.container, dstPath, f, true, "", "", nil)
 	if err != nil {
-		return nil, fmt.Errorf("error trying to upload file at %s to storage: %v\nHeaders: %v", path, err, headers)
+		return nil, fmt.Errorf("error trying to upload file at %s to storage: %v\nHeaders: %v", dstPath, err, headers)
 	}
-	return &Backup{URL: fmt.Sprintf("%s/%s/%s", cloud.storageURL(), cloud.container, filepath.Base(path)), Hash: headers["Etag"]}, nil
+	return &Backup{URL: fmt.Sprintf("%s/%s/%s", cloud.storageURL(), cloud.container, dstPath), Hash: headers["Etag"]}, nil
 }
 
 //storageURL finds cloud repository url
@@ -58,13 +58,13 @@ func (cloud *CloudClient) deleteFile(path string) error {
 }
 
 //Backup is the API to make URL and HASH files to be used in mgo store function
-func (cloud *CloudClient) Backup(Files []string) ([]Backup, error) {
+func (cloud *CloudClient) Backup(Files []string, dstFolder string) ([]Backup, error) {
 	if len(Files) == 0 {
 		return []Backup{}, nil
 	}
 	var backups []Backup
 	for _, value := range Files {
-		back, err := cloud.UploadFile(value)
+		back, err := cloud.UploadFile(value, dstFolder)
 		if err != nil {
 			return nil, fmt.Errorf("Error in BackupClient:backup upload file %v", err)
 		}
