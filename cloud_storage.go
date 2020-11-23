@@ -2,7 +2,6 @@ package storage
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 
@@ -11,13 +10,8 @@ import (
 
 // CloudClient takes care of files backup
 type CloudClient struct {
-	conn      swiftConnection
+	conn      *swift.Connection
 	container string
-}
-
-type swiftConnection interface {
-	ObjectPut(container string, objectName string, contents io.Reader, checkHash bool, Hash string, contentType string, h swift.Headers) (headers swift.Headers, err error)
-	ObjectDelete(container string, objectName string) error
 }
 
 // NewCloudClient Create a client connect with Cloud
@@ -27,6 +21,13 @@ func NewCloudClient(userName, apiKey, authURL, domain, containerName string) *Cl
 
 //UploadFile Store a file in cloud container and return a Backup file containing a URL and a Hash for that file.
 func (cloud *CloudClient) UploadFile(srcPath string, dstFolder string) (*Backup, error) {
+	if !cloud.conn.Authenticated() {
+		if err := cloud.conn.Authenticate(); err != nil {
+			return nil, fmt.Errorf("error authenticating to swift:%q", err)
+		}
+		defer cloud.conn.UnAuthenticate()
+	}
+
 	f, err := os.Open(srcPath)
 	if err != nil {
 		return nil, fmt.Errorf("error Opening file at %s: %v", f.Name, err)
@@ -37,15 +38,7 @@ func (cloud *CloudClient) UploadFile(srcPath string, dstFolder string) (*Backup,
 	if err != nil {
 		return nil, fmt.Errorf("error trying to upload file at %s to storage: %v\nHeaders: %v", dstPath, err, headers)
 	}
-	return &Backup{URL: fmt.Sprintf("%s/%s/%s", cloud.storageURL(), cloud.container, dstPath), Hash: headers["Etag"]}, nil
-}
-
-//storageURL finds cloud repository url
-func (cloud *CloudClient) storageURL() string {
-	if v, ok := cloud.conn.(*swift.Connection); ok {
-		return v.StorageUrl
-	}
-	return ""
+	return &Backup{URL: fmt.Sprintf("%s/%s/%s", cloud.conn.StorageUrl, cloud.container, dstPath), Hash: headers["Etag"]}, nil
 }
 
 //deleteFile delete a file from cloud container.
@@ -59,6 +52,12 @@ func (cloud *CloudClient) deleteFile(path string) error {
 
 //Backup is the API to make URL and HASH files to be used in mgo store function
 func (cloud *CloudClient) Backup(Files []string, dstFolder string) ([]Backup, error) {
+	if !cloud.conn.Authenticated() {
+		if err := cloud.conn.Authenticate(); err != nil {
+			return nil, fmt.Errorf("error authenticating to swift:%q", err)
+		}
+		defer cloud.conn.UnAuthenticate()
+	}
 	if len(Files) == 0 {
 		return []Backup{}, nil
 	}
