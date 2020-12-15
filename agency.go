@@ -53,11 +53,11 @@ type Backup struct {
 
 // Summaries contains all summary detailed information
 type Summaries struct {
-	General         Summary
-	MemberActive    Summary
-	MemberInactive  Summary
-	ServantActive   Summary
-	ServantInactive Summary
+	General       Summary
+	MemberActive  Summary
+	Undefined     Summary
+	ServantActive Summary
+	Pensioner     Summary
 }
 
 // Summary A Struct containing summarized  information about a agency/month stats
