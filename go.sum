@@ -1,8 +1,8 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/aws/aws-sdk-go v1.34.28 h1:sscPpn/Ns3i0F4HPEWAVcwdIRaZZCuL7llJ2/60yPIk=
 github.com/aws/aws-sdk-go v1.34.28/go.mod h1:H7NKnBqNVzoTJpGfLrQkkD+ytBA93eiDYi/+8rV9s48=
-github.com/dadosjusbr/coletores v0.0.0-20201122053603-68a0eed3d9ad h1:+LCxb+SflHIf5urINs5QKlLlXuuU0gCFw9weo8l8D2g=
-github.com/dadosjusbr/coletores v0.0.0-20201122053603-68a0eed3d9ad/go.mod h1:/MYAexbepJrBZGhKACp2ZAbRSrexfvccln0ig/0ci6E=
+github.com/dadosjusbr/coletores v0.0.0-20201216050911-0186b4dcc191 h1:8zhYeBAwOA9ZWym3rFOzEVOMYyA+a2H42qDBcq3/pOA=
+github.com/dadosjusbr/coletores v0.0.0-20201216050911-0186b4dcc191/go.mod h1:/MYAexbepJrBZGhKACp2ZAbRSrexfvccln0ig/0ci6E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-sql-driver/mysql v1.5.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=

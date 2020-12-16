@@ -57,7 +57,6 @@ type Summaries struct {
 	MemberActive  Summary
 	Undefined     Summary
 	ServantActive Summary
-	Pensioner     Summary
 }
 
 // Summary A Struct containing summarized  information about a agency/month stats
