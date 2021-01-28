@@ -100,10 +100,10 @@ func (c *DBClient) GetAgency(aid string) (*Agency, error) {
 func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]AgencyMonthlyInfo, error) {
 	var result = make(map[string][]AgencyMonthlyInfo)
 	c.Collection(c.monthlyInfoCol)
-	findOptions := options.Find()
 	for _, agency := range agencies {
-		resultMonthly, err := c.col.Find(context.TODO(), bson.D{{Key: "aid", Value: agency.ID}, {Key: "year", Value: year}},
-			findOptions.SetProjection(bson.D{{Key: "aid", Value: ""}, {Key: "year", Value: ""}, {Key: "month", Value: ""}, {Key: "summary", Value: ""}}))
+		resultMonthly, err := c.col.Find(
+			context.TODO(), bson.D{{Key: "aid", Value: agency.ID}, {Key: "year", Value: year}},
+			options.Find().SetProjection(bson.D{{"aid", 1}, {"year", 1}, {"month", 1}, {"summary", 1}}))
 		if err != nil {
 			return nil, fmt.Errorf("Error in GetMonthlyInfo %v", err)
 		}

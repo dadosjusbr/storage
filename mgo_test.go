@@ -42,13 +42,17 @@ func makePointer(x float64) *float64 {
 	return &x
 }
 
+func newString(s string) *string {
+	return &s
+}
+
 var (
 	emp4Row = []coletores.Employee{
 		{
 			Reg:       "",
 			Name:      "Abiaci De Carvalho Silva",
 			Role:      "Inativo",
-			Type:      "servidor",
+			Type:      newString("servidor"),
 			Workplace: "inativo",
 			Active:    false,
 			Income: &coletores.IncomeDetails{
@@ -80,7 +84,7 @@ var (
 			Reg:       "",
 			Name:      "Abraao Falcao De Carvalho",
 			Role:      "Promotor Eleitoral",
-			Type:      "servidor",
+			Type:      newString("servidor"),
 			Workplace: "10ª zona eleitoral - guarabira/pb",
 			Active:    true,
 			Income: &coletores.IncomeDetails{
@@ -112,7 +116,7 @@ var (
 			Reg:       "",
 			Name:      "Abraao Galcao",
 			Role:      "Promotor Eleitoral",
-			Type:      "membro",
+			Type:      newString("membro"),
 			Workplace: "10ª zona eleitoral - guarabira/pb",
 			Active:    false,
 			Income: &coletores.IncomeDetails{
@@ -144,7 +148,7 @@ var (
 			Reg:       "",
 			Name:      "Abraao Halcao",
 			Role:      "Promotor Eleitoral",
-			Type:      "membro",
+			Type:      newString("membro"),
 			Workplace: "10ª zona eleitoral - guarabira/pb",
 			Active:    true,
 			Income: &coletores.IncomeDetails{
@@ -219,15 +223,12 @@ var (
 	}
 
 	summFor4Row = Summaries{
-		General:         summFor4RowGeneral,
-		MemberActive:    summFor4RowMA,
-		MemberInactive:  summFor4RowMI,
-		ServantActive:   summFor4RowSA,
-		ServantInactive: summFor4RowSI,
+		General:       summFor4RowGeneral,
+		MemberActive:  summFor4RowMA,
+		ServantActive: summFor4RowSA,
 	}
 	summFor1Row = Summaries{
-		General:         summFor1RowGeneral,
-		ServantInactive: summFor1RowGeneral,
+		General: summFor1RowGeneral,
 	}
 
 	crawler = coletores.Crawler{CrawlerID: "123132", CrawlerVersion: "v.1"}
@@ -287,7 +288,7 @@ func (cs *checkStorage) ObjectDelete(container string, objectName string) error 
 func TestClient_Store(t *testing.T) {
 	err := createFiles(cr.Files)
 	assert.NoError(t, err)
-	bc := &CloudClient{conn: &checkStorage{check: false}, container: "dadosjusbr"}
+	bc := &CloudClient{conn: &checkStorage{check: false, container: "dadosjusbr"}}
 	col := checkCollection{
 		t:      t,
 		filter: bson.D{{Key: "aid", Value: "a"}, {Key: "year", Value: 2019}, {Key: "month", Value: 9}},
@@ -380,7 +381,7 @@ func Test_Backup(t *testing.T) {
 			if tt.cs != nil {
 				bc.container = tt.cs.container
 			}
-			got, err := bc.Backup(tt.Files)
+			got, err := bc.Backup(tt.Files, "dest")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 			}

@@ -53,10 +53,10 @@ type Backup struct {
 
 // Summaries contains all summary detailed information
 type Summaries struct {
-	General       Summary
-	MemberActive  Summary
-	Undefined     Summary
-	ServantActive Summary
+	General       Summary `json:"general,omitempty" bson:"general"`
+	MemberActive  Summary `json:"memberactive,omitempty" bson:"memberactive"`
+	Undefined     Summary `json:"undefined,omitempty" bson:"undefined"`
+	ServantActive Summary `json:"servantactive,omitempty" bson:"servantactive"`
 }
 
 // Summary A Struct containing summarized  information about a agency/month stats
