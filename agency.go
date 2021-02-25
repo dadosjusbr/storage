@@ -61,17 +61,17 @@ type Summaries struct {
 
 // Summary A Struct containing summarized  information about a agency/month stats
 type Summary struct {
-	Count  int         `json:"count" bson:"count,omitempty"`   // Number of employees
-	Wage   DataSummary `json:"wage" bson:"wage,omitempty"`     //  Statistics (Max, Min, Median, Total)
-	Perks  DataSummary `json:"perks" bson:"perks,omitempty"`   //  Statistics (Max, Min, Median, Total)
-	Others DataSummary `json:"others" bson:"others,omitempty"` //  Statistics (Max, Min, Median, Total)
+	Count           int             `json:"count" bson:"count,omitempty"`   // Number of employees
+	Wage            DataSummary     `json:"wage" bson:"wage,omitempty"`     //  Statistics (Max, Min, Median, Total)
+	Perks           DataSummary     `json:"perks" bson:"perks,omitempty"`   //  Statistics (Max, Min, Median, Total)
+	Others          DataSummary     `json:"others" bson:"others,omitempty"` //  Statistics (Max, Min, Median, Total)
+	IncomeHistogram map[int]float64 `json:"hist" bson:"hist,omitempty"`
 }
 
 // DataSummary A Struct containing data summary with statistics.
 type DataSummary struct {
-	Max       float64         `json:"max" bson:"max,omitempty"`
-	Min       float64         `json:"min" bson:"min,omitempty"`
-	Average   float64         `json:"avg" bson:"avg,omitempty"`
-	Total     float64         `json:"total" bson:"total,omitempty"`
-	Histogram map[int]float64 `json:"hist" bson:"hist,omitempty"`
+	Max     float64 `json:"max" bson:"max,omitempty"`
+	Min     float64 `json:"min" bson:"min,omitempty"`
+	Average float64 `json:"avg" bson:"avg,omitempty"`
+	Total   float64 `json:"total" bson:"total,omitempty"`
 }
