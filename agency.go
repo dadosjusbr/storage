@@ -69,8 +69,9 @@ type Summary struct {
 
 // DataSummary A Struct containing data summary with statistics.
 type DataSummary struct {
-	Max     float64 `json:"max" bson:"max,omitempty"`
-	Min     float64 `json:"min" bson:"min,omitempty"`
-	Average float64 `json:"avg" bson:"avg,omitempty"`
-	Total   float64 `json:"total" bson:"total,omitempty"`
+	Max       float64         `json:"max" bson:"max,omitempty"`
+	Min       float64         `json:"min" bson:"min,omitempty"`
+	Average   float64         `json:"avg" bson:"avg,omitempty"`
+	Total     float64         `json:"total" bson:"total,omitempty"`
+	Histogram map[int]float64 `json:"hist" bson:"hist,omitempty"`
 }
