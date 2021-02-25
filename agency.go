@@ -66,7 +66,7 @@ type Summary struct {
 	Perks           DataSummary `json:"perks" bson:"perks,omitempty"`   //  Statistics (Max, Min, Median, Total)
 	Others          DataSummary `json:"others" bson:"others,omitempty"` //  Statistics (Max, Min, Median, Total)
 	IncomeHistogram map[int]int `json:"hist" bson:"hist,omitempty"`
-	Benefits        DataSummary `json:"benefits" bson:"hist,omitempty"` // Agreggated summary of Perks+Others.
+	Benefits        DataSummary `json:"benefits" bson:"benefits,omitempty"` // Agreggated summary of Perks+Others.
 }
 
 // DataSummary A Struct containing data summary with statistics.
