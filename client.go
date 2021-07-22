@@ -58,3 +58,12 @@ func (c *Client) Store(agmi AgencyMonthlyInfo) error {
 	}
 	return nil
 }
+
+// GetAgenciesCount Return the Agencies amount
+func (c *Client) GetAgenciesCount() (int64, error) {
+	count, err := c.Db.GetAgenciesCount()
+	if err != nil {
+		return count, fmt.Errorf("GetAgenciesCount() error: %q", err)
+	}
+	return count, nil
+}

@@ -14,6 +14,7 @@ import (
 type collection interface {
 	ReplaceOne(ctx context.Context, filter interface{}, replacement interface{}, opts ...*options.ReplaceOptions) (*mongo.UpdateResult, error)
 	Find(ctx context.Context, filter interface{}, opts ...*options.FindOptions) (*mongo.Cursor, error)
+	CountDocuments(ctx context.Context, filter interface{}, opts ...*options.CountOptions) (int64, error)
 	FindOne(ctx context.Context, filter interface{}, opts ...*options.FindOneOptions) *mongo.SingleResult
 }
 
@@ -69,6 +70,16 @@ func (c *DBClient) GetOPE(uf string, year int) ([]Agency, map[string][]AgencyMon
 		return nil, nil, fmt.Errorf("GetOPE() error: %q", err)
 	}
 	return allAgencies, result, nil
+}
+
+// GetAgenciesCount Return the Agencies amount
+func (c *DBClient) GetAgenciesCount() (int64, error) {
+	c.Collection(c.agencyCol)
+	itemCount, err := c.col.CountDocuments(context.TODO(), bson.D{}, nil)
+	if err != nil {
+		return itemCount, fmt.Errorf("Error in result %v", err)
+	}
+	return itemCount, nil
 }
 
 //GetAgencies Return UF Agencies
