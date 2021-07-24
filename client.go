@@ -85,3 +85,12 @@ func (c *Client) GetLastDateWithMonthlyInfo() (int, int, error) {
 	}
 	return month, year, nil
 }
+
+//GetFirstDateWithMonthlyInfo return the initial year and month with collected data
+func (c *Client) GetFirstDateWithMonthlyInfo() (int, int, error) {
+	month, year, err := c.Db.GetFirstDateWithMonthlyInfo()
+	if err != nil {
+		return 0, 0, fmt.Errorf("GetFirstDateWithMonthlyInfo() error: %q", err)
+	}
+	return month, year, nil
+}
