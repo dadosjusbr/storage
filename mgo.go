@@ -156,3 +156,16 @@ func (c *DBClient) GetOMA(month int, year int, agency string) (*AgencyMonthlyInf
 func (c *DBClient) Collection(collectionName string) {
 	c.col = c.mgoClient.Database(c.dbName).Collection(collectionName)
 }
+
+//GetLastDateWithMonthlyInfo return the latest year and month with collected data
+func (c *DBClient) GetLastDateWithMonthlyInfo() (int, int, error) {
+	var resultMonthly AgencyMonthlyInfo
+	err := c.col.FindOne(
+		context.TODO(),
+		bson.D{}, options.FindOne().SetSort(bson.D{{Key: "year", Value: -1}, {Key: "month", Value: -1}})).Decode(&resultMonthly)
+	if err != nil {
+		// ErrNoDocuments means that the filter did not match any documents in the collection
+		return 0, 0, fmt.Errorf("Error in result %v", err)
+	}
+	return resultMonthly.Month, resultMonthly.Year, nil
+}

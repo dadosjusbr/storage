@@ -76,3 +76,12 @@ func (c *Client) GetNumberOfMonthsCollected() (int64, error) {
 	}
 	return count, nil
 }
+
+//GetLastDateWithMonthlyInfo return the latest year and month with collected data
+func (c *Client) GetLastDateWithMonthlyInfo() (int, int, error) {
+	month, year, err := c.Db.GetLastDateWithMonthlyInfo()
+	if err != nil {
+		return 0, 0, fmt.Errorf("GetLastDateWithMonthlyInfo() error: %q", err)
+	}
+	return month, year, nil
+}
