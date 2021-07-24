@@ -72,7 +72,7 @@ func (c *Client) GetAgenciesCount() (int64, error) {
 func (c *Client) GetMonthlyInfoAmount() (int64, error) {
 	count, err := c.Db.GetMonthlyInfoAmount()
 	if err != nil {
-		return count, fmt.Errorf("GetAgenciesCount() error: %q", err)
+		return count, fmt.Errorf("GetNumberOfMonthsCollected() error: %q", err)
 	}
 	return count, nil
 }
