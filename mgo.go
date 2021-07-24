@@ -82,7 +82,7 @@ func (c *DBClient) GetAgenciesCount() (int64, error) {
 	return itemCount, nil
 }
 
-// GetMonthlyInfoAmount Return the Agencies amount
+// GetNumberOfMonthsCollected Return the number of months collected
 func (c *DBClient) GetNumberOfMonthsCollected() (int64, error) {
 	c.Collection(c.monthlyInfoCol)
 	itemCount, err := c.col.CountDocuments(context.TODO(), bson.D{}, nil)
