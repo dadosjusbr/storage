@@ -16,6 +16,16 @@ type collection interface {
 	Find(ctx context.Context, filter interface{}, opts ...*options.FindOptions) (*mongo.Cursor, error)
 	CountDocuments(ctx context.Context, filter interface{}, opts ...*options.CountOptions) (int64, error)
 	FindOne(ctx context.Context, filter interface{}, opts ...*options.FindOneOptions) *mongo.SingleResult
+	Aggregate(ctx context.Context, pipeline interface{}, opts ...*options.AggregateOptions) (*mongo.Cursor, error)
+}
+
+//the GeneralMonthlyInfo is used to struct the agregation used to get the remuneration info from all angencies in a given month
+type GeneralMonthlyInfo struct {
+	Month  int     `json:"_id,omitempty" bson:"_id,omitempty"`
+	Wage   float64 `json:"wage,omitempty" bson:"wage,omitempty"`
+	Perks  float64 `json:"perks,omitempty" bson:"perks,omitempty"`
+	Others float64 `json:"others,omitempty" bson:"others,omitempty"`
+	Count  int     `json:"count,omitempty" bson:"count,omitempty"`
 }
 
 // Errors raised by package storage.
@@ -155,4 +165,57 @@ func (c *DBClient) GetOMA(month int, year int, agency string) (*AgencyMonthlyInf
 //Collection Changes active collection
 func (c *DBClient) Collection(collectionName string) {
 	c.col = c.mgoClient.Database(c.dbName).Collection(collectionName)
+}
+
+//GetGeneralMonthlyInfosFromYear return the sum from all remuneration info from all months of a given year
+func (c *DBClient) GetGeneralMonthlyInfosFromYear(year int) ([]GeneralMonthlyInfo, error) {
+	c.Collection(c.monthlyInfoCol)
+	resultMonthly, err := c.col.Aggregate(context.TODO(),
+		mongo.Pipeline{
+			bson.D{{"$match",
+				bson.D{{"year", year}}}},
+			bson.D{{"$group",
+				bson.D{
+					{"_id", "$month"},
+					{"wage", bson.D{{"$sum", "$summary.memberactive.wage.total"}}},
+					{"perks", bson.D{{"$sum", "$summary.memberactive.perks.total"}}},
+					{"others", bson.D{{"$sum", "$summary.memberactive.others.total"}}},
+					{"count", bson.D{{"$sum", "$summary.memberactive.count"}}}}}},
+			bson.D{{"$sort",
+				bson.D{
+					{"month", 1}}}}})
+	if err != nil {
+		return nil, fmt.Errorf("Error in GetMonthlyInfo %v", err)
+	}
+	var mr []GeneralMonthlyInfo
+	resultMonthly.All(context.TODO(), &mr)
+	return mr, nil
+}
+
+//GetFirstDateWithMonthlyInfo return the initial year and month with collected data
+func (c *DBClient) GetFirstDateWithMonthlyInfo() (int, int, error) {
+	var resultMonthly AgencyMonthlyInfo
+	firstDateQueryOptions := options.FindOne().SetSort(bson.D{{Key: "year", Value: +1}, {Key: "month", Value: +1}})
+	err := c.col.FindOne(
+		context.TODO(),
+		bson.D{}, firstDateQueryOptions).Decode(&resultMonthly)
+	if err != nil {
+		// ErrNoDocuments means that the filter did not match any documents in the collection
+		return 0, 0, fmt.Errorf("Error in result %v", err)
+	}
+	return resultMonthly.Month, resultMonthly.Year, nil
+}
+
+//GetLastDateWithMonthlyInfo return the latest year and month with collected data
+func (c *DBClient) GetLastDateWithMonthlyInfo() (int, int, error) {
+	var resultMonthly AgencyMonthlyInfo
+	lastDateQueryOptions := options.FindOne().SetSort(bson.D{{Key: "year", Value: -1}, {Key: "month", Value: -1}})
+	err := c.col.FindOne(
+		context.TODO(),
+		bson.D{}, lastDateQueryOptions).Decode(&resultMonthly)
+	if err != nil {
+		// ErrNoDocuments means that the filter did not match any documents in the collection
+		return 0, 0, fmt.Errorf("Error in result %v", err)
+	}
+	return resultMonthly.Month, resultMonthly.Year, nil
 }
