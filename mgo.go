@@ -195,9 +195,10 @@ func (c *DBClient) GetGeneralMonthlyInfosFromYear(year int) ([]GeneralMonthlyInf
 //GetFirstDateWithMonthlyInfo return the initial year and month with collected data
 func (c *DBClient) GetFirstDateWithMonthlyInfo() (int, int, error) {
 	var resultMonthly AgencyMonthlyInfo
+	firstDateQueryOptions := options.FindOne().SetSort(bson.D{{Key: "year", Value: +1}, {Key: "month", Value: +1}})
 	err := c.col.FindOne(
 		context.TODO(),
-		bson.D{}, options.FindOne().SetSort(bson.D{{Key: "year", Value: +1}, {Key: "month", Value: +1}})).Decode(&resultMonthly)
+		bson.D{}, firstDateQueryOptions).Decode(&resultMonthly)
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
 		return 0, 0, fmt.Errorf("Error in result %v", err)
@@ -208,9 +209,10 @@ func (c *DBClient) GetFirstDateWithMonthlyInfo() (int, int, error) {
 //GetLastDateWithMonthlyInfo return the latest year and month with collected data
 func (c *DBClient) GetLastDateWithMonthlyInfo() (int, int, error) {
 	var resultMonthly AgencyMonthlyInfo
+	lastDateQueryOptions := options.FindOne().SetSort(bson.D{{Key: "year", Value: -1}, {Key: "month", Value: -1}})
 	err := c.col.FindOne(
 		context.TODO(),
-		bson.D{}, options.FindOne().SetSort(bson.D{{Key: "year", Value: -1}, {Key: "month", Value: -1}})).Decode(&resultMonthly)
+		bson.D{}, lastDateQueryOptions).Decode(&resultMonthly)
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
 		return 0, 0, fmt.Errorf("Error in result %v", err)
