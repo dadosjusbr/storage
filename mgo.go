@@ -180,8 +180,7 @@ func (c *DBClient) GetGeneralMonthlyInfosFromYear(year int) ([]GeneralMonthlyInf
 					{"wage", bson.D{{"$sum", "$summary.memberactive.wage.total"}}},
 					{"perks", bson.D{{"$sum", "$summary.memberactive.perks.total"}}},
 					{"others", bson.D{{"$sum", "$summary.memberactive.others.total"}}},
-					{"count", bson.D{{"$sum", "$summary.memberactive.count"}}},
-					{"month", bson.D{{"$sum", "$month"}}}}}},
+					{"count", bson.D{{"$sum", "$summary.memberactive.count"}}}}}},
 			bson.D{{"$sort",
 				bson.D{
 					{"month", 1}}}}})
