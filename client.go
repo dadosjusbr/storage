@@ -58,3 +58,39 @@ func (c *Client) Store(agmi AgencyMonthlyInfo) error {
 	}
 	return nil
 }
+
+// GetAgenciesCount Return the Agencies amount
+func (c *Client) GetAgenciesCount() (int64, error) {
+	count, err := c.Db.GetAgenciesCount()
+	if err != nil {
+		return count, fmt.Errorf("GetAgenciesCount() error: %q", err)
+	}
+	return count, nil
+}
+
+// GetNumberOfMonthsCollected Return the Agencies amount
+func (c *Client) GetNumberOfMonthsCollected() (int64, error) {
+	count, err := c.Db.GetNumberOfMonthsCollected()
+	if err != nil {
+		return count, fmt.Errorf("GetNumberOfMonthsCollected() error: %q", err)
+	}
+	return count, nil
+}
+
+//GetLastDateWithMonthlyInfo return the latest year and month with collected data
+func (c *Client) GetLastDateWithMonthlyInfo() (int, int, error) {
+	month, year, err := c.Db.GetLastDateWithMonthlyInfo()
+	if err != nil {
+		return 0, 0, fmt.Errorf("GetLastDateWithMonthlyInfo() error: %q", err)
+	}
+	return month, year, nil
+}
+
+//GetFirstDateWithMonthlyInfo return the initial year and month with collected data
+func (c *Client) GetFirstDateWithMonthlyInfo() (int, int, error) {
+	month, year, err := c.Db.GetFirstDateWithMonthlyInfo()
+	if err != nil {
+		return 0, 0, fmt.Errorf("GetFirstDateWithMonthlyInfo() error: %q", err)
+	}
+	return month, year, nil
+}
