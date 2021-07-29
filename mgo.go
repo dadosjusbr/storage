@@ -28,6 +28,11 @@ type GeneralMonthlyInfo struct {
 	Count  int     `json:"count,omitempty" bson:"count,omitempty"`
 }
 
+type RemmunerationSummary struct {
+	Count int
+	Value float64
+}
+
 // Errors raised by package storage.
 var (
 	ErrNothingFound = fmt.Errorf("There is no document with this parameters")
@@ -218,4 +223,30 @@ func (c *DBClient) GetLastDateWithMonthlyInfo() (int, int, error) {
 		return 0, 0, fmt.Errorf("Error in result %v", err)
 	}
 	return resultMonthly.Month, resultMonthly.Year, nil
+}
+
+//GetRemunerationSummary return the amount  of remuneration records from all agencies and the final remuneration value
+func (c *DBClient) GetRemunerationSummary() (*RemmunerationSummary, error) {
+	c.Collection(c.monthlyInfoCol)
+	r, err := c.col.Aggregate(context.TODO(),
+		mongo.Pipeline{bson.D{{"$group",
+			bson.D{
+				{"_id", ""},
+				{"wage", bson.D{{"$sum", "$summary.memberactive.wage.total"}}},
+				{"perks", bson.D{{"$sum", "$summary.memberactive.perks.total"}}},
+				{"others", bson.D{{"$sum", "$summary.memberactive.others.total"}}},
+				{"count", bson.D{{"$sum", "$summary.memberactive.count"}}}}}}})
+	if err != nil {
+		return nil, fmt.Errorf("Error in GetGeneralRemunerationValue %v", err)
+	}
+	var result struct {
+		Wage   float64 `bson:"wage,omitempty"`
+		Perks  float64 `bson:"perks,omitempty"`
+		Others float64 `bson:"others,omitempty"`
+		Count  int     `bson:"count,omitempty"`
+	}
+	if r.Next(context.TODO()) {
+		r.Decode(&result)
+	}
+	return &RemmunerationSummary{Count: result.Count, Value: result.Others + result.Perks + result.Wage}, nil
 }
