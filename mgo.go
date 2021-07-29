@@ -228,7 +228,7 @@ func (c *DBClient) GetAmountOfRemunerationRecords() (int, error) {
 			{"amount",
 				bson.D{{"$sum", "$summary.memberactive.count"}}}}}}})
 	if err != nil {
-		return 0, fmt.Errorf("Error in GetMonthlyInfo %v", err)
+		return 0, fmt.Errorf("Error in GetAmountOfRemunerationRecords %v", err)
 	}
 	var result struct {
 		Amount int `json:"amount,omitempty" bson:"amount,omitempty"`
@@ -239,7 +239,25 @@ func (c *DBClient) GetAmountOfRemunerationRecords() (int, error) {
 	return result.Amount, nil
 }
 
-// func (c *DBClient) GetGeneralRemunerationValue() float64 {
-// 	c.Collection(c.monthlyInfoCol)
-// 	c.col.Aggregate()
-// }
+func (c *DBClient) GetGeneralRemunerationValue() (float64, error) {
+	c.Collection(c.monthlyInfoCol)
+	generalRemuneration, err := c.col.Aggregate(context.TODO(),
+		mongo.Pipeline{bson.D{{"$group",
+			bson.D{
+				{"_id", ""},
+				{"wage", bson.D{{"$sum", "$summary.memberactive.wage.total"}}},
+				{"perks", bson.D{{"$sum", "$summary.memberactive.perks.total"}}},
+				{"others", bson.D{{"$sum", "$summary.memberactive.others.total"}}}}}}})
+	if err != nil {
+		return 0, fmt.Errorf("Error in GetGeneralRemunerationValue %v", err)
+	}
+	var result struct {
+		Wage   float64 `json:"wage,omitempty" bson:"wage,omitempty"`
+		Perks  float64 `json:"perks,omitempty" bson:"perks,omitempty"`
+		Others float64 `json:"others,omitempty" bson:"others,omitempty"`
+	}
+	if generalRemuneration.Next(context.TODO()) {
+		generalRemuneration.Decode(&result)
+	}
+	return result.Others + result.Perks + result.Wage, nil
+}
