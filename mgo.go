@@ -219,3 +219,27 @@ func (c *DBClient) GetLastDateWithMonthlyInfo() (int, int, error) {
 	}
 	return resultMonthly.Month, resultMonthly.Year, nil
 }
+
+//GetAmountOfRemunerationRecords return the amount of remuneration records from all agencies
+func (c *DBClient) GetAmountOfRemunerationRecords() (int, error) {
+	c.Collection(c.monthlyInfoCol)
+	amountCursor, err := c.col.Aggregate(context.TODO(),
+		mongo.Pipeline{bson.D{{"$group", bson.D{{"_id", ""},
+			{"amount",
+				bson.D{{"$sum", "$summary.memberactive.count"}}}}}}})
+	if err != nil {
+		return 0, fmt.Errorf("Error in GetMonthlyInfo %v", err)
+	}
+	var result struct {
+		Amount int `json:"amount,omitempty" bson:"amount,omitempty"`
+	}
+	if amountCursor.Next(context.TODO()) {
+		amountCursor.Decode(&result)
+	}
+	return result.Amount, nil
+}
+
+// func (c *DBClient) GetGeneralRemunerationValue() float64 {
+// 	c.Collection(c.monthlyInfoCol)
+// 	c.col.Aggregate()
+// }
