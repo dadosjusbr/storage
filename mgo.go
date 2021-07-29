@@ -220,26 +220,8 @@ func (c *DBClient) GetLastDateWithMonthlyInfo() (int, int, error) {
 	return resultMonthly.Month, resultMonthly.Year, nil
 }
 
-//GetAmountOfRemunerationRecords return the amount of remuneration records from all agencies
-func (c *DBClient) GetAmountOfRemunerationRecords() (int, error) {
-	c.Collection(c.monthlyInfoCol)
-	amountCursor, err := c.col.Aggregate(context.TODO(),
-		mongo.Pipeline{bson.D{{"$group", bson.D{{"_id", ""},
-			{"amount",
-				bson.D{{"$sum", "$summary.memberactive.count"}}}}}}})
-	if err != nil {
-		return 0, fmt.Errorf("Error in GetAmountOfRemunerationRecords %v", err)
-	}
-	var result struct {
-		Amount int `bson:"amount,omitempty"`
-	}
-	if amountCursor.Next(context.TODO()) {
-		amountCursor.Decode(&result)
-	}
-	return result.Amount, nil
-}
-
-func (c *DBClient) GetGeneralRemunerationValue() (float64, error) {
+//GetGeneralRemunerationValueAndAmount return the amount  of remuneration records from all agencies and the final remuneration value
+func (c *DBClient) GetGeneralRemunerationValueAndAmount() (float64, int, error) {
 	c.Collection(c.monthlyInfoCol)
 	generalRemuneration, err := c.col.Aggregate(context.TODO(),
 		mongo.Pipeline{bson.D{{"$group",
@@ -247,17 +229,19 @@ func (c *DBClient) GetGeneralRemunerationValue() (float64, error) {
 				{"_id", ""},
 				{"wage", bson.D{{"$sum", "$summary.memberactive.wage.total"}}},
 				{"perks", bson.D{{"$sum", "$summary.memberactive.perks.total"}}},
-				{"others", bson.D{{"$sum", "$summary.memberactive.others.total"}}}}}}})
+				{"others", bson.D{{"$sum", "$summary.memberactive.others.total"}}},
+				{"amount", bson.D{{"$sum", "$summary.memberactive.count"}}}}}}})
 	if err != nil {
-		return 0, fmt.Errorf("Error in GetGeneralRemunerationValue %v", err)
+		return 0, 0, fmt.Errorf("Error in GetGeneralRemunerationValue %v", err)
 	}
 	var result struct {
 		Wage   float64 `bson:"wage,omitempty"`
 		Perks  float64 `bson:"perks,omitempty"`
 		Others float64 `bson:"others,omitempty"`
+		Amount int     `bson:"amount,omitempty"`
 	}
 	if generalRemuneration.Next(context.TODO()) {
 		generalRemuneration.Decode(&result)
 	}
-	return result.Others + result.Perks + result.Wage, nil
+	return result.Others + result.Perks + result.Wage, result.Amount, nil
 }
