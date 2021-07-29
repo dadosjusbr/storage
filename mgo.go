@@ -252,7 +252,7 @@ func (c *DBClient) GetGeneralRemunerationValue() (float64, error) {
 		return 0, fmt.Errorf("Error in GetGeneralRemunerationValue %v", err)
 	}
 	var result struct {
-		Wage   float64 `json:"wage,omitempty" bson:"wage,omitempty"`
+		Wage   float64 `bson:"wage,omitempty"`
 		Perks  float64 `json:"perks,omitempty" bson:"perks,omitempty"`
 		Others float64 `json:"others,omitempty" bson:"others,omitempty"`
 	}
