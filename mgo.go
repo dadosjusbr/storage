@@ -231,7 +231,7 @@ func (c *DBClient) GetAmountOfRemunerationRecords() (int, error) {
 		return 0, fmt.Errorf("Error in GetAmountOfRemunerationRecords %v", err)
 	}
 	var result struct {
-		Amount int `json:"amount,omitempty" bson:"amount,omitempty"`
+		Amount int `bson:"amount,omitempty"`
 	}
 	if amountCursor.Next(context.TODO()) {
 		amountCursor.Decode(&result)
