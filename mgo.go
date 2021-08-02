@@ -200,6 +200,7 @@ func (c *DBClient) GetGeneralMonthlyInfosFromYear(year int) ([]GeneralMonthlyInf
 //GetFirstDateWithMonthlyInfo return the initial year and month with collected data
 func (c *DBClient) GetFirstDateWithMonthlyInfo() (int, int, error) {
 	var resultMonthly AgencyMonthlyInfo
+	c.Collection(c.monthlyInfoCol)
 	firstDateQueryOptions := options.FindOne().SetSort(bson.D{{Key: "year", Value: +1}, {Key: "month", Value: +1}})
 	err := c.col.FindOne(
 		context.TODO(),
@@ -214,6 +215,7 @@ func (c *DBClient) GetFirstDateWithMonthlyInfo() (int, int, error) {
 //GetLastDateWithMonthlyInfo return the latest year and month with collected data
 func (c *DBClient) GetLastDateWithMonthlyInfo() (int, int, error) {
 	var resultMonthly AgencyMonthlyInfo
+	c.Collection(c.monthlyInfoCol)
 	lastDateQueryOptions := options.FindOne().SetSort(bson.D{{Key: "year", Value: -1}, {Key: "month", Value: -1}})
 	err := c.col.FindOne(
 		context.TODO(),
