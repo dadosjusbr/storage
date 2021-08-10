@@ -151,6 +151,25 @@ func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]Age
 	return result, nil
 }
 
+//GetMonthlyInfo return summarized monthlyInfo for each agency in agencies in a specific year with packages
+func (c *DBClient) GetMonthlyInfoSummary(agencies []Agency, year int) (map[string][]AgencyMonthlyInfo, error) {
+	var result = make(map[string][]AgencyMonthlyInfo)
+	c.Collection(c.monthlyInfoCol)
+	for _, agency := range agencies {
+		resultMonthly, err := c.col.Find(
+			context.TODO(), bson.D{{Key: "aid", Value: agency.ID}, {Key: "year", Value: year}},
+			options.Find().SetProjection(bson.D{{"aid", 1}, {"year", 1}, {"month", 1}, {"summary", 1}, {"package", 1}}))
+		if err != nil {
+			return nil, fmt.Errorf("Error in GetMonthlyInfo %v", err)
+		}
+		var mr []AgencyMonthlyInfo
+		resultMonthly.All(context.TODO(), &mr)
+		result[agency.ID] = mr
+	}
+
+	return result, nil
+}
+
 //GetOMA Search if DB has a match for filters
 func (c *DBClient) GetOMA(month int, year int, agency string) (*AgencyMonthlyInfo, *Agency, error) {
 	c.Collection(c.monthlyInfoCol)
