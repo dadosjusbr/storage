@@ -151,7 +151,7 @@ func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]Age
 	return result, nil
 }
 
-//GetMonthlyInfo return summarized monthlyInfo for each agency in agencies in a specific year with packages
+// GetMonthlyInfoSummary returns summarized monthlyInfo for each agency in agencies in a specific year with packages
 func (c *DBClient) GetMonthlyInfoSummary(agencies []Agency, year int) (map[string][]AgencyMonthlyInfo, error) {
 	var result = make(map[string][]AgencyMonthlyInfo)
 	c.Collection(c.monthlyInfoCol)
@@ -166,7 +166,6 @@ func (c *DBClient) GetMonthlyInfoSummary(agencies []Agency, year int) (map[strin
 		resultMonthly.All(context.TODO(), &mr)
 		result[agency.ID] = mr
 	}
-
 	return result, nil
 }
 
