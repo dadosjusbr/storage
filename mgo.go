@@ -147,7 +147,6 @@ func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]Age
 		resultMonthly.All(context.TODO(), &mr)
 		result[agency.ID] = mr
 	}
-
 	return result, nil
 }
 
