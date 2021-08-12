@@ -138,8 +138,8 @@ func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]Age
 	c.Collection(c.monthlyInfoCol)
 	for _, agency := range agencies {
 		resultMonthly, err := c.col.Find(
-			context.TODO(), bson.D{{Key: "aid", Value: agency.ID}, {Key: "year", Value: year}},
-			options.Find().SetProjection(bson.D{{"aid", 1}, {"year", 1}, {"month", 1}, {"summary", 1}}))
+			context.TODO(),
+			bson.D{{Key: "aid", Value: agency.ID}, {Key: "year", Value: year}})
 		if err != nil {
 			return nil, fmt.Errorf("Error in GetMonthlyInfo %v", err)
 		}
