@@ -59,6 +59,21 @@ func (c *Client) Store(agmi AgencyMonthlyInfo) error {
 	return nil
 }
 
+func (c *Client) StoreAgreggation(agreggation Agreggation) error {
+	c.Db.Collection(c.Db.aggregationCol)
+	_, err := c.Db.col.InsertOne(context.TODO(),
+		bson.D{
+			{Key: "aid", Value: agreggation.AgencyID},
+			{Key: "group", Value: agreggation.Group},
+			{Key: "month", Value: agreggation.Month},
+			{Key: "year", Value: agreggation.Year},
+			{Key: "package", Value: agreggation.Package}})
+	if err != nil {
+		return fmt.Errorf("error while creating a new agreggation %q", err)
+	}
+	return nil
+}
+
 // GetAgenciesCount Return the Agencies amount
 func (c *Client) GetAgenciesCount() (int64, error) {
 	count, err := c.Db.GetAgenciesCount()
