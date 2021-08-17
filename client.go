@@ -59,6 +59,7 @@ func (c *Client) Store(agmi AgencyMonthlyInfo) error {
 	return nil
 }
 
+// Store stores an agreggation in the database.
 func (c *Client) StoreAgreggation(agreggation Agreggation) error {
 	c.Db.Collection(c.Db.aggregationCol)
 	_, err := c.Db.col.InsertOne(context.TODO(),
