@@ -45,12 +45,12 @@ type DBClient struct {
 	dbName         string
 	monthlyInfoCol string
 	agencyCol      string
-	aggregationCol string
+	packageCol     string
 	col            collection
 }
 
 //NewDBClient instantiates a mongo new client, but will not connect to the specified URL. Please use Client.Connect before using the client.
-func NewDBClient(url, dbName, monthlyInfoCol, agencyCol string, aggregationCol string) (*DBClient, error) {
+func NewDBClient(url, dbName, monthlyInfoCol, agencyCol string, packageCol string) (*DBClient, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(url))
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func NewDBClient(url, dbName, monthlyInfoCol, agencyCol string, aggregationCol s
 		dbName:         dbName,
 		monthlyInfoCol: monthlyInfoCol,
 		agencyCol:      agencyCol,
-		aggregationCol: aggregationCol}, nil
+		packageCol:     packageCol}, nil
 }
 
 //Connect establishes a connection to MongoDB using the previously specified URL
@@ -277,21 +277,16 @@ func (c *DBClient) GetRemunerationSummary() (*RemmunerationSummary, error) {
 }
 
 //GetAggregation return an aggregation who attends the given params
-func (c *DBClient) GetAgreggation(
-	aid *string,
-	year *int,
-	month *int,
-	group *string,
-) (*Agreggation, error) {
-	c.Collection(c.aggregationCol)
-	var agreggation Agreggation
+func (c *DBClient) GetAgreggation(pkgOpts PackageFilterOpts) (*Package, error) {
+	c.Collection(c.packageCol)
+	var pkg Package
 	err := c.col.FindOne(context.TODO(), bson.D{{
-		Key: "aid", Value: aid},
-		{Key: "year", Value: year},
-		{Key: "month", Value: month},
-		{Key: "group", Value: group}}).Decode(&agreggation)
+		Key: "aid", Value: pkgOpts.AgencyID},
+		{Key: "year", Value: pkgOpts.Year},
+		{Key: "month", Value: pkgOpts.Month},
+		{Key: "group", Value: pkgOpts.Group}}).Decode(&pkg)
 	if err != nil {
 		return nil, fmt.Errorf("Error searching for datapackage: %q", err)
 	}
-	return &agreggation, nil
+	return &pkg, nil
 }

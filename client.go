@@ -59,16 +59,16 @@ func (c *Client) Store(agmi AgencyMonthlyInfo) error {
 	return nil
 }
 
-// Store stores an agreggation in the database.
-func (c *Client) StoreAgreggation(agreggation Agreggation) error {
-	c.Db.Collection(c.Db.aggregationCol)
+// Store stores an package in the database.
+func (c *Client) StoreAgreggation(newPackage Package) error {
+	c.Db.Collection(c.Db.packageCol)
 	_, err := c.Db.col.InsertOne(context.TODO(),
 		bson.D{
-			{Key: "aid", Value: agreggation.AgencyID},
-			{Key: "group", Value: agreggation.Group},
-			{Key: "month", Value: agreggation.Month},
-			{Key: "year", Value: agreggation.Year},
-			{Key: "package", Value: agreggation.Package}})
+			{Key: "aid", Value: newPackage.AgencyID},
+			{Key: "group", Value: newPackage.Group},
+			{Key: "month", Value: newPackage.Month},
+			{Key: "year", Value: newPackage.Year},
+			{Key: "package", Value: newPackage.Package}})
 	if err != nil {
 		return fmt.Errorf("error while creating a new agreggation %q", err)
 	}
