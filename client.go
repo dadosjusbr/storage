@@ -70,7 +70,7 @@ func (c *Client) StoreAgreggation(newPackage Package) error {
 			{Key: "year", Value: newPackage.Year},
 			{Key: "package", Value: newPackage.Package}})
 	if err != nil {
-		return fmt.Errorf("error while creating a new agreggation %q", err)
+		return fmt.Errorf("error while storing a new agreggation %q", err)
 	}
 	return nil
 }
