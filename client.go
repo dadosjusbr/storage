@@ -59,6 +59,22 @@ func (c *Client) Store(agmi AgencyMonthlyInfo) error {
 	return nil
 }
 
+// Store stores an package in the database.
+func (c *Client) StorePackage(newPackage Package) error {
+	c.Db.Collection(c.Db.packageCol)
+	_, err := c.Db.col.InsertOne(context.TODO(),
+		bson.D{
+			{Key: "aid", Value: newPackage.AgencyID},
+			{Key: "group", Value: newPackage.Group},
+			{Key: "month", Value: newPackage.Month},
+			{Key: "year", Value: newPackage.Year},
+			{Key: "package", Value: newPackage.Package}})
+	if err != nil {
+		return fmt.Errorf("error while storing a new agreggation %q", err)
+	}
+	return nil
+}
+
 // GetAgenciesCount Return the Agencies amount
 func (c *Client) GetAgenciesCount() (int64, error) {
 	count, err := c.Db.GetAgenciesCount()

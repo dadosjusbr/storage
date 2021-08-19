@@ -17,6 +17,7 @@ type collection interface {
 	CountDocuments(ctx context.Context, filter interface{}, opts ...*options.CountOptions) (int64, error)
 	FindOne(ctx context.Context, filter interface{}, opts ...*options.FindOneOptions) *mongo.SingleResult
 	Aggregate(ctx context.Context, pipeline interface{}, opts ...*options.AggregateOptions) (*mongo.Cursor, error)
+	InsertOne(ctx context.Context, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error)
 }
 
 //the GeneralMonthlyInfo is used to struct the agregation used to get the remuneration info from all angencies in a given month
@@ -44,16 +45,21 @@ type DBClient struct {
 	dbName         string
 	monthlyInfoCol string
 	agencyCol      string
+	packageCol     string
 	col            collection
 }
 
 //NewDBClient instantiates a mongo new client, but will not connect to the specified URL. Please use Client.Connect before using the client.
-func NewDBClient(url, dbName, monthlyInfoCol, agencyCol string) (*DBClient, error) {
+func NewDBClient(url, dbName, monthlyInfoCol, agencyCol string, packageCol string) (*DBClient, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(url))
 	if err != nil {
 		return nil, err
 	}
-	return &DBClient{mgoClient: client, dbName: dbName, monthlyInfoCol: monthlyInfoCol, agencyCol: agencyCol}, nil
+	return &DBClient{mgoClient: client,
+		dbName:         dbName,
+		monthlyInfoCol: monthlyInfoCol,
+		agencyCol:      agencyCol,
+		packageCol:     packageCol}, nil
 }
 
 //Connect establishes a connection to MongoDB using the previously specified URL
@@ -268,4 +274,19 @@ func (c *DBClient) GetRemunerationSummary() (*RemmunerationSummary, error) {
 		r.Decode(&result)
 	}
 	return &RemmunerationSummary{Count: result.Count, Value: result.Others + result.Perks + result.Wage}, nil
+}
+
+//GetAggregation return an aggregation who attends the given params
+func (c *DBClient) GetPackage(pkgOpts PackageFilterOpts) (*Package, error) {
+	c.Collection(c.packageCol)
+	var pkg Package
+	err := c.col.FindOne(context.TODO(), bson.D{{
+		Key: "aid", Value: pkgOpts.AgencyID},
+		{Key: "year", Value: pkgOpts.Year},
+		{Key: "month", Value: pkgOpts.Month},
+		{Key: "group", Value: pkgOpts.Group}}).Decode(&pkg)
+	if err != nil {
+		return nil, fmt.Errorf("Error searching for datapackage: %q", err)
+	}
+	return &pkg, nil
 }
