@@ -60,7 +60,7 @@ func (c *Client) Store(agmi AgencyMonthlyInfo) error {
 }
 
 // Store stores an package in the database.
-func (c *Client) StoreAgreggation(newPackage Package) error {
+func (c *Client) StorePackage(newPackage Package) error {
 	c.Db.Collection(c.Db.packageCol)
 	_, err := c.Db.col.InsertOne(context.TODO(),
 		bson.D{
