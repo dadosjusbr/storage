@@ -277,7 +277,7 @@ func (c *DBClient) GetRemunerationSummary() (*RemmunerationSummary, error) {
 }
 
 //GetAggregation return an aggregation who attends the given params
-func (c *DBClient) GetAgreggation(pkgOpts PackageFilterOpts) (*Package, error) {
+func (c *DBClient) GetPackage(pkgOpts PackageFilterOpts) (*Package, error) {
 	c.Collection(c.packageCol)
 	var pkg Package
 	err := c.col.FindOne(context.TODO(), bson.D{{
