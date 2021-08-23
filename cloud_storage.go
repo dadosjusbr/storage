@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/ncw/swift"
 )
@@ -33,7 +34,9 @@ func (cloud *CloudClient) UploadFile(srcPath string, dstFolder string) (*Backup,
 		return nil, fmt.Errorf("error Opening file at %s: %v", f.Name(), err)
 	}
 	defer f.Close()
-	dstPath := filepath.Join(dstFolder, filepath.Base(srcPath))
+	d := filepath.Join(dstFolder, filepath.Base(srcPath))
+	// this varaiable exists because we need to format the file path to something who swift can understand
+	dstPath := strings.Replace(d, "\\", "/", -1)
 	headers, err := cloud.conn.ObjectPut(cloud.container, dstPath, f, true, "", "", nil)
 	if err != nil {
 		return nil, fmt.Errorf("error trying to upload file at %s to storage: %v\nHeaders: %v", dstPath, err, headers)
