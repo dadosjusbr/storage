@@ -146,7 +146,9 @@ func (c *DBClient) GetAllAgencies() ([]Agency, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Error while indexing Agencies: %q", err)
 	}
-	agCursor.All(context.TODO(), &agencies)
+	if err := agCursor.All(context.TODO(), &agencies); err != nil {
+		return nil, fmt.Errorf("Error while indexing Agencies: %q", err)
+	}
 	return agencies, nil
 }
 
