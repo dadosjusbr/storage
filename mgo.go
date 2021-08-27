@@ -138,6 +138,20 @@ func (c *DBClient) GetAgency(aid string) (*Agency, error) {
 	return &Ag, nil
 }
 
+// GetAllAgencies returns all agencies from AG collection
+func (c *DBClient) GetAllAgencies() ([]Agency, error) {
+	c.Collection(c.agencyCol)
+	var agencies []Agency
+	agCursor, err := c.col.Find(context.TODO(), bson.D{})
+	if err != nil {
+		return nil, fmt.Errorf("Error while indexing Agencies: %q", err)
+	}
+	if err := agCursor.All(context.TODO(), &agencies); err != nil {
+		return nil, fmt.Errorf("Error while indexing Agencies: %q", err)
+	}
+	return agencies, nil
+}
+
 //GetMonthlyInfo return summarized monthlyInfo for each agency in agencies in a specific year
 func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]AgencyMonthlyInfo, error) {
 	var result = make(map[string][]AgencyMonthlyInfo)
