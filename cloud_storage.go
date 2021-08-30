@@ -31,7 +31,7 @@ func (cloud *CloudClient) UploadFile(srcPath string, dstFolder string) (*Backup,
 
 	f, err := os.Open(srcPath)
 	if err != nil {
-		return nil, fmt.Errorf("error Opening file at %s: %v", f.Name(), err)
+		return nil, fmt.Errorf("error Opening file at %s: %v", srcPath, err)
 	}
 	defer f.Close()
 	d := filepath.Join(dstFolder, filepath.Base(srcPath))
