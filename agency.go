@@ -16,9 +16,8 @@
 package storage
 
 import (
-	"time"
-
-	"github.com/dadosjusbr/coletores"
+	"github.com/dadosjusbr/proto/coleta"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Agency A Struct containing the main descriptions of each Agency.
@@ -33,16 +32,18 @@ type Agency struct {
 
 // AgencyMonthlyInfo A Struct containing a snapshot of a agency in a month.
 type AgencyMonthlyInfo struct {
-	AgencyID          string               `json:"aid,omitempty" bson:"aid,omitempty"`
-	Month             int                  `json:"month,omitempty" bson:"month,omitempty"`
-	Year              int                  `json:"year,omitempty" bson:"year,omitempty"`
-	Backups           []Backup             `json:"backups,omitempty" bson:"backups,omitempty"`
-	Summary           Summaries            `json:"summary,omitempty" bson:"summary,omitempty"`
-	Employee          []coletores.Employee `json:"employee,omitempty" bson:"employee,omitempty"`
-	Crawler           coletores.Crawler    `json:"crawler,omitempty" bson:"crawler,omitempty"`
-	CrawlingTimestamp time.Time            `json:"ts,omitempty" bson:"ts,omitempty"`             // Crawling moment (always UTC)
-	ProcInfo          *coletores.ProcInfo  `json:"procinfo,omitempty" bson:"procinfo,omitempty"` // Making this a pointer because it should be an optional field due to backwards compatibility.
-	Package           *Backup              `json:"package,omitempty" bson:"package,omitempty"`   // Making this a pointer because it should be an optional field due to backwards compatibility.
+	AgencyID          string                 `json:"aid,omitempty" bson:"aid,omitempty"`
+	Month             int                    `json:"month,omitempty" bson:"month,omitempty"`
+	Year              int                    `json:"year,omitempty" bson:"year,omitempty"`
+	Backups           []Backup               `json:"backups,omitempty" bson:"backups,omitempty"`
+	Summary           Summary                `json:"summary,omitempty" bson:"summary,omitempty"`
+	CrawlerID         string                 `json:"crawlerid,omitempty" bson:"crawlerid,omitempty"`
+	CrawlerVersion    string                 `json:"crawlerver,omitempty" bson:"crawlerver,omitempty"`
+	CrawlerDir        string                 `json:"crawlerdir,omitempty" bson:"crawlerdir,omitempty"`
+	CrawlingTimestamp *timestamppb.Timestamp `json:"ts,omitempty" bson:"ts,omitempty"`             // Crawling moment (always UTC)
+	ProcInfo          *coleta.ProcInfo       `json:"procinfo,omitempty" bson:"procinfo,omitempty"` // Making this a pointer because it should be an optional field due to backwards compatibility.
+	Package           *Backup                `json:"package,omitempty" bson:"package,omitempty"`   // Making this a pointer because it should be an optional field due to backwards compatibility.
+	Meta              *Meta                  `json:"meta,omitempty" bson:"meta,omitempy"`
 }
 
 // Backup contains the URL to download a file and a hash to track if in the future will be changes in the file.
@@ -61,12 +62,10 @@ type Summaries struct {
 
 // Summary A Struct containing summarized  information about a agency/month stats
 type Summary struct {
-	Count           int         `json:"count" bson:"count,omitempty"`   // Number of employees
-	Wage            DataSummary `json:"wage" bson:"wage,omitempty"`     //  Statistics (Max, Min, Median, Total)
-	Perks           DataSummary `json:"perks" bson:"perks,omitempty"`   //  Statistics (Max, Min, Median, Total)
-	Others          DataSummary `json:"others" bson:"others,omitempty"` //  Statistics (Max, Min, Median, Total)
-	IncomeHistogram map[int]int `json:"hist" bson:"hist,omitempty"`
-	Benefits        DataSummary `json:"benefits" bson:"benefits,omitempty"` // Agreggated summary of Perks+Others.
+	Count              int         `json:"count" bson:"count,omitempty"`                             // Number of employees
+	BaseRemuneration   DataSummary `json:"base_remuneration" bson:"base_remuneration,omitempty"`     //  Statistics (Max, Min, Median, Total)
+	OtherRemunerations DataSummary `json:"other_remunerations" bson:"other_remunerations,omitempty"` //  Statistics (Max, Min, Median, Total)
+	IncomeHistogram    map[int]int `json:"hist" bson:"hist,omitempty"`
 }
 
 // DataSummary A Struct containing data summary with statistics.
@@ -75,4 +74,19 @@ type DataSummary struct {
 	Min     float64 `json:"min" bson:"min,omitempty"`
 	Average float64 `json:"avg" bson:"avg,omitempty"`
 	Total   float64 `json:"total" bson:"total,omitempty"`
+}
+
+type Meta struct {
+	NoLoginRequired   bool   `json:"no_login_required,omitempty" bson:"no_login_required,omitempty"`
+	NoCaptchaRequired bool   `json:"no_captcha_required,omitempty" bson:"no_captcha_required,omitempty"`
+	Access            string `json:"access,omitempty" bson:"access,omitempty"`
+	Extension         string `json:"extension,omitempty" bson:"extension,omitempty"`
+	StrictlyTabular   bool   `json:"strictly_tabular,omitempty" bson:"strictly_tabular,omitempty"`
+	ConsistentFormat  bool   `json:"consistent_format,omitempty" bson:"consistent_format,omitempty"`
+	HaveEnrollment    bool   `json:"have_enrollment,omitempty" bson:"have_enrollment,omitempty"`
+	ThereIsACapacity  bool   `json:"there_is_a_capacity,omitempty" bson:"there_is_a_capacity,omitempty"`
+	HasPosition       bool   `json:"has_position,omitempty" bson:"has_position,omitempty"`
+	BaseRevenue       string `json:"base_revenue,omitempty" bson:"base_revenue,omitempty"`
+	OtherRecipes      string `json:"other_recipes,omitempty" bson:"other_recipes,omitempty"`
+	Expenditure       string `json:"expenditure,omitempty" bson:"expenditure,omitempty"`
 }
