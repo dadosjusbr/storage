@@ -31,19 +31,21 @@ type Agency struct {
 }
 
 // AgencyMonthlyInfo A Struct containing a snapshot of a agency in a month.
+
 type AgencyMonthlyInfo struct {
 	AgencyID          string                 `json:"aid,omitempty" bson:"aid,omitempty"`
 	Month             int                    `json:"month,omitempty" bson:"month,omitempty"`
 	Year              int                    `json:"year,omitempty" bson:"year,omitempty"`
 	Backups           []Backup               `json:"backups,omitempty" bson:"backups,omitempty"`
 	Summary           Summary                `json:"summary,omitempty" bson:"summary,omitempty"`
-	CrawlerID         string                 `json:"crawlerid,omitempty" bson:"crawlerid,omitempty"`
-	CrawlerVersion    string                 `json:"crawlerver,omitempty" bson:"crawlerver,omitempty"`
-	CrawlerDir        string                 `json:"crawlerdir,omitempty" bson:"crawlerdir,omitempty"`
-	CrawlingTimestamp *timestamppb.Timestamp `json:"ts,omitempty" bson:"ts,omitempty"`             // Crawling moment (always UTC)
-	ProcInfo          *coleta.ProcInfo       `json:"procinfo,omitempty" bson:"procinfo,omitempty"` // Making this a pointer because it should be an optional field due to backwards compatibility.
-	Package           *Backup                `json:"package,omitempty" bson:"package,omitempty"`   // Making this a pointer because it should be an optional field due to backwards compatibility.
+	CrawlerID         string                 `json:"crawler_id,omitempty" bson:"crawler_id,omitempty"`
+	CrawlerVersion    string                 `json:"crawler_version,omitempty" bson:"crawler_version,omitempty"`
+	CrawlerDir        string                 `json:"crawler_dir,omitempty" bson:"crawler_dir,omitempty"`
+	CrawlingTimestamp *timestamppb.Timestamp `json:"crawling_ts,omitempty" bson:"crawling_ts,omitempty"` // Crawling moment (always UTC)
+	ProcInfo          *coleta.ProcInfo       `json:"procinfo,omitempty" bson:"procinfo,omitempty"`       // Making this a pointer because it should be an optional field due to backwards compatibility.
+	Package           *Backup                `json:"package,omitempty" bson:"package,omitempty"`         // Making this a pointer because it should be an optional field due to backwards compatibility.
 	Meta              *Meta                  `json:"meta,omitempty" bson:"meta,omitempy"`
+	ExectionTime      float64                `json:"exection_time,omitempty" bson:"exection_time,omitempty"`
 }
 
 // Backup contains the URL to download a file and a hash to track if in the future will be changes in the file.
