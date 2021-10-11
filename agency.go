@@ -41,9 +41,10 @@ type AgencyMonthlyInfo struct {
 	CrawlerID         string                 `json:"crawler_id,omitempty" bson:"crawler_id,omitempty"`
 	CrawlerVersion    string                 `json:"crawler_version,omitempty" bson:"crawler_version,omitempty"`
 	CrawlerDir        string                 `json:"crawler_dir,omitempty" bson:"crawler_dir,omitempty"`
-	CrawlingTimestamp *timestamppb.Timestamp `json:"crawling_ts,omitempty" bson:"crawling_ts,omitempty"` // Crawling moment (always UTC)
-	ProcInfo          *coleta.ProcInfo       `json:"procinfo,omitempty" bson:"procinfo,omitempty"`       // Making this a pointer because it should be an optional field due to backwards compatibility.
-	Package           *Backup                `json:"package,omitempty" bson:"package,omitempty"`         // Making this a pointer because it should be an optional field due to backwards compatibility.
+	CrawlerRepo       string                 `json:"crawler_repo,omitempty" bson:"crawler_repo,omitempty"` // The github Repository of MI Crawler
+	CrawlingTimestamp *timestamppb.Timestamp `json:"crawling_ts,omitempty" bson:"crawling_ts,omitempty"`   // Crawling moment (always UTC)
+	ProcInfo          *coleta.ProcInfo       `json:"procinfo,omitempty" bson:"procinfo,omitempty"`         // Making this a pointer because it should be an optional field due to backwards compatibility.
+	Package           *Backup                `json:"package,omitempty" bson:"package,omitempty"`           // Making this a pointer because it should be an optional field due to backwards compatibility.
 	Meta              *Meta                  `json:"meta,omitempty" bson:"meta,omitempy"`
 	ExectionTime      float64                `json:"exection_time,omitempty" bson:"exection_time,omitempty"`
 }
