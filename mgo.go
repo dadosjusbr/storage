@@ -22,11 +22,10 @@ type collection interface {
 
 //the GeneralMonthlyInfo is used to struct the agregation used to get the remuneration info from all angencies in a given month
 type GeneralMonthlyInfo struct {
-	Month  int     `json:"_id,omitempty" bson:"_id,omitempty"`
-	Wage   float64 `json:"wage,omitempty" bson:"wage,omitempty"`
-	Perks  float64 `json:"perks,omitempty" bson:"perks,omitempty"`
-	Others float64 `json:"others,omitempty" bson:"others,omitempty"`
-	Count  int     `json:"count,omitempty" bson:"count,omitempty"`
+	Month              int     `json:"_id,omitempty" bson:"_id,omitempty"`
+	Count              int     `json:"count" bson:"count,omitempty"`                             // Number of employees
+	BaseRemuneration   float64 `json:"base_remuneration" bson:"base_remuneration,omitempty"`     //  Statistics (Max, Min, Median, Total)
+	OtherRemunerations float64 `json:"other_remunerations" bson:"other_remunerations,omitempty"` //  Statistics (Max, Min, Median, Total)
 }
 
 type RemmunerationSummary struct {
@@ -219,13 +218,12 @@ func (c *DBClient) GetGeneralMonthlyInfosFromYear(year int) ([]GeneralMonthlyInf
 			bson.D{{"$group",
 				bson.D{
 					{"_id", "$month"},
-					{"wage", bson.D{{"$sum", "$summary.memberactive.wage.total"}}},
-					{"perks", bson.D{{"$sum", "$summary.memberactive.perks.total"}}},
-					{"others", bson.D{{"$sum", "$summary.memberactive.others.total"}}},
-					{"count", bson.D{{"$sum", "$summary.memberactive.count"}}}}}},
+					{"base_remuneration", bson.D{{"$sum", "$summary.base_remuneration.total"}}},
+					{"other_remunerations", bson.D{{"$sum", "$summary.other_remunerations.total"}}},
+					{"count", bson.D{{"$sum", "$summary.count"}}}}}},
 			bson.D{{"$sort",
 				bson.D{
-					{"month", 1}}}}})
+					{"_id", 1}}}}})
 	if err != nil {
 		return nil, fmt.Errorf("Error in GetMonthlyInfo %v", err)
 	}
@@ -271,23 +269,21 @@ func (c *DBClient) GetRemunerationSummary() (*RemmunerationSummary, error) {
 		mongo.Pipeline{bson.D{{"$group",
 			bson.D{
 				{"_id", ""},
-				{"wage", bson.D{{"$sum", "$summary.memberactive.wage.total"}}},
-				{"perks", bson.D{{"$sum", "$summary.memberactive.perks.total"}}},
-				{"others", bson.D{{"$sum", "$summary.memberactive.others.total"}}},
-				{"count", bson.D{{"$sum", "$summary.memberactive.count"}}}}}}})
+				{"base_remuneration", bson.D{{"$sum", "$summary.base_remuneration.total"}}},
+				{"other_remunerations", bson.D{{"$sum", "$summary.other_remunerations.total"}}},
+				{"count", bson.D{{"$sum", "$summary.count"}}}}}}})
 	if err != nil {
 		return nil, fmt.Errorf("Error in GetGeneralRemunerationValue %v", err)
 	}
 	var result struct {
-		Wage   float64 `bson:"wage,omitempty"`
-		Perks  float64 `bson:"perks,omitempty"`
-		Others float64 `bson:"others,omitempty"`
-		Count  int     `bson:"count,omitempty"`
+		BaseRemuneration   float64 `json:"base_remuneration" bson:"base_remuneration,omitempty"`     //  Statistics (Max, Min, Median, Total)
+		OtherRemunerations float64 `json:"other_remunerations" bson:"other_remunerations,omitempty"` //  Statistics (Max, Min, Median, Total)
+		Count              int     `bson:"count,omitempty"`
 	}
 	if r.Next(context.TODO()) {
 		r.Decode(&result)
 	}
-	return &RemmunerationSummary{Count: result.Count, Value: result.Others + result.Perks + result.Wage}, nil
+	return &RemmunerationSummary{Count: result.Count, Value: result.BaseRemuneration + result.OtherRemunerations}, nil
 }
 
 //GetAggregation return an aggregation who attends the given params
