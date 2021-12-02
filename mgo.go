@@ -239,7 +239,7 @@ func (c *DBClient) GetFirstDateWithMonthlyInfo() (int, int, error) {
 	firstDateQueryOptions := options.FindOne().SetSort(bson.D{{Key: "year", Value: +1}, {Key: "month", Value: +1}})
 	err := c.col.FindOne(
 		context.TODO(),
-		bson.D{}, firstDateQueryOptions).Decode(&resultMonthly)
+		bson.D{{"month", bson.M{"$exists": true}}}, firstDateQueryOptions).Decode(&resultMonthly)
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
 		return 0, 0, fmt.Errorf("Error in result %v", err)
@@ -254,7 +254,7 @@ func (c *DBClient) GetLastDateWithMonthlyInfo() (int, int, error) {
 	lastDateQueryOptions := options.FindOne().SetSort(bson.D{{Key: "year", Value: -1}, {Key: "month", Value: -1}})
 	err := c.col.FindOne(
 		context.TODO(),
-		bson.D{}, lastDateQueryOptions).Decode(&resultMonthly)
+		bson.D{{"month", bson.M{"$exists": true}}}, lastDateQueryOptions).Decode(&resultMonthly)
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
 		return 0, 0, fmt.Errorf("Error in result %v", err)
