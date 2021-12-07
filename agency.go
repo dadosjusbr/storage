@@ -93,3 +93,9 @@ type Meta struct {
 	OtherRecipes      string `json:"other_recipes,omitempty" bson:"other_recipes,omitempty"`
 	Expenditure       string `json:"expenditure,omitempty" bson:"expenditure,omitempty"`
 }
+
+type Score struct {
+	Score             float64 `json:"score,omitempty"`
+	CompletenessScore float64 `json:"completeness_score,omitempty"`
+	EasinessScore     float64 `json:"easiness_score,omitempty"`
+}
