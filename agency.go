@@ -46,6 +46,7 @@ type AgencyMonthlyInfo struct {
 	ProcInfo          *coleta.ProcInfo       `json:"procinfo,omitempty" bson:"procinfo,omitempty"`         // Making this a pointer because it should be an optional field due to backwards compatibility.
 	Package           *Backup                `json:"package,omitempty" bson:"package,omitempty"`           // Making this a pointer because it should be an optional field due to backwards compatibility.
 	Meta              *Meta                  `json:"meta,omitempty" bson:"meta,omitempy"`
+	Score             *Score                 `json:"score,omitempty" bson:"score,omitempy"`
 	ExectionTime      float64                `json:"exection_time,omitempty" bson:"exection_time,omitempty"`
 }
 
