@@ -3,9 +3,11 @@ package storage
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -61,6 +63,8 @@ func NewDBClient(url, dbName, monthlyInfoCol, agencyCol string, packageCol strin
 		packageCol:     packageCol}, nil
 }
 
+var landingPageFilter = bson.M{"aid": bson.M{"$regex": primitive.Regex{Pattern: "^tj", Options: "i"}}}
+
 //Connect establishes a connection to MongoDB using the previously specified URL
 func (c *DBClient) Connect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
@@ -95,7 +99,7 @@ func (c *DBClient) GetOPE(uf string, year int) ([]Agency, map[string][]AgencyMon
 // GetAgenciesCount Return the Agencies amount
 func (c *DBClient) GetAgenciesCount() (int64, error) {
 	c.Collection(c.agencyCol)
-	itemCount, err := c.col.CountDocuments(context.TODO(), bson.D{}, nil)
+	itemCount, err := c.col.CountDocuments(context.TODO(), landingPageFilter, nil)
 	if err != nil {
 		return itemCount, fmt.Errorf("Error in result %v", err)
 	}
@@ -105,7 +109,7 @@ func (c *DBClient) GetAgenciesCount() (int64, error) {
 // GetNumberOfMonthsCollected Return the number of months collected
 func (c *DBClient) GetNumberOfMonthsCollected() (int64, error) {
 	c.Collection(c.monthlyInfoCol)
-	itemCount, err := c.col.CountDocuments(context.TODO(), bson.D{}, nil)
+	itemCount, err := c.col.CountDocuments(context.TODO(), landingPageFilter, nil)
 	if err != nil {
 		return itemCount, fmt.Errorf("Error in result %v", err)
 	}
@@ -265,23 +269,28 @@ func (c *DBClient) GetLastDateWithMonthlyInfo() (int, int, error) {
 //GetRemunerationSummary return the amount  of remuneration records from all agencies and the final remuneration value
 func (c *DBClient) GetRemunerationSummary() (*RemmunerationSummary, error) {
 	c.Collection(c.monthlyInfoCol)
-	r, err := c.col.Aggregate(context.TODO(),
-		mongo.Pipeline{bson.D{{"$group",
-			bson.D{
-				{"_id", ""},
-				{"base_remuneration", bson.D{{"$sum", "$summary.base_remuneration.total"}}},
-				{"other_remunerations", bson.D{{"$sum", "$summary.other_remunerations.total"}}},
-				{"count", bson.D{{"$sum", "$summary.count"}}}}}}})
+	// NOTA: Não estamos usando a função de agregação do mongo pois a camada gratuita do Atlas não
+	// permite a utilização de filtros enquanto estamos agregando.
+	var amis []AgencyMonthlyInfo
+	resultMonthly, err := c.col.Find(
+		context.TODO(), landingPageFilter,
+		options.Find().SetProjection(bson.D{{Key: "summary", Value: 1}}))
 	if err != nil {
-		return nil, fmt.Errorf("Error in GetGeneralRemunerationValue %v", err)
+		return nil, fmt.Errorf("error querying data: %q", err)
+	}
+	if err := resultMonthly.All(context.TODO(), &amis); err != nil {
+		log.Printf("Error querying data: %q", err)
+		return nil, fmt.Errorf("error querying data: %q", err)
 	}
 	var result struct {
 		BaseRemuneration   float64 `json:"base_remuneration" bson:"base_remuneration,omitempty"`     //  Statistics (Max, Min, Median, Total)
 		OtherRemunerations float64 `json:"other_remunerations" bson:"other_remunerations,omitempty"` //  Statistics (Max, Min, Median, Total)
 		Count              int     `bson:"count,omitempty"`
 	}
-	if r.Next(context.TODO()) {
-		r.Decode(&result)
+	for _, ami := range amis {
+		result.Count++
+		result.BaseRemuneration += ami.Summary.BaseRemuneration.Total
+		result.OtherRemunerations += ami.Summary.OtherRemunerations.Total
 	}
 	return &RemmunerationSummary{Count: result.Count, Value: result.BaseRemuneration + result.OtherRemunerations}, nil
 }
