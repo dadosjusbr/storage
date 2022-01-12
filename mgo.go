@@ -119,14 +119,14 @@ func (c *DBClient) GetNumberOfMonthsCollected() (int64, error) {
 //GetAgencies Return UF Agencies
 func (c *DBClient) GetAgencies(uf string) ([]Agency, error) {
 	c.Collection(c.agencyCol)
-	resultAgencies, err := c.col.Find(context.TODO(), bson.D{{Key: "uf", Value: uf}}, nil)
+	resultAgencies, err := c.col.Find(context.TODO(), bson.M{"$and": []bson.M{landingPageFilter, {"uf": uf}}}, nil)
 	if err != nil {
-		return nil, fmt.Errorf("Find error in getAgencies %v", err)
+		return nil, fmt.Errorf("error in getAgencies %v", err)
 	}
 	var allAgencies []Agency
 	resultAgencies.All(context.TODO(), &allAgencies)
 	if err := resultAgencies.Err(); err != nil {
-		return nil, fmt.Errorf("Error in result %v", err)
+		return nil, fmt.Errorf("error in getAgencies %v", err)
 	}
 	return allAgencies, nil
 }
