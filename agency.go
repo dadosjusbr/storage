@@ -96,7 +96,7 @@ type Meta struct {
 }
 
 type Score struct {
-	Score             float64 `json:"score,omitempty"`
-	CompletenessScore float64 `json:"completeness_score,omitempty"`
-	EasinessScore     float64 `json:"easiness_score,omitempty"`
+	Score             float64 `json:"score,omitempty" bson:"score,omitempty"`
+	CompletenessScore float64 `json:"completeness_score,omitempty" bson:"completeness_score,omitempty"`
+	EasinessScore     float64 `json:"easiness_score,omitempty" bson:"easiness_score,omitempty"`
 }
