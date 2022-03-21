@@ -200,13 +200,16 @@ func (c *DBClient) GetOMA(month int, year int, agency string) (*AgencyMonthlyInf
 	c.Collection(c.monthlyInfoCol)
 	var resultMonthly AgencyMonthlyInfo
 	err := c.col.FindOne(context.TODO(), bson.D{{Key: "aid", Value: agency}, {Key: "year", Value: year}, {Key: "month", Value: month}}).Decode(&resultMonthly)
-	if err != nil {
-		// ErrNoDocuments means that the filter did not match any documents in the collection
+	// ErrNoDocuments means that the filter did not match any documents in the collection
+	if err == mongo.ErrNoDocuments {
 		return nil, nil, ErrNothingFound
+	}
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not fetch AGMI information from bd: %w", err)
 	}
 	agencyObject, err := c.GetAgency(agency)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Error in GetAgency %v", err)
+		return nil, nil, fmt.Errorf("error in GetAgency: %w", err)
 	}
 	return &resultMonthly, agencyObject, nil
 }
