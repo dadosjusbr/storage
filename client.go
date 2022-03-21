@@ -40,10 +40,14 @@ func (c *Client) GetOPE(Uf string, Year int) ([]Agency, map[string][]AgencyMonth
 // GetOMA Connect to db to collect data for a month including all employees
 func (c *Client) GetOMA(month int, year int, agency string) (*AgencyMonthlyInfo, *Agency, error) {
 	agsMR, agencyObj, err := c.Db.GetOMA(month, year, agency)
-	if err != nil {
-		return nil, nil, fmt.Errorf("GetOMA() error: %q", err)
+	if err == nil {
+		return agsMR, agencyObj, err
 	}
-	return agsMR, agencyObj, err
+	// It is important to let API users know when there no record/doc has been found.
+	if err == ErrNothingFound {
+		return nil, nil, err
+	}
+	return nil, nil, fmt.Errorf("error in GetOMA: %q", err)
 }
 
 // Store stores the Agency Monthly Info stats.
