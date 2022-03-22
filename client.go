@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -52,13 +53,31 @@ func (c *Client) GetOMA(month int, year int, agency string) (*AgencyMonthlyInfo,
 
 // Store stores the Agency Monthly Info stats.
 func (c *Client) Store(agmi AgencyMonthlyInfo) error {
-	if c.Db.col == nil {
-		return fmt.Errorf("missing collection")
+	// TODO: avaliar a necessidade de utilizar transações.
+
+	// Armazenando sempre duas cópias no novo item. Tomamos a decisão de
+	// armazenar uma cópia para evitar a complexidade e a perda de desempenho de
+	// gerenciar a manutenção de apenas uma cópia entre as coleções (tirar de uma
+	// coleção e colocar em outra).
+
+	// ## Armazenando versão corrente
+	c.Db.Collection(c.Db.monthlyInfoCol)
+	key := bson.D{{Key: "aid", Value: agmi.AgencyID}, {Key: "year", Value: agmi.Year}, {Key: "month", Value: agmi.Month}}
+	opts := options.Replace().SetUpsert(true)
+	if _, err := c.Db.col.ReplaceOne(context.TODO(), key, agmi, opts); err != nil {
+		return fmt.Errorf("error trying to update current monthly info with value {%v}: %q", agmi, err)
 	}
-	var err error
-	_, err = c.Db.col.ReplaceOne(context.TODO(), bson.D{{Key: "aid", Value: agmi.AgencyID}, {Key: "year", Value: agmi.Year}, {Key: "month", Value: agmi.Month}}, agmi, options.Replace().SetUpsert(true))
-	if err != nil {
-		return fmt.Errorf("error trying to update mongodb with value {%v}: %q", agmi, err)
+	// ## Armazenando revisão.
+	c.Db.Collection(c.Db.revCol)
+	rev := MonthlyInfoVersion{
+		AgencyID:  agmi.AgencyID,
+		Month:     agmi.Month,
+		Year:      agmi.Year,
+		VersionID: time.Now().Unix(),
+		Version:   agmi,
+	}
+	if _, err := c.Db.col.InsertOne(context.TODO(), rev); err != nil {
+		return fmt.Errorf("error trying to insert monthly info revision with value {%v}: %q", agmi, err)
 	}
 	return nil
 }

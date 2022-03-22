@@ -47,11 +47,12 @@ type DBClient struct {
 	monthlyInfoCol string
 	agencyCol      string
 	packageCol     string
+	revCol         string
 	col            collection
 }
 
 //NewDBClient instantiates a mongo new client, but will not connect to the specified URL. Please use Client.Connect before using the client.
-func NewDBClient(url, dbName, monthlyInfoCol, agencyCol string, packageCol string) (*DBClient, error) {
+func NewDBClient(url, dbName, monthlyInfoCol, agencyCol string, packageCol string, revCol string) (*DBClient, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(url))
 	if err != nil {
 		return nil, err
@@ -60,7 +61,8 @@ func NewDBClient(url, dbName, monthlyInfoCol, agencyCol string, packageCol strin
 		dbName:         dbName,
 		monthlyInfoCol: monthlyInfoCol,
 		agencyCol:      agencyCol,
-		packageCol:     packageCol}, nil
+		packageCol:     packageCol,
+		revCol:         revCol}, nil
 }
 
 var landingPageFilter = bson.M{"aid": bson.M{"$regex": primitive.Regex{Pattern: "^tj", Options: "i"}}}

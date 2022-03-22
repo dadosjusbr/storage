@@ -100,3 +100,12 @@ type Score struct {
 	CompletenessScore float64 `json:"completeness_score,omitempty" bson:"completeness_score,omitempty"`
 	EasinessScore     float64 `json:"easiness_score,omitempty" bson:"easiness_score,omitempty"`
 }
+
+// MonthlyInfoVersion é um item do histórico de coletas armazenado no banco de dados.
+type MonthlyInfoVersion struct {
+	AgencyID  string            `json:"aid,omitempty" bson:"aid,omitempty"`
+	Month     int               `json:"month,omitempty" bson:"month,omitempty"`
+	Year      int               `json:"year,omitempty" bson:"year,omitempty"`
+	VersionID int64             `json:"version_id,omitempty" bson:"version_id,omitempty"` // revisão/versão do irem. O tipo é int64 pois podemos querer usar epoch para ficar mais simples.
+	Version   AgencyMonthlyInfo `json:"version,omitempty" bson:"version,omitempty"`
+}
