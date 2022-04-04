@@ -82,18 +82,32 @@ func (c *Client) Store(agmi AgencyMonthlyInfo) error {
 	return nil
 }
 
-// Store stores an package in the database.
+// StorePackage update an package in the database.
 func (c *Client) StorePackage(newPackage Package) error {
 	c.Db.Collection(c.Db.packageCol)
-	_, err := c.Db.col.InsertOne(context.TODO(),
-		bson.D{
-			{Key: "aid", Value: newPackage.AgencyID},
-			{Key: "group", Value: newPackage.Group},
-			{Key: "month", Value: newPackage.Month},
-			{Key: "year", Value: newPackage.Year},
-			{Key: "package", Value: newPackage.Package}})
+	filter := bson.M{
+		"aid": bson.M{
+			"$eq": newPackage.AgencyID,
+		},
+		"month": bson.M{
+			"$eq": newPackage.Month,
+		},
+		"year": bson.M{
+			"$eq": newPackage.Year,
+		},
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"aid":     newPackage.AgencyID,
+			"group":   newPackage.Group,
+			"month":   newPackage.Month,
+			"year":    newPackage.Year,
+			"package": newPackage.Package,
+		},
+	}
+	_, err := c.Db.col.ReplaceOne(context.TODO(), filter, update)
 	if err != nil {
-		return fmt.Errorf("error while storing a new agreggation %q", err)
+		return fmt.Errorf("error while updating a agreggation: %q", err)
 	}
 	return nil
 }
