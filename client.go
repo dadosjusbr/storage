@@ -97,13 +97,11 @@ func (c *Client) StorePackage(newPackage Package) error {
 		},
 	}
 	update := bson.M{
-		"$set": bson.M{
-			"aid":     newPackage.AgencyID,
-			"group":   newPackage.Group,
-			"month":   newPackage.Month,
-			"year":    newPackage.Year,
-			"package": newPackage.Package,
-		},
+		"aid":     newPackage.AgencyID,
+		"group":   newPackage.Group,
+		"month":   newPackage.Month,
+		"year":    newPackage.Year,
+		"package": newPackage.Package,
 	}
 	_, err := c.Db.col.ReplaceOne(context.TODO(), filter, update)
 	if err != nil {
