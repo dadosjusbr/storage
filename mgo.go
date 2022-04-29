@@ -154,6 +154,9 @@ func (c *DBClient) GetAllAgencies() ([]Agency, error) {
 	if err := agCursor.All(context.TODO(), &agencies); err != nil {
 		return nil, fmt.Errorf("Error while indexing Agencies: %q", err)
 	}
+	for i := range agencies {
+		agencies[i].FlagURL = "v1/orgao/" + agencies[i].ID
+	}
 	return agencies, nil
 }
 
