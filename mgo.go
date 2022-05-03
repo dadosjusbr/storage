@@ -65,7 +65,7 @@ func NewDBClient(url, dbName, monthlyInfoCol, agencyCol string, packageCol strin
 		revCol:         revCol}, nil
 }
 
-var landingPageFilter = bson.M{"aid": bson.M{"$regex": primitive.Regex{Pattern: "^tj", Options: "i"}}}
+var landingPageFilter = bson.M{"aid": bson.M{"$regex": primitive.Regex{Pattern: "^tj|^mp", Options: "i"}}}
 
 //Connect establishes a connection to MongoDB using the previously specified URL
 func (c *DBClient) Connect() error {
