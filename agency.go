@@ -31,7 +31,7 @@ type Agency struct {
 	Colleting []Collecting `json:"colleting" bson:"colleting,omitempty"`
 }
 
-// Collecting A Struct containing the day we checked or status of the data and the reasons why we didn't collected it.
+// Collecting A Struct containing the day we checked the status of the data and the reasons why we didn't collected it.
 type Collecting struct {
 	Timestamp   int64    `json:"timestamp" bson:"timestamp,omitempty"`     // Day(unix) we checked the status of the data
 	Description []string `json:"description" bson:"description,omitempty"` // Reasons why we didn't collect the data
