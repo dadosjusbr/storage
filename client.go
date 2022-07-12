@@ -86,15 +86,9 @@ func (c *Client) Store(agmi AgencyMonthlyInfo) error {
 func (c *Client) StorePackage(newPackage Package) error {
 	c.Db.Collection(c.Db.packageCol)
 	filter := bson.M{
-		"aid": bson.M{
-			"$eq": newPackage.AgencyID,
-		},
-		"month": bson.M{
-			"$eq": newPackage.Month,
-		},
-		"year": bson.M{
-			"$eq": newPackage.Year,
-		},
+		"aid":   newPackage.AgencyID,
+		"month": newPackage.Month,
+		"year":  newPackage.Year,
 	}
 	update := bson.M{
 		"aid":     newPackage.AgencyID,
@@ -103,7 +97,8 @@ func (c *Client) StorePackage(newPackage Package) error {
 		"year":    newPackage.Year,
 		"package": newPackage.Package,
 	}
-	_, err := c.Db.col.ReplaceOne(context.TODO(), filter, update)
+	opts := options.Replace().SetUpsert(true)
+	_, err := c.Db.col.ReplaceOne(context.TODO(), filter, update, opts)
 	if err != nil {
 		return fmt.Errorf("error while updating a agreggation: %q", err)
 	}
