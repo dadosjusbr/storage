@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -65,8 +64,6 @@ func NewDBClient(url, dbName, monthlyInfoCol, agencyCol string, packageCol strin
 		revCol:         revCol}, nil
 }
 
-var landingPageFilter = bson.M{"aid": bson.M{"$regex": primitive.Regex{Pattern: "^tj|^mp", Options: "i"}}}
-
 //Connect establishes a connection to MongoDB using the previously specified URL
 func (c *DBClient) Connect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
@@ -101,7 +98,7 @@ func (c *DBClient) GetOPE(uf string, year int) ([]Agency, map[string][]AgencyMon
 // GetAgenciesCount Return the Agencies amount
 func (c *DBClient) GetAgenciesCount() (int64, error) {
 	c.Collection(c.agencyCol)
-	itemCount, err := c.col.CountDocuments(context.TODO(), landingPageFilter, nil)
+	itemCount, err := c.col.CountDocuments(context.TODO(), nil, nil)
 	if err != nil {
 		return itemCount, fmt.Errorf("Error in result %v", err)
 	}
@@ -111,7 +108,7 @@ func (c *DBClient) GetAgenciesCount() (int64, error) {
 // GetNumberOfMonthsCollected Return the number of months collected
 func (c *DBClient) GetNumberOfMonthsCollected() (int64, error) {
 	c.Collection(c.monthlyInfoCol)
-	itemCount, err := c.col.CountDocuments(context.TODO(), landingPageFilter, nil)
+	itemCount, err := c.col.CountDocuments(context.TODO(), nil, nil)
 	if err != nil {
 		return itemCount, fmt.Errorf("Error in result %v", err)
 	}
@@ -121,7 +118,7 @@ func (c *DBClient) GetNumberOfMonthsCollected() (int64, error) {
 //GetAgencies Return UF Agencies
 func (c *DBClient) GetAgencies(uf string) ([]Agency, error) {
 	c.Collection(c.agencyCol)
-	resultAgencies, err := c.col.Find(context.TODO(), bson.M{"$and": []bson.M{landingPageFilter, {"uf": uf}}}, nil)
+	resultAgencies, err := c.col.Find(context.TODO(), bson.M{"$and": []bson.M{{"uf": uf}}}, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error in getAgencies %v", err)
 	}
@@ -285,7 +282,7 @@ func (c *DBClient) GetRemunerationSummary() (*RemmunerationSummary, error) {
 	// permite a utilização de filtros enquanto estamos agregando.
 	var amis []AgencyMonthlyInfo
 	resultMonthly, err := c.col.Find(
-		context.TODO(), landingPageFilter,
+		context.TODO(), nil,
 		options.Find().SetProjection(bson.D{{Key: "summary", Value: 1}}))
 	if err != nil {
 		return nil, fmt.Errorf("error querying data: %q", err)
