@@ -98,7 +98,7 @@ func (c *DBClient) GetOPE(uf string, year int) ([]Agency, map[string][]AgencyMon
 // GetAgenciesCount Return the Agencies amount
 func (c *DBClient) GetAgenciesCount() (int64, error) {
 	c.Collection(c.agencyCol)
-	itemCount, err := c.col.CountDocuments(context.TODO(), nil, nil)
+	itemCount, err := c.col.CountDocuments(context.TODO(), bson.D{})
 	if err != nil {
 		return itemCount, fmt.Errorf("Error in result %v", err)
 	}
@@ -108,7 +108,7 @@ func (c *DBClient) GetAgenciesCount() (int64, error) {
 // GetNumberOfMonthsCollected Return the number of months collected
 func (c *DBClient) GetNumberOfMonthsCollected() (int64, error) {
 	c.Collection(c.monthlyInfoCol)
-	itemCount, err := c.col.CountDocuments(context.TODO(), nil, nil)
+	itemCount, err := c.col.CountDocuments(context.TODO(), bson.D{})
 	if err != nil {
 		return itemCount, fmt.Errorf("Error in result %v", err)
 	}
@@ -282,7 +282,7 @@ func (c *DBClient) GetRemunerationSummary() (*RemmunerationSummary, error) {
 	// permite a utilização de filtros enquanto estamos agregando.
 	var amis []AgencyMonthlyInfo
 	resultMonthly, err := c.col.Find(
-		context.TODO(), nil,
+		context.TODO(), bson.D{},
 		options.Find().SetProjection(bson.D{{Key: "summary", Value: 1}}))
 	if err != nil {
 		return nil, fmt.Errorf("error querying data: %q", err)
