@@ -1,22 +1,17 @@
 package storage
 
 import (
-	"context"
 	"fmt"
-	"time"
-
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 //Client is composed by mongoDbClient and Cloud5 client (used for backup).
 type Client struct {
 	Db    *DBClient
-	Cloud *CloudClient
+	Cloud IStorageService
 }
 
 // NewClient NewClient
-func NewClient(db *DBClient, cloud *CloudClient) (*Client, error) {
+func NewClient(db *DBClient, cloud IStorageService) (*Client, error) {
 	c := Client{Db: db, Cloud: cloud}
 	if err := c.Db.Connect(); err != nil {
 		return nil, err
@@ -25,7 +20,7 @@ func NewClient(db *DBClient, cloud *CloudClient) (*Client, error) {
 }
 
 // Close Connection with DB
-func (c *Client) Close(db *DBClient, cloud *CloudClient) error {
+func (c *Client) Close(db *DBClient, cloud IStorageService) error {
 	return c.Db.Disconnect()
 }
 
@@ -53,54 +48,16 @@ func (c *Client) GetOMA(month int, year int, agency string) (*AgencyMonthlyInfo,
 
 // Store stores the Agency Monthly Info stats.
 func (c *Client) Store(agmi AgencyMonthlyInfo) error {
-	// TODO: avaliar a necessidade de utilizar transações.
-
-	// Armazenando sempre duas cópias no novo item. Tomamos a decisão de
-	// armazenar uma cópia para evitar a complexidade e a perda de desempenho de
-	// gerenciar a manutenção de apenas uma cópia entre as coleções (tirar de uma
-	// coleção e colocar em outra).
-
-	// ## Armazenando versão corrente
-	c.Db.Collection(c.Db.monthlyInfoCol)
-	key := bson.D{{Key: "aid", Value: agmi.AgencyID}, {Key: "year", Value: agmi.Year}, {Key: "month", Value: agmi.Month}}
-	opts := options.Replace().SetUpsert(true)
-	if _, err := c.Db.col.ReplaceOne(context.TODO(), key, agmi, opts); err != nil {
-		return fmt.Errorf("error trying to update current monthly info with value {%v}: %q", agmi, err)
-	}
-	// ## Armazenando revisão.
-	c.Db.Collection(c.Db.revCol)
-	rev := MonthlyInfoVersion{
-		AgencyID:  agmi.AgencyID,
-		Month:     agmi.Month,
-		Year:      agmi.Year,
-		VersionID: time.Now().Unix(),
-		Version:   agmi,
-	}
-	if _, err := c.Db.col.InsertOne(context.TODO(), rev); err != nil {
-		return fmt.Errorf("error trying to insert monthly info revision with value {%v}: %q", agmi, err)
+	if err := c.Db.Store(agmi); err != nil {
+		return fmt.Errorf("Store() error: %q", err)
 	}
 	return nil
 }
 
 // StorePackage update an package in the database.
 func (c *Client) StorePackage(newPackage Package) error {
-	c.Db.Collection(c.Db.packageCol)
-	filter := bson.M{
-		"aid":   newPackage.AgencyID,
-		"month": newPackage.Month,
-		"year":  newPackage.Year,
-	}
-	update := bson.M{
-		"aid":     newPackage.AgencyID,
-		"group":   newPackage.Group,
-		"month":   newPackage.Month,
-		"year":    newPackage.Year,
-		"package": newPackage.Package,
-	}
-	opts := options.Replace().SetUpsert(true)
-	_, err := c.Db.col.ReplaceOne(context.TODO(), filter, update, opts)
-	if err != nil {
-		return fmt.Errorf("error while updating a agreggation: %q", err)
+	if err := c.Db.StorePackage(newPackage);err != nil {
+		return fmt.Errorf("StorePackage() error %q", err)
 	}
 	return nil
 }

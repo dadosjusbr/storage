@@ -216,6 +216,56 @@ func (c *DBClient) GetOMA(month int, year int, agency string) (*AgencyMonthlyInf
 	return &resultMonthly, agencyObject, nil
 }
 
+func (c *DBClient) Store(agmi AgencyMonthlyInfo) error {
+	// Armazenando sempre duas cópias no novo item. Tomamos a decisão de
+	// armazenar uma cópia para evitar a complexidade e a perda de desempenho de
+	// gerenciar a manutenção de apenas uma cópia entre as coleções (tirar de uma
+	// coleção e colocar em outra).
+
+	// ## Armazenando versão corrente
+	c.Collection(c.monthlyInfoCol)
+	key := bson.D{{Key: "aid", Value: agmi.AgencyID}, {Key: "year", Value: agmi.Year}, {Key: "month", Value: agmi.Month}}
+	opts := options.Replace().SetUpsert(true)
+	if _, err := c.col.ReplaceOne(context.TODO(), key, agmi, opts); err != nil {
+		return fmt.Errorf("error trying to update current monthly info with value {%v}: %q", agmi, err)
+	}
+	// ## Armazenando revisão.
+	c.Collection(c.revCol)
+	rev := MonthlyInfoVersion{
+		AgencyID:  agmi.AgencyID,
+		Month:     agmi.Month,
+		Year:      agmi.Year,
+		VersionID: time.Now().Unix(),
+		Version:   agmi,
+	}
+	if _, err := c.col.InsertOne(context.TODO(), rev); err != nil {
+		return fmt.Errorf("error trying to insert monthly info revision with value {%v}: %q", agmi, err)
+	}
+	return nil
+}
+
+func (c *DBClient) StorePackage(newPackage Package) error {
+	c.Collection(c.packageCol)
+	filter := bson.M{
+		"aid":   newPackage.AgencyID,
+		"month": newPackage.Month,
+		"year":  newPackage.Year,
+	}
+	update := bson.M{
+		"aid":     newPackage.AgencyID,
+		"group":   newPackage.Group,
+		"month":   newPackage.Month,
+		"year":    newPackage.Year,
+		"package": newPackage.Package,
+	}
+	opts := options.Replace().SetUpsert(true)
+	_, err := c.col.ReplaceOne(context.TODO(), filter, update, opts)
+	if err != nil {
+		return fmt.Errorf("error while updating a agreggation: %q", err)
+	}
+	return nil
+}
+
 //Collection Changes active collection
 func (c *DBClient) Collection(collectionName string) {
 	c.col = c.mgoClient.Database(c.dbName).Collection(collectionName)

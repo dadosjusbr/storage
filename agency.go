@@ -61,6 +61,7 @@ type AgencyMonthlyInfo struct {
 type Backup struct {
 	URL  string `json:"url" bson:"url,omitempty"`
 	Hash string `json:"hash" bson:"hash,omitempty"`
+	Size int64  `json:"size" bson:"size,omitempty"`
 }
 
 // Summaries contains all summary detailed information
