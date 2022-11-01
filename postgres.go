@@ -3,9 +3,12 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"reflect"
 	"time"
 
+	"github.com/dadosjusbr/proto/coleta"
 	_ "github.com/newrelic/go-agent/v3/integrations/nrpq"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/driver/postgres"
@@ -86,22 +89,78 @@ func (p *PostgresDB) Disconnect() error {
 }
 
 func (p *PostgresDB) Store(agmi Coleta) error {
+	var bkpJson string
+	var pkgJson string
+	var procInfoJson string
+	var summaryJson string
+
+	if !reflect.DeepEqual(&agmi.Backup[0], &Backup{}){
+		bkp, err := json.Marshal(agmi.Backup[0])
+		if err != nil {
+			return fmt.Errorf("error marshaling backup: %q", err)
+		}
+		bkpJson = string(bkp)
+	}
+
+	if !reflect.DeepEqual(&agmi.Sumario, &Sumario{}){
+		summary, err := json.Marshal(agmi.Sumario)
+		if err != nil {
+			return fmt.Errorf("error marshaling summary: %q", err)
+		}
+		summaryJson = string(summary)
+	}
+
+	if !reflect.DeepEqual(&agmi.Package, &Package{}){
+		pkg, err := json.Marshal(agmi.Package)
+		if err != nil {
+			return fmt.Errorf("error marshaling package: %q", err)
+		}
+		pkgJson = string(pkg)
+	}
+
+	if !reflect.DeepEqual(&agmi.ProcInfo, coleta.ProcInfo{}){
+		procInfo, err := json.Marshal(agmi.ProcInfo)
+		if err != nil {
+			return fmt.Errorf("error marshaling procInfo: %q",err)
+		}
+		procInfoJson = string(procInfo)
+	}
+
 	err := p.db.Transaction(func(tx *gorm.DB) error {
-		// bkp, err := json.Marshal(agmi.Backup[0])
-		// if err != nil {
-		// 	return fmt.Errorf("error marshaling backup: %q", err)
-		// }
+		if err := tx.Table("coletas").Where("id = ?", agmi.ID).Update("atual", false).Error; err != nil {
+			return fmt.Errorf("error seting 'atual' to false: %q", err)
+		}
 
-		// summary, err := json.Marshal(agmi.Sumario)
-		// if err != nil {
-		// 	return fmt.Errorf("error marshaling summary: %q", err)
-		// }
-		// if err := tx.Table("coletas").Where("id = ?", agmi.ID).Update("atual", false).Error; err != nil {
-		// 	return fmt.Errorf("error seting 'atual' to false: %q", err)
-		// }
-
-		if err := tx.Table("coletas").Create([]interface{}{
-			agmi,
+		if err := tx.Table("coletas").Create(map[string]interface{}{
+			"id": agmi.ID,
+			"ano": agmi.Ano,
+			"mes": agmi.Mes,
+			"id_orgao": agmi.IdOrgao,
+			"timestamp": agmi.Timestamp,
+			"atual":true,
+			"repositorio_coletor": agmi.RepositorioColetor,
+			"versao_coletor": agmi.VersaoColetor,
+			"repositorio_parser": agmi.RepositorioParser,
+			"versao_parser": agmi.VersaoParser,
+			"nao_requer_login": agmi.NaoRequerLogin,
+			"nao_requer_captcha": agmi.NaoRequerCaptcha,
+			"estritamente_tabular": agmi.EstritamenteTabular,
+			"formato_consistente": agmi.FormatoConsistente,
+			"tem_matricula": agmi.TemMatricula,
+			"tem_lotacao": agmi.TemLotacao,
+			"tem_cargo": agmi.TemCargo,
+			"acesso": agmi.Acesso,
+			"extensao": agmi.Extensao,
+			"detalhamento_receita_base": agmi.DetalhamentoReceitaBase,
+			"detalhamento_outras_receitas": agmi.DetalhamentoOutrasReceitas,
+			"detalhamento_descontos": agmi.DetalhamentoDescontos,
+			"indice_completude": agmi.IndiceCompletude,
+			"indice_facilidade": agmi.IndiceFacilidade,
+			"indice_transparencia": agmi.IndiceTransparencia,
+			"backups": bkpJson,
+			"procinfo": procInfoJson,
+			"package": pkgJson,
+			"sumario": summaryJson,
 		}).Error; err != nil {
 			return fmt.Errorf("error inserting 'coleta': %q", err)
 		}
