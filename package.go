@@ -1,15 +1,15 @@
 package storage
 
 type Package struct {
-	AgencyID *string `json:"aid,omitempty" bson:"aid,omitempty"`
-	Month    *int    `json:"month,omitempty" bson:"month,omitempty"`
-	Year     *int    `json:"year,omitempty" bson:"year,omitempty"`
-	Group    *string `json:"group,omitempty" bson:"group,omitempty"`
-	Package  Backup
+	IdOrgao *string `json:"aid,omitempty" bson:"aid,omitempty"`
+	Mes     *int    `json:"mes,omitempty" bson:"month,omitempty"`
+	Ano     *int    `json:"ano,omitempty" bson:"year,omitempty"`
+	Grupo   *string `json:"grupo,omitempty" bson:"group,omitempty"`
+	Package Backup
 }
 type PackageFilterOpts struct {
-	AgencyID *string `json:"aid,omitempty" bson:"aid,omitempty"`
-	Month    *int    `json:"month,omitempty" bson:"month,omitempty"`
-	Year     *int    `json:"year,omitempty" bson:"year,omitempty"`
-	Group    *string `json:"group,omitempty" bson:"group,omitempty"`
+	IdOrgao *string `json:"id_orgao,omitempty" bson:"aid,omitempty"`
+	Mes     *int    `json:"mes,omitempty" bson:"month,omitempty"`
+	Ano     *int    `json:"ano,omitempty" bson:"year,omitempty"`
+	Grupo   *string `json:"grupo,omitempty" bson:"group,omitempty"`
 }

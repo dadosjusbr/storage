@@ -250,15 +250,15 @@ func (c *DBClient) Store(agmi Coleta) error {
 func (c *DBClient) StorePackage(newPackage Package) error {
 	c.Collection(c.packageCol)
 	filter := bson.M{
-		"aid":   newPackage.AgencyID,
-		"month": newPackage.Month,
-		"year":  newPackage.Year,
+		"aid":   newPackage.IdOrgao,
+		"month": newPackage.Mes,
+		"year":  newPackage.Ano,
 	}
 	update := bson.M{
-		"aid":     newPackage.AgencyID,
-		"group":   newPackage.Group,
-		"month":   newPackage.Month,
-		"year":    newPackage.Year,
+		"aid":     newPackage.IdOrgao,
+		"group":   newPackage.Grupo,
+		"month":   newPackage.Mes,
+		"year":    newPackage.Ano,
 		"package": newPackage.Package,
 	}
 	opts := options.Replace().SetUpsert(true)
@@ -362,10 +362,10 @@ func (c *DBClient) GetPackage(pkgOpts PackageFilterOpts) (*Package, error) {
 	c.Collection(c.packageCol)
 	var pkg Package
 	err := c.col.FindOne(context.TODO(), bson.D{{
-		Key: "aid", Value: pkgOpts.AgencyID},
-		{Key: "year", Value: pkgOpts.Year},
-		{Key: "month", Value: pkgOpts.Month},
-		{Key: "group", Value: pkgOpts.Group}}).Decode(&pkg)
+		Key: "aid", Value: pkgOpts.IdOrgao},
+		{Key: "year", Value: pkgOpts.Ano},
+		{Key: "month", Value: pkgOpts.Mes},
+		{Key: "group", Value: pkgOpts.Grupo}}).Decode(&pkg)
 	if err != nil {
 		return nil, fmt.Errorf("Error searching for datapackage: %q", err)
 	}
