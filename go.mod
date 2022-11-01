@@ -18,5 +18,6 @@ require (
 	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/exp v0.0.0-20221026153819-32f3d567a233
 	google.golang.org/protobuf v1.27.1
+	gorm.io/datatypes v1.0.7 // indirect
 	gorm.io/driver/postgres v1.4.5 // indirect
 )

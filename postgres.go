@@ -87,12 +87,23 @@ func (p *PostgresDB) Disconnect() error {
 
 func (p *PostgresDB) Store(agmi Coleta) error {
 	err := p.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(&agmi).Error; err != nil {
-			return fmt.Errorf("error inserting 'coleta': %q", err)
-		}
+		// bkp, err := json.Marshal(agmi.Backup[0])
+		// if err != nil {
+		// 	return fmt.Errorf("error marshaling backup: %q", err)
+		// }
 
-		if err := tx.Model(&Coleta{}).Update("atual", false).Where("id = ?", agmi.ID).Error; err != nil {
-			return fmt.Errorf("error seting 'atual' to false: %q", err)
+		// summary, err := json.Marshal(agmi.Sumario)
+		// if err != nil {
+		// 	return fmt.Errorf("error marshaling summary: %q", err)
+		// }
+		// if err := tx.Table("coletas").Where("id = ?", agmi.ID).Update("atual", false).Error; err != nil {
+		// 	return fmt.Errorf("error seting 'atual' to false: %q", err)
+		// }
+
+		if err := tx.Table("coletas").Create([]interface{}{
+			agmi,
+		}).Error; err != nil {
+			return fmt.Errorf("error inserting 'coleta': %q", err)
 		}
 
 		return nil

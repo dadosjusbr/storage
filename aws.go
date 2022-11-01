@@ -19,7 +19,7 @@ type S3Client struct {
 	bucket   string
 }
 
-func NewS3Client(region string) (*S3Client, error) {
+func NewS3Client(region string, bucket string) (*S3Client, error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(region),
 	})
@@ -27,7 +27,7 @@ func NewS3Client(region string) (*S3Client, error) {
 		return nil, fmt.Errorf("error creating aws session: %w", err)
 	}
 	s3Client := s3.New(sess)
-	return &S3Client{s3: s3Client}, nil
+	return &S3Client{s3: s3Client, bucket: bucket}, nil
 }
 
 func (s S3Client) UploadFile(srcPath string, dstFolder string) (*Backup, error) {
@@ -37,7 +37,6 @@ func (s S3Client) UploadFile(srcPath string, dstFolder string) (*Backup, error) 
 		return nil, fmt.Errorf("Error opening file at %s: %v", srcPath, err)
 	}
 	defer f.Close()
-
 	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(s.bucket),
 		Body:   f,
@@ -53,7 +52,7 @@ func (s S3Client) UploadFile(srcPath string, dstFolder string) (*Backup, error) 
 	}
 	headObjectOutput, err := s.s3.HeadObject(headObjectInput)
 	if err != nil {
-		log.Fatalf("Error getting file metadata from (%s): %q", dstFolder, err)
+		return nil, fmt.Errorf("Error getting file metadata from (%s): %q", dstFolder, err)
 	}
 	backup := &Backup{
 		Size: *headObjectOutput.ContentLength,
@@ -69,9 +68,22 @@ func (s S3Client) Backup(Files []string, dstFolder string) ([]Backup, error) {
 		return []Backup{}, nil
 	}
 	var backups []Backup
-	// for _, value := range Files {
+	bkpFile, err := os.Open(Files[len(Files)-1])
+	if err != nil {
+		return nil, fmt.Errorf("Error opening file at %s: %v", Files[len(Files)-1], err)
+	}
+	defer bkpFile.Close()
 
-	// }
+	uploader := s3manager.NewUploaderWithClient(s.s3)
+	_, err = uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(s.bucket),
+		Body:   bkpFile,
+		Key:    aws.String(dstFolder),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Error trying to upload file in S3 with key (%s): %v", dstFolder, err)
+	}
+
 	headObjectInput := &s3.HeadObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(dstFolder),

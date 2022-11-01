@@ -41,22 +41,24 @@ type Coletando struct {
 
 // Estrutura que contém as informações de uma coleta.
 type Coleta struct {
-	ID                 string           `json:"id" gorm:"column:id"` // 'trt13/01/2020'
-	Timestamp          time.Time        `json:"timestamp,omitempty" bson:"timestamp,omitempty" gorm:"column:timestamp"`
+	ID                 string           `json:"id" bson:"-" gorm:"primaryKey;column:id"` // 'trt13/01/2020'
+	Timestamp          time.Time        `json:"timestamp,omitempty" bson:"-" gorm:"primaryKey;column:timestamp"`
 	IdOrgao            string           `json:"id_orgao,omitempty" bson:"aid,omitempty" gorm:"column:id_orgao"`
 	Mes                int              `json:"mes,omitempty" bson:"month,omitempty" gorm:"column:mes"`
 	Ano                int              `json:"ano,omitempty" bson:"year,omitempty" gorm:"column:ano"`
-	Atual              bool             `json:"atual,omitempty" gorm:"column:atual"`
-	Backup             []Backup         `json:"backups,omitempty" bson:"backups,omitempty" gorm:"column:backups"`
-	Sumario            Sumario         	`json:"sumario,omitempty" bson:"summary,omitempty" gorm:"column:sumario"`
+	Atual              bool             `json:"atual,omitempty" bson:"-" gorm:"column:atual"`
+	Backup             []Backup         `json:"backups,omitempty" bson:"backups,omitempty" gorm:"-"`
+	Sumario            Sumario         	`json:"sumario,omitempty" bson:"summary,omitempty" gorm:"-"` 
 	RepositorioColetor string           `json:"repositorio_coletor,omitempty" bson:"crawler_repo,omitempty" gorm:"column:repositorio_coletor"`
 	VersaoColetor      string           `json:"versao_coletor,omitempty" bson:"crawler_version,omitempty" gorm:"column:versao_coletor"`
 	RepositorioParser  string           `json:"repositorio_parser,omitempty" bson:"parser_repository,omitempty" gorm:"column:repositorio_parser"`
 	VersaoParser       string           `json:"versao_parser,omitempty" bson:"parser_version,omitempty" gorm:"column:versao_parser"`
-	ProcInfo           *coleta.ProcInfo `json:"procinfo,omitempty" bson:"procinfo,omitempty" gorm:"procinfo"`
-	Package            *Backup          `json:"package,omitempty" bson:"package,omitempty" gorm:"package"`
-	Meta               *Meta       			`json:"meta,omitempty" bson:"metadata,omitempty"`
-	Indice             *Indice          `json:"indices,omitempty" bson:"score,omitempty"`
+	ProcInfo           *coleta.ProcInfo `json:"procinfo,omitempty" bson:"procinfo,omitempty" gorm:"-"`
+	Package            *Backup          `json:"package,omitempty" bson:"package,omitempty" gorm:"-"`
+	Meta       													`json:"meta,omitempty" bson:"meta,omitempty"`
+	Indice          										`json:"indices,omitempty" bson:"score,omitempty"`
+	CrawlerID         string            `json:"crawler_id,omitempty" bson:"crawler_id,omitempty" gorm:"-"`
+	CrawlingTimestamp *timestamppb.Timestamp `json:"crawling_ts,omitempty" bson:"crawling_ts,omitempty" gorm:"-"`   // Crawling moment (always UTC)
 }
 
 // Backup contains the URL to download a file and a hash to track if in the future will be changes in the file.
