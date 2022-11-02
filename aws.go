@@ -31,13 +31,18 @@ func NewS3Client(region string, bucket string) (*S3Client, error) {
 }
 
 func (s S3Client) UploadFile(srcPath string, dstFolder string) (*Backup, error) {
+	txn := s.newrelic.StartTransaction("aws.UploadFile")
+	defer txn.End()
+	ctx := newrelic.NewContext(aws.BackgroundContext(), txn)
 	uploader := s3manager.NewUploaderWithClient(s.s3)
+
 	f, err := os.Open(srcPath)
 	if err != nil {
 		return nil, fmt.Errorf("Error opening file at %s: %v", srcPath, err)
 	}
 	defer f.Close()
-	_, err = uploader.Upload(&s3manager.UploadInput{
+
+	_, err = uploader.UploadWithContext(ctx, &s3manager.UploadInput{
 		Bucket: aws.String(s.bucket),
 		Body:   f,
 		Key:    aws.String(dstFolder),
@@ -68,37 +73,43 @@ func (s S3Client) Backup(Files []string, dstFolder string) ([]Backup, error) {
 		return []Backup{}, nil
 	}
 	var backups []Backup
-	bkpFile, err := os.Open(Files[len(Files)-1])
-	if err != nil {
-		return nil, fmt.Errorf("Error opening file at %s: %v", Files[len(Files)-1], err)
-	}
-	defer bkpFile.Close()
-
+	txn := s.newrelic.StartTransaction("aws.Backup")
+	defer txn.End()
+	ctx := newrelic.NewContext(aws.BackgroundContext(), txn)
 	uploader := s3manager.NewUploaderWithClient(s.s3)
-	_, err = uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(s.bucket),
-		Body:   bkpFile,
-		Key:    aws.String(dstFolder),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Error trying to upload file in S3 with key (%s): %v", dstFolder, err)
-	}
 
-	headObjectInput := &s3.HeadObjectInput{
-		Bucket: aws.String(s.bucket),
-		Key:    aws.String(dstFolder),
-	}
+	for _, file := range Files {
+		f, err := os.Open(file)
+		if err != nil {
+			return nil, fmt.Errorf("Error opening file at %s: %v", file, err)
+		}
+		defer f.Close()
 
-	headObjectOutput, err := s.s3.HeadObject(headObjectInput)
-	if err != nil {
-		log.Fatalf("Error getting file metadata from (%s): %q", dstFolder, err)
-	}
+		_, err = uploader.UploadWithContext(ctx, &s3manager.UploadInput{
+			Bucket: aws.String(s.bucket),
+			Body:   f,
+			Key:    aws.String(dstFolder),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("Error trying to upload file in S3 with key (%s): %v", dstFolder, err)
+		}
 
-	backup := &Backup{
-		Size: *headObjectOutput.ContentLength,
-		Hash: strings.ReplaceAll(*headObjectOutput.ETag, "\"", ""),
-		URL:  fmt.Sprintf("https://%s.s3.amazonaws.com/%s", s.bucket, dstFolder),
+		headObjectInput := &s3.HeadObjectInput{
+			Bucket: aws.String(s.bucket),
+			Key:    aws.String(dstFolder),
+		}
+
+		headObjectOutput, err := s.s3.HeadObject(headObjectInput)
+		if err != nil {
+			log.Fatalf("Error getting file metadata from (%s): %q", dstFolder, err)
+		}
+
+		backup := &Backup{
+			Size: *headObjectOutput.ContentLength,
+			Hash: strings.ReplaceAll(*headObjectOutput.ETag, "\"", ""),
+			URL:  fmt.Sprintf("https://%s.s3.amazonaws.com/%s", s.bucket, dstFolder),
+		}
+		backups = append(backups, *backup)
 	}
-	backups = append(backups, *backup)
 	return backups, nil
 }
