@@ -90,6 +90,7 @@ type DataSummary struct {
 type Meta struct {
 	NoLoginRequired   bool   `json:"no_login_required,omitempty" bson:"no_login_required,omitempty"`
 	NoCaptchaRequired bool   `json:"no_captcha_required,omitempty" bson:"no_captcha_required,omitempty"`
+	OpenFormat        bool   `json:"open_format,omitempty" bson:"open_format,omitempty"`
 	Access            string `json:"access,omitempty" bson:"access,omitempty"`
 	Extension         string `json:"extension,omitempty" bson:"extension,omitempty"`
 	StrictlyTabular   bool   `json:"strictly_tabular,omitempty" bson:"strictly_tabular,omitempty"`
