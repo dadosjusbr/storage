@@ -20,7 +20,7 @@ func NewClient(db *DBClient, cloud IStorageService) (*Client, error) {
 }
 
 // Close Connection with DB
-func (c *Client) Close(db *DBClient, cloud IStorageService) error {
+func (c *Client) Close() error {
 	return c.Db.Disconnect()
 }
 
