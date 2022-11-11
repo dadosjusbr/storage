@@ -17,6 +17,8 @@ github.com/dadosjusbr/coletores v0.0.0-20201216050911-0186b4dcc191 h1:8zhYeBAwOA
 github.com/dadosjusbr/coletores v0.0.0-20201216050911-0186b4dcc191/go.mod h1:/MYAexbepJrBZGhKACp2ZAbRSrexfvccln0ig/0ci6E=
 github.com/dadosjusbr/proto v0.0.0-20211004174721-e51d25d61af2 h1:WYWK/7oh/Atl2fE+rHU5SGasofPVr9bCwfa5K/beFXo=
 github.com/dadosjusbr/proto v0.0.0-20211004174721-e51d25d61af2/go.mod h1:a04KL3nn5wvlJTuoTYggaeokQi3njDyt9L7Ss9EQEJQ=
+github.com/dadosjusbr/proto v0.0.0-20221111143805-a41e9c57346c h1:AC8emyvDGDWay68+wvRilvHpm2//8LcOR3nFjGA5xEk=
+github.com/dadosjusbr/proto v0.0.0-20221111143805-a41e9c57346c/go.mod h1:gPA7VxjEmyez/xtln4qBj+tM1NO0/zcw3ryjxTRNSco=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
