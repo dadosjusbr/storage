@@ -89,19 +89,17 @@ type DataSummary struct {
 }
 
 type Meta struct {
-	NoLoginRequired   bool   `json:"no_login_required,omitempty" bson:"no_login_required,omitempty"`
-	NoCaptchaRequired bool   `json:"no_captcha_required,omitempty" bson:"no_captcha_required,omitempty"`
-	OpenFormat        bool   `json:"open_format,omitempty" bson:"open_format,omitempty"`
-	Access            string `json:"access,omitempty" bson:"access,omitempty"`
-	Extension         string `json:"extension,omitempty" bson:"extension,omitempty"`
-	StrictlyTabular   bool   `json:"strictly_tabular,omitempty" bson:"strictly_tabular,omitempty"`
-	ConsistentFormat  bool   `json:"consistent_format,omitempty" bson:"consistent_format,omitempty"`
-	HaveEnrollment    bool   `json:"have_enrollment,omitempty" bson:"have_enrollment,omitempty"`
-	ThereIsACapacity  bool   `json:"there_is_a_capacity,omitempty" bson:"there_is_a_capacity,omitempty"`
-	HasPosition       bool   `json:"has_position,omitempty" bson:"has_position,omitempty"`
-	BaseRevenue       string `json:"base_revenue,omitempty" bson:"base_revenue,omitempty"`
-	OtherRecipes      string `json:"other_recipes,omitempty" bson:"other_recipes,omitempty"`
-	Expenditure       string `json:"expenditure,omitempty" bson:"expenditure,omitempty"`
+	OpenFormat       bool   `json:"open_format,omitempty" bson:"open_format,omitempty"`
+	Access           string `json:"access,omitempty" bson:"access,omitempty"`
+	Extension        string `json:"extension,omitempty" bson:"extension,omitempty"`
+	StrictlyTabular  bool   `json:"strictly_tabular,omitempty" bson:"strictly_tabular,omitempty"`
+	ConsistentFormat bool   `json:"consistent_format,omitempty" bson:"consistent_format,omitempty"`
+	HaveEnrollment   bool   `json:"have_enrollment,omitempty" bson:"have_enrollment,omitempty"`
+	ThereIsACapacity bool   `json:"there_is_a_capacity,omitempty" bson:"there_is_a_capacity,omitempty"`
+	HasPosition      bool   `json:"has_position,omitempty" bson:"has_position,omitempty"`
+	BaseRevenue      string `json:"base_revenue,omitempty" bson:"base_revenue,omitempty"`
+	OtherRecipes     string `json:"other_recipes,omitempty" bson:"other_recipes,omitempty"`
+	Expenditure      string `json:"expenditure,omitempty" bson:"expenditure,omitempty"`
 }
 
 type Score struct {
