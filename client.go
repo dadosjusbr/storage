@@ -6,12 +6,12 @@ import (
 
 //Client is composed by mongoDbClient and Cloud5 client (used for backup).
 type Client struct {
-	Db    *DBClient
+	Db    IDatabaseService
 	Cloud IStorageService
 }
 
 // NewClient NewClient
-func NewClient(db *DBClient, cloud IStorageService) (*Client, error) {
+func NewClient(db IDatabaseService, cloud IStorageService) (*Client, error) {
 	c := Client{Db: db, Cloud: cloud}
 	if err := c.Db.Connect(); err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (c *Client) Store(agmi AgencyMonthlyInfo) error {
 
 // StorePackage update an package in the database.
 func (c *Client) StorePackage(newPackage Package) error {
-	if err := c.Db.StorePackage(newPackage);err != nil {
+	if err := c.Db.StorePackage(newPackage); err != nil {
 		return fmt.Errorf("StorePackage() error %q", err)
 	}
 	return nil
