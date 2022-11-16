@@ -27,7 +27,7 @@ type PostgresDB struct {
 }
 
 func NewPostgresDB(user, password, dbName, host, port string) (*PostgresDB, error) {
-	// check if parameters are not empty
+	// Checando se os parâmetros estão corretos
 	if user == "" {
 		return nil, fmt.Errorf("user cannot be empty")
 	}
@@ -57,6 +57,7 @@ func NewPostgresDB(user, password, dbName, host, port string) (*PostgresDB, erro
 }
 
 func (p *PostgresDB) Connect() error {
+	// Abrindo conexao com o postgres
 	conn, err := sql.Open("nrpostgres", p.dsn)
 	if err != nil {
 		panic(err)
@@ -66,6 +67,7 @@ func (p *PostgresDB) Connect() error {
 	if err := conn.PingContext(ctx); err != nil {
 		return fmt.Errorf("error connecting to postgres (creds:%s):%q", p.dsn, err)
 	}
+	// Abrindo conexão com o postgres no GORM
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: conn,
 	}))
@@ -94,6 +96,7 @@ func (p *PostgresDB) Store(agmi AgencyMonthlyInfo) error {
 	var procInfoJson string
 	var summaryJson string
 
+	// Transformando o Backup em json caso ele não esteja vazio
 	if !reflect.DeepEqual(&agmi.Backups[0], &Backup{}) {
 		bkp, err := json.Marshal(agmi.Backups[0])
 		if err != nil {
@@ -102,6 +105,7 @@ func (p *PostgresDB) Store(agmi AgencyMonthlyInfo) error {
 		bkpJson = string(bkp)
 	}
 
+	// Transformando o Sumário em json caso ele não esteja vazio
 	if !reflect.DeepEqual(&agmi.Summary, &Summary{}) {
 		summary, err := json.Marshal(agmi.Summary)
 		if err != nil {
@@ -110,6 +114,7 @@ func (p *PostgresDB) Store(agmi AgencyMonthlyInfo) error {
 		summaryJson = string(summary)
 	}
 
+	// Transformando o Pacote em json caso ele não esteja vazio
 	if !reflect.DeepEqual(&agmi.Package, &Package{}) {
 		pkg, err := json.Marshal(agmi.Package)
 		if err != nil {
@@ -118,6 +123,7 @@ func (p *PostgresDB) Store(agmi AgencyMonthlyInfo) error {
 		pkgJson = string(pkg)
 	}
 
+	// Transformando o Procinfo em json caso ele não esteja vazio
 	if !reflect.DeepEqual(&agmi.ProcInfo, coleta.ProcInfo{}) {
 		procInfo, err := json.Marshal(agmi.ProcInfo)
 		if err != nil {
@@ -126,11 +132,16 @@ func (p *PostgresDB) Store(agmi AgencyMonthlyInfo) error {
 		procInfoJson = string(procInfo)
 	}
 
+	/* Iniciando a transação. É necessário que seja uma transação porque queremos
+	executar vários scripts que são dependentes um do outro. Ou seja, se um falhar
+	todos falham. Isso nos dá uma maior segurança ao executar a inserção. */
 	err := p.db.Transaction(func(tx *gorm.DB) error {
+		// Definindo atual como false para todos os registros com o mesmo ID.
 		if err := tx.Table("coletas").Where("id = ?", agmi.ID).Update("atual", false).Error; err != nil {
 			return fmt.Errorf("error seting 'atual' to false: %q", err)
 		}
 
+		//Inserindo a nova coleta, com o campo atual como true.
 		if err := tx.Table("coletas").Create(map[string]interface{}{
 			"id":                           agmi.ID,
 			"ano":                          agmi.Year,
@@ -172,6 +183,7 @@ func (p *PostgresDB) Store(agmi AgencyMonthlyInfo) error {
 
 	return nil
 }
+
 func (p *PostgresDB) StorePackage(newPackage Package) error {
 	//TODO implement me
 	panic("implement me")
