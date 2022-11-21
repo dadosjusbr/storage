@@ -10,24 +10,22 @@ import (
 
 	"github.com/dadosjusbr/storage/models"
 	_ "github.com/newrelic/go-agent/v3/integrations/nrpq"
-	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 type PostgresDB struct {
 	db       *gorm.DB
-	newrelic *newrelic.Application
 	user     string
 	password string
 	dbName   string
 	host     string
 	port     string
-	dsn      string
+	uri      string
 }
 
 func NewPostgresDB(user, password, dbName, host, port string) (*PostgresDB, error) {
-	// check if parameters are not empty
+	// Verificando se as credenciais de conexão não estão vazias
 	if user == "" {
 		return nil, fmt.Errorf("user cannot be empty")
 	}
@@ -44,36 +42,44 @@ func NewPostgresDB(user, password, dbName, host, port string) (*PostgresDB, erro
 		return nil, fmt.Errorf("port cannot be empty")
 	}
 
-	dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable", host, port, user, dbName, password)
-
-	return &PostgresDB{
+	uri := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable", host, port, user, dbName, password)
+	postgresDB := &PostgresDB{
 		user:     user,
 		password: password,
 		dbName:   dbName,
 		host:     host,
 		port:     port,
-		dsn:      dsn,
-	}, nil
+		uri:      uri,
+	}
+	//Conectando ao postgres
+	if err := postgresDB.Connect(); err != nil {
+		return nil, fmt.Errorf("error connecting to postgres (creds:%s):%q", uri, err)
+	}
+	return postgresDB, nil
 }
 
 func (p *PostgresDB) Connect() error {
-	conn, err := sql.Open("nrpostgres", p.dsn)
-	if err != nil {
-		panic(err)
+	if p.db != nil {
+		return nil
+	} else {
+		conn, err := sql.Open("nrpostgres", p.uri)
+		if err != nil {
+			panic(err)
+		}
+		ctx, canc := context.WithTimeout(context.Background(), 30*time.Second)
+		defer canc()
+		if err := conn.PingContext(ctx); err != nil {
+			return fmt.Errorf("error connecting to postgres (creds:%s):%q", p.uri, err)
+		}
+		db, err := gorm.Open(postgres.New(postgres.Config{
+			Conn: conn,
+		}))
+		if err != nil {
+			return fmt.Errorf("error initializing gorm: %q", err)
+		}
+		p.db = db
+		return nil
 	}
-	ctx, canc := context.WithTimeout(context.Background(), 30*time.Second)
-	defer canc()
-	if err := conn.PingContext(ctx); err != nil {
-		return fmt.Errorf("error connecting to postgres (creds:%s):%q", p.dsn, err)
-	}
-	db, err := gorm.Open(postgres.New(postgres.Config{
-		Conn: conn,
-	}))
-	if err != nil {
-		return fmt.Errorf("error initializing gorm: %q", err)
-	}
-	p.db = db
-	return nil
 }
 
 func (p *PostgresDB) Disconnect() error {
@@ -89,6 +95,10 @@ func (p *PostgresDB) Disconnect() error {
 }
 
 func (p *PostgresDB) Store(agmi models.AgencyMonthlyInfo) error {
+	/*Criando o DTO da coleta a partir de um modelo. É necessário a utilização de 
+	DTO's para melhor escalabilidade de bancos de dados. Caso não fosse utilizado,
+	não seria possível utilizar outros frameworks/bancos além do GORM, pois ele 
+	afeta diretamente os tipos e campos de uma struct.*/
 	coletas, err := dto.NewAgencyMonthlyInfoDTO(agmi)
 	if err != nil {
 		return fmt.Errorf("error converting agency monthly info to dto: %q", err)

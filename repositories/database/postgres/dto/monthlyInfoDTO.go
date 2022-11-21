@@ -3,12 +3,13 @@ package dto
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/dadosjusbr/proto/coleta"
 	"github.com/dadosjusbr/storage/models"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/datatypes"
-	"strconv"
-	"time"
 )
 
 // AgencyMonthlyInfo A Struct containing a snapshot of a agency in a month.

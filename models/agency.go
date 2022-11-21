@@ -8,7 +8,6 @@ type Agency struct {
 	Entity     string       `json:"entity" bson:"entity,omitempty" gorm:"column:entidade"` // "J" For Judiciário, "M" for Ministério Público, "P" for Procuradorias and "D" for Defensorias.
 	UF         string       `json:"uf" bson:"uf,omitempty" gorm:"column:uf"`               // Short code for federative unity.
 	FlagURL    string       `json:"url" bson:"url,omitempty"`                              // Link for state url
-  //TODO
 	Collecting []Collecting `json:"collecting" bson:"collecting,omitempty"`
 }
 

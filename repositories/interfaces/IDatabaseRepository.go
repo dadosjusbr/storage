@@ -9,6 +9,7 @@ type IDatabaseRepository interface {
 	Disconnect() error
 	Store(agmi models.AgencyMonthlyInfo) error
 	StorePackage(newPackage models.Package) error
+	// OPE : Órgãos Por Estado
 	GetOPE(uf string, year int) ([]models.Agency, map[string][]models.AgencyMonthlyInfo, error)
 	GetAgenciesCount() (int64, error)
 	GetNumberOfMonthsCollected() (int64, error)
@@ -17,6 +18,7 @@ type IDatabaseRepository interface {
 	GetAllAgencies() ([]models.Agency, error)
 	GetMonthlyInfo(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error)
 	GetMonthlyInfoSummary(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error)
+	// OMA: Órgão Mês Ano
 	GetOMA(month int, year int, agency string) (*models.AgencyMonthlyInfo, *models.Agency, error)
 	GetGeneralMonthlyInfosFromYear(year int) ([]models.GeneralMonthlyInfo, error)
 	GetFirstDateWithMonthlyInfo() (int, int, error)
