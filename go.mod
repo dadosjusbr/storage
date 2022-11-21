@@ -15,6 +15,7 @@ require (
 	golang.org/x/crypto v0.1.0 // indirect
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gorm.io/datatypes v1.0.7 // indirect
 	gorm.io/driver/postgres v1.4.5
 	gorm.io/gorm v1.24.1
 )
