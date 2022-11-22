@@ -28,12 +28,12 @@ func (c *Client) Close() error {
 }
 
 // GetOPE Connect to db to collect data to build 'Órgao por estado' screen
-func (c *Client) GetOPE(Uf string, Year int) ([]models.Agency, map[string][]models.AgencyMonthlyInfo, error) {
-	ags, agsMR, err := c.Db.GetOPE(Uf, Year)
+func (c *Client) GetOPE(Uf string, Year int) ([]models.Agency, error) {
+	ags, err := c.Db.GetOPE(Uf, Year)
 	if err != nil {
-		return nil, nil, fmt.Errorf("GetOPE() error: %q", err)
+		return nil, fmt.Errorf("GetOPE() error: %q", err)
 	}
-	return ags, agsMR, err
+	return ags, err
 }
 
 // GetOMA Connect to db to collect data for a month including all employees

@@ -10,7 +10,7 @@ type IDatabaseRepository interface {
 	Store(agmi models.AgencyMonthlyInfo) error
 	StorePackage(newPackage models.Package) error
 	// OPE : Órgãos Por Estado
-	GetOPE(uf string, year int) ([]models.Agency, map[string][]models.AgencyMonthlyInfo, error)
+	GetOPE(uf string, year int) ([]models.Agency, error)
 	GetAgenciesCount() (int64, error)
 	GetNumberOfMonthsCollected() (int64, error)
 	GetAgencies(uf string) ([]models.Agency, error)
