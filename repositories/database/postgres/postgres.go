@@ -163,8 +163,20 @@ func (p *PostgresDB) GetAllAgencies() ([]models.Agency, error) {
 }
 
 func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error) {
-	//TODO implement me
-	panic("implement me")
+	var dtoAgmis []dto.AgencyMonthlyInfoDTO
+	if err := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Where("ano = ? AND atual = ? AND (procinfo::text = null OR procinfo IS NULL) ", year, true).Find(&dtoAgmis).Error; err != nil {
+		return nil, fmt.Errorf("error getting monthly info: %q", err)
+	}
+
+	agmis := make(map[string][]models.AgencyMonthlyInfo)
+	for _, dtoAgmi := range dtoAgmis {
+		agmi, err := dtoAgmi.ConvertToModel()
+		if err != nil {
+			return nil, fmt.Errorf("error converting agency monthly info dto to model: %q", err)
+		}
+		agmis[dtoAgmi.AgencyID] = append(agmis[dtoAgmi.AgencyID], *agmi)
+	}
+	return agmis, nil
 }
 
 func (p *PostgresDB) GetMonthlyInfoSummary(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error) {
