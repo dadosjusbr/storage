@@ -2,16 +2,19 @@ package storage
 
 import (
 	"fmt"
+
+	"github.com/dadosjusbr/storage/models"
+	"github.com/dadosjusbr/storage/repositories/interfaces"
 )
 
 //Client is composed by mongoDbClient and Cloud5 client (used for backup).
 type Client struct {
-	Db    *DBClient
-	Cloud IStorageService
+	Db    interfaces.IDatabaseRepository
+	Cloud interfaces.IStorageRepository
 }
 
 // NewClient NewClient
-func NewClient(db *DBClient, cloud IStorageService) (*Client, error) {
+func NewClient(db interfaces.IDatabaseRepository, cloud interfaces.IStorageRepository) (*Client, error) {
 	c := Client{Db: db, Cloud: cloud}
 	if err := c.Db.Connect(); err != nil {
 		return nil, err
@@ -25,7 +28,7 @@ func (c *Client) Close() error {
 }
 
 // GetOPE Connect to db to collect data to build 'Órgao por estado' screen
-func (c *Client) GetOPE(Uf string, Year int) ([]Agency, map[string][]AgencyMonthlyInfo, error) {
+func (c *Client) GetOPE(Uf string, Year int) ([]models.Agency, map[string][]models.AgencyMonthlyInfo, error) {
 	ags, agsMR, err := c.Db.GetOPE(Uf, Year)
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetOPE() error: %q", err)
@@ -34,7 +37,7 @@ func (c *Client) GetOPE(Uf string, Year int) ([]Agency, map[string][]AgencyMonth
 }
 
 // GetOMA Connect to db to collect data for a month including all employees
-func (c *Client) GetOMA(month int, year int, agency string) (*AgencyMonthlyInfo, *Agency, error) {
+func (c *Client) GetOMA(month int, year int, agency string) (*models.AgencyMonthlyInfo, *models.Agency, error) {
 	agsMR, agencyObj, err := c.Db.GetOMA(month, year, agency)
 	if err == nil {
 		return agsMR, agencyObj, err
@@ -47,7 +50,7 @@ func (c *Client) GetOMA(month int, year int, agency string) (*AgencyMonthlyInfo,
 }
 
 // Store stores the Agency Monthly Info stats.
-func (c *Client) Store(agmi AgencyMonthlyInfo) error {
+func (c *Client) Store(agmi models.AgencyMonthlyInfo) error {
 	if err := c.Db.Store(agmi); err != nil {
 		return fmt.Errorf("Store() error: %q", err)
 	}
@@ -55,8 +58,8 @@ func (c *Client) Store(agmi AgencyMonthlyInfo) error {
 }
 
 // StorePackage update an package in the database.
-func (c *Client) StorePackage(newPackage Package) error {
-	if err := c.Db.StorePackage(newPackage);err != nil {
+func (c *Client) StorePackage(newPackage models.Package) error {
+	if err := c.Db.StorePackage(newPackage); err != nil {
 		return fmt.Errorf("StorePackage() error %q", err)
 	}
 	return nil

@@ -1,4 +1,4 @@
-package storage
+package fileStorage
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/dadosjusbr/storage/models"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
@@ -29,7 +30,7 @@ func NewS3Client(region string, bucket string) (*S3Client, error) {
 	return &S3Client{s3: s3Client, bucket: bucket}, nil
 }
 
-func (s S3Client) UploadFile(srcPath string, dstFolder string) (*Backup, error) {
+func (s S3Client) UploadFile(srcPath string, dstFolder string) (*models.Backup, error) {
 	txn := s.newrelic.StartTransaction("aws.UploadFile")
 	defer txn.End()
 	ctx := newrelic.NewContext(aws.BackgroundContext(), txn)
@@ -58,7 +59,7 @@ func (s S3Client) UploadFile(srcPath string, dstFolder string) (*Backup, error) 
 	if err != nil {
 		return nil, fmt.Errorf("Error getting file metadata from (%s): %q", dstFolder, err)
 	}
-	backup := &Backup{
+	backup := &models.Backup{
 		Size: *headObjectOutput.ContentLength,
 		Hash: strings.ReplaceAll(*headObjectOutput.ETag, "\"", ""),
 		URL:  fmt.Sprintf("https://%s.s3.amazonaws.com/%s", s.bucket, dstFolder),

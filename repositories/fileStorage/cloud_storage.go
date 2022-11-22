@@ -1,4 +1,4 @@
-package storage
+package fileStorage
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/dadosjusbr/storage/models"
 	"github.com/ncw/swift"
 )
 
@@ -21,7 +22,7 @@ func NewCloudClient(userName, apiKey, authURL, domain, containerName string) *Cl
 }
 
 //UploadFile Store a file in cloud container and return a Backup file containing a URL and a Hash for that file.
-func (cloud *CloudClient) UploadFile(srcPath string, dstFolder string) (*Backup, error) {
+func (cloud *CloudClient) UploadFile(srcPath string, dstFolder string) (*models.Backup, error) {
 	if !cloud.conn.Authenticated() {
 		if err := cloud.conn.Authenticate(); err != nil {
 			return nil, fmt.Errorf("error authenticating to swift:%q", err)
@@ -41,7 +42,7 @@ func (cloud *CloudClient) UploadFile(srcPath string, dstFolder string) (*Backup,
 	if err != nil {
 		return nil, fmt.Errorf("error trying to upload file at %s to storage: %v\nHeaders: %v", dstPath, err, headers)
 	}
-	return &Backup{URL: fmt.Sprintf("%s/%s/%s", cloud.conn.StorageUrl, cloud.container, dstPath), Hash: headers["Etag"]}, nil
+	return &models.Backup{URL: fmt.Sprintf("%s/%s/%s", cloud.conn.StorageUrl, cloud.container, dstPath), Hash: headers["Etag"]}, nil
 }
 
 //deleteFile delete a file from cloud container.
@@ -54,7 +55,7 @@ func (cloud *CloudClient) deleteFile(path string) error {
 }
 
 //Backup is the API to make URL and HASH files to be used in mgo store function
-func (cloud *CloudClient) Backup(Files []string, dstFolder string) ([]Backup, error) {
+func (cloud *CloudClient) Backup(Files []string, dstFolder string) ([]models.Backup, error) {
 	if !cloud.conn.Authenticated() {
 		if err := cloud.conn.Authenticate(); err != nil {
 			return nil, fmt.Errorf("error authenticating to swift:%q", err)
@@ -62,9 +63,9 @@ func (cloud *CloudClient) Backup(Files []string, dstFolder string) ([]Backup, er
 		defer cloud.conn.UnAuthenticate()
 	}
 	if len(Files) == 0 {
-		return []Backup{}, nil
+		return []models.Backup{}, nil
 	}
-	var backups []Backup
+	var backups []models.Backup
 	for _, value := range Files {
 		back, err := cloud.UploadFile(value, dstFolder)
 		if err != nil {

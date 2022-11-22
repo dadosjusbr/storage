@@ -1,4 +1,4 @@
-package storage
+package mongo
 
 import (
 	"context"
@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/dadosjusbr/storage"
+	"github.com/dadosjusbr/storage/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -21,24 +23,6 @@ type collection interface {
 	InsertOne(ctx context.Context, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error)
 }
 
-//the GeneralMonthlyInfo is used to struct the agregation used to get the remuneration info from all angencies in a given month
-type GeneralMonthlyInfo struct {
-	Month              int     `json:"_id,omitempty" bson:"_id,omitempty"`
-	Count              int     `json:"count" bson:"count,omitempty"`                             // Number of employees
-	BaseRemuneration   float64 `json:"base_remuneration" bson:"base_remuneration,omitempty"`     //  Statistics (Max, Min, Median, Total)
-	OtherRemunerations float64 `json:"other_remunerations" bson:"other_remunerations,omitempty"` //  Statistics (Max, Min, Median, Total)
-}
-
-type RemmunerationSummary struct {
-	Count int
-	Value float64
-}
-
-// Errors raised by package storage.
-var (
-	ErrNothingFound = fmt.Errorf("There is no document with this parameters")
-)
-
 //DBClient is a mongodb Client instance
 type DBClient struct {
 	mgoClient      *mongo.Client
@@ -51,7 +35,7 @@ type DBClient struct {
 }
 
 //NewDBClient instantiates a mongo new client, but will not connect to the specified URL. Please use Client.Connect before using the client.
-func NewDBClient(url, dbName, monthlyInfoCol, agencyCol string, packageCol string, revCol string) (*DBClient, error) {
+func NewMongoDB(url, dbName, monthlyInfoCol, agencyCol string, packageCol string, revCol string) (*DBClient, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(url))
 	if err != nil {
 		return nil, err
@@ -83,7 +67,7 @@ func (c *DBClient) Disconnect() error {
 }
 
 // GetOPE return agmi info to build first screen
-func (c *DBClient) GetOPE(uf string, year int) ([]Agency, map[string][]AgencyMonthlyInfo, error) {
+func (c *DBClient) GetOPE(uf string, year int) ([]models.Agency, map[string][]models.AgencyMonthlyInfo, error) {
 	allAgencies, err := c.GetAgencies(uf)
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetOPE() error: %q", err)
@@ -116,13 +100,13 @@ func (c *DBClient) GetNumberOfMonthsCollected() (int64, error) {
 }
 
 //GetAgencies Return UF Agencies
-func (c *DBClient) GetAgencies(uf string) ([]Agency, error) {
+func (c *DBClient) GetAgencies(uf string) ([]models.Agency, error) {
 	c.Collection(c.agencyCol)
 	resultAgencies, err := c.col.Find(context.TODO(), bson.M{"$and": []bson.M{{"uf": uf}}}, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error in getAgencies %v", err)
 	}
-	var allAgencies []Agency
+	var allAgencies []models.Agency
 	resultAgencies.All(context.TODO(), &allAgencies)
 	if err := resultAgencies.Err(); err != nil {
 		return nil, fmt.Errorf("error in getAgencies %v", err)
@@ -131,9 +115,9 @@ func (c *DBClient) GetAgencies(uf string) ([]Agency, error) {
 }
 
 //GetAgency Return Agency that match ID.
-func (c *DBClient) GetAgency(aid string) (*Agency, error) {
+func (c *DBClient) GetAgency(aid string) (*models.Agency, error) {
 	c.Collection(c.agencyCol)
-	var Ag Agency
+	var Ag models.Agency
 	if err := c.col.FindOne(context.TODO(), bson.D{{Key: "aid", Value: aid}}).Decode(&Ag); err != nil {
 		return nil, fmt.Errorf("Error searching for agency id \"%s\":%q", aid, err)
 	}
@@ -141,9 +125,9 @@ func (c *DBClient) GetAgency(aid string) (*Agency, error) {
 }
 
 // GetAllAgencies returns all agencies from AG collection
-func (c *DBClient) GetAllAgencies() ([]Agency, error) {
+func (c *DBClient) GetAllAgencies() ([]models.Agency, error) {
 	c.Collection(c.agencyCol)
-	var agencies []Agency
+	var agencies []models.Agency
 	agCursor, err := c.col.Find(context.TODO(), bson.D{})
 	if err != nil {
 		return nil, fmt.Errorf("Error while indexing Agencies: %q", err)
@@ -158,8 +142,8 @@ func (c *DBClient) GetAllAgencies() ([]Agency, error) {
 }
 
 //GetMonthlyInfo return summarized monthlyInfo for each agency in agencies in a specific year
-func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]AgencyMonthlyInfo, error) {
-	var result = make(map[string][]AgencyMonthlyInfo)
+func (c *DBClient) GetMonthlyInfo(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error) {
+	var result = make(map[string][]models.AgencyMonthlyInfo)
 	c.Collection(c.monthlyInfoCol)
 	opts := &options.FindOptions{}
 	opts.SetSort(bson.M{"month": 1})
@@ -172,7 +156,7 @@ func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]Age
 		if err != nil {
 			return nil, fmt.Errorf("Error in GetMonthlyInfo %v", err)
 		}
-		var mr []AgencyMonthlyInfo
+		var mr []models.AgencyMonthlyInfo
 		resultMonthly.All(context.TODO(), &mr)
 		result[agency.ID] = mr
 	}
@@ -180,8 +164,8 @@ func (c *DBClient) GetMonthlyInfo(agencies []Agency, year int) (map[string][]Age
 }
 
 // GetMonthlyInfoSummary returns summarized monthlyInfo for each agency in agencies in a specific year with packages
-func (c *DBClient) GetMonthlyInfoSummary(agencies []Agency, year int) (map[string][]AgencyMonthlyInfo, error) {
-	var result = make(map[string][]AgencyMonthlyInfo)
+func (c *DBClient) GetMonthlyInfoSummary(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error) {
+	var result = make(map[string][]models.AgencyMonthlyInfo)
 	c.Collection(c.monthlyInfoCol)
 	for _, agency := range agencies {
 		resultMonthly, err := c.col.Find(
@@ -190,7 +174,7 @@ func (c *DBClient) GetMonthlyInfoSummary(agencies []Agency, year int) (map[strin
 		if err != nil {
 			return nil, fmt.Errorf("Error in GetMonthlyInfo %v", err)
 		}
-		var mr []AgencyMonthlyInfo
+		var mr []models.AgencyMonthlyInfo
 		resultMonthly.All(context.TODO(), &mr)
 		result[agency.ID] = mr
 	}
@@ -198,13 +182,13 @@ func (c *DBClient) GetMonthlyInfoSummary(agencies []Agency, year int) (map[strin
 }
 
 //GetOMA Search if DB has a match for filters
-func (c *DBClient) GetOMA(month int, year int, agency string) (*AgencyMonthlyInfo, *Agency, error) {
+func (c *DBClient) GetOMA(month int, year int, agency string) (*models.AgencyMonthlyInfo, *models.Agency, error) {
 	c.Collection(c.monthlyInfoCol)
-	var resultMonthly AgencyMonthlyInfo
+	var resultMonthly models.AgencyMonthlyInfo
 	err := c.col.FindOne(context.TODO(), bson.D{{Key: "aid", Value: agency}, {Key: "year", Value: year}, {Key: "month", Value: month}}).Decode(&resultMonthly)
 	// ErrNoDocuments means that the filter did not match any documents in the collection
 	if err == mongo.ErrNoDocuments {
-		return nil, nil, ErrNothingFound
+		return nil, nil, storage.ErrNothingFound
 	}
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not fetch AGMI information from bd: %w", err)
@@ -216,7 +200,7 @@ func (c *DBClient) GetOMA(month int, year int, agency string) (*AgencyMonthlyInf
 	return &resultMonthly, agencyObject, nil
 }
 
-func (c *DBClient) Store(agmi AgencyMonthlyInfo) error {
+func (c *DBClient) Store(agmi models.AgencyMonthlyInfo) error {
 	// Armazenando sempre duas cópias no novo item. Tomamos a decisão de
 	// armazenar uma cópia para evitar a complexidade e a perda de desempenho de
 	// gerenciar a manutenção de apenas uma cópia entre as coleções (tirar de uma
@@ -231,7 +215,7 @@ func (c *DBClient) Store(agmi AgencyMonthlyInfo) error {
 	}
 	// ## Armazenando revisão.
 	c.Collection(c.revCol)
-	rev := MonthlyInfoVersion{
+	rev := models.MonthlyInfoVersion{
 		AgencyID:  agmi.AgencyID,
 		Month:     agmi.Month,
 		Year:      agmi.Year,
@@ -244,7 +228,7 @@ func (c *DBClient) Store(agmi AgencyMonthlyInfo) error {
 	return nil
 }
 
-func (c *DBClient) StorePackage(newPackage Package) error {
+func (c *DBClient) StorePackage(newPackage models.Package) error {
 	c.Collection(c.packageCol)
 	filter := bson.M{
 		"aid":   newPackage.AgencyID,
@@ -272,7 +256,7 @@ func (c *DBClient) Collection(collectionName string) {
 }
 
 //GetGeneralMonthlyInfosFromYear return the sum from all remuneration info from all months of a given year
-func (c *DBClient) GetGeneralMonthlyInfosFromYear(year int) ([]GeneralMonthlyInfo, error) {
+func (c *DBClient) GetGeneralMonthlyInfosFromYear(year int) ([]models.GeneralMonthlyInfo, error) {
 	c.Collection(c.monthlyInfoCol)
 	resultMonthly, err := c.col.Aggregate(context.TODO(),
 		mongo.Pipeline{
@@ -290,14 +274,14 @@ func (c *DBClient) GetGeneralMonthlyInfosFromYear(year int) ([]GeneralMonthlyInf
 	if err != nil {
 		return nil, fmt.Errorf("Error in GetMonthlyInfo %v", err)
 	}
-	var mr []GeneralMonthlyInfo
+	var mr []models.GeneralMonthlyInfo
 	resultMonthly.All(context.TODO(), &mr)
 	return mr, nil
 }
 
 //GetFirstDateWithMonthlyInfo return the initial year and month with collected data
 func (c *DBClient) GetFirstDateWithMonthlyInfo() (int, int, error) {
-	var resultMonthly AgencyMonthlyInfo
+	var resultMonthly models.AgencyMonthlyInfo
 	c.Collection(c.monthlyInfoCol)
 	firstDateQueryOptions := options.FindOne().SetSort(bson.D{{Key: "year", Value: +1}, {Key: "month", Value: +1}})
 	err := c.col.FindOne(
@@ -312,7 +296,7 @@ func (c *DBClient) GetFirstDateWithMonthlyInfo() (int, int, error) {
 
 //GetLastDateWithMonthlyInfo return the latest year and month with collected data
 func (c *DBClient) GetLastDateWithMonthlyInfo() (int, int, error) {
-	var resultMonthly AgencyMonthlyInfo
+	var resultMonthly models.AgencyMonthlyInfo
 	c.Collection(c.monthlyInfoCol)
 	lastDateQueryOptions := options.FindOne().SetSort(bson.D{{Key: "year", Value: -1}, {Key: "month", Value: -1}})
 	err := c.col.FindOne(
@@ -326,11 +310,11 @@ func (c *DBClient) GetLastDateWithMonthlyInfo() (int, int, error) {
 }
 
 //GetRemunerationSummary return the amount  of remuneration records from all agencies and the final remuneration value
-func (c *DBClient) GetRemunerationSummary() (*RemmunerationSummary, error) {
+func (c *DBClient) GetRemunerationSummary() (*models.RemmunerationSummary, error) {
 	c.Collection(c.monthlyInfoCol)
 	// NOTA: Não estamos usando a função de agregação do mongo pois a camada gratuita do Atlas não
 	// permite a utilização de filtros enquanto estamos agregando.
-	var amis []AgencyMonthlyInfo
+	var amis []models.AgencyMonthlyInfo
 	resultMonthly, err := c.col.Find(
 		context.TODO(), bson.D{},
 		options.Find().SetProjection(bson.D{{Key: "summary", Value: 1}}))
@@ -351,13 +335,13 @@ func (c *DBClient) GetRemunerationSummary() (*RemmunerationSummary, error) {
 		result.BaseRemuneration += ami.Summary.BaseRemuneration.Total
 		result.OtherRemunerations += ami.Summary.OtherRemunerations.Total
 	}
-	return &RemmunerationSummary{Count: result.Count, Value: result.BaseRemuneration + result.OtherRemunerations}, nil
+	return &models.RemmunerationSummary{Count: result.Count, Value: result.BaseRemuneration + result.OtherRemunerations}, nil
 }
 
 //GetAggregation return an aggregation who attends the given params
-func (c *DBClient) GetPackage(pkgOpts PackageFilterOpts) (*Package, error) {
+func (c *DBClient) GetPackage(pkgOpts models.PackageFilterOpts) (*models.Package, error) {
 	c.Collection(c.packageCol)
-	var pkg Package
+	var pkg models.Package
 	err := c.col.FindOne(context.TODO(), bson.D{{
 		Key: "aid", Value: pkgOpts.AgencyID},
 		{Key: "year", Value: pkgOpts.Year},

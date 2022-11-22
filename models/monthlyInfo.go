@@ -12,80 +12,30 @@
 // daily: nil                              daily: 0
 // perks: nil							   perks: 0
 // total: 0								   total: 0
-
-package storage
+package models
 
 import (
 	"github.com/dadosjusbr/proto/coleta"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// Agency A Struct containing the main descriptions of each Agency.
-type Agency struct {
-	ID         string       `json:"aid" bson:"aid,omitempty"`       // 'trt13'
-	Name       string       `json:"name" bson:"name,omitempty"`     // 'Tribunal Regional do Trabalho 13° Região'
-	Type       string       `json:"type" bson:"type,omitempty"`     // "R" for Regional, "M" for Municipal, "F" for Federal, "E" for State.
-	Entity     string       `json:"entity" bson:"entity,omitempty"` // "J" For Judiciário, "M" for Ministério Público, "P" for Procuradorias and "D" for Defensorias.
-	UF         string       `json:"uf" bson:"uf,omitempty"`         // Short code for federative unity.
-	FlagURL    string       `json:"url" bson:"url,omitempty"`       // Link for state url
-	Collecting []Collecting `json:"collecting" bson:"collecting,omitempty"`
-}
-
-// Collecting A Struct containing the day we checked the status of the data and the reasons why we didn't collected it.
-type Collecting struct {
-	Timestamp   *int64   `json:"timestamp" bson:"timestamp,omitempty"`     // Day(unix) we checked the status of the data
-	Description []string `json:"description" bson:"description,omitempty"` // Reasons why we didn't collect the data
-}
-
 // AgencyMonthlyInfo A Struct containing a snapshot of a agency in a month.
-
 type AgencyMonthlyInfo struct {
 	AgencyID          string                 `json:"aid,omitempty" bson:"aid,omitempty"`
 	Month             int                    `json:"month,omitempty" bson:"month,omitempty"`
 	Year              int                    `json:"year,omitempty" bson:"year,omitempty"`
-	Backups           []Backup               `json:"backups,omitempty" bson:"backups,omitempty"`
+	Backups           Backup                 `json:"backups,omitempty" bson:"backups,omitempty"`
 	Summary           Summary                `json:"summary,omitempty" bson:"summary,omitempty"`
-	CrawlerID         string                 `json:"crawler_id,omitempty" bson:"crawler_id,omitempty"`
 	CrawlerVersion    string                 `json:"crawler_version,omitempty" bson:"crawler_version,omitempty"`
-	CrawlerDir        string                 `json:"crawler_dir,omitempty" bson:"crawler_dir,omitempty"`
 	CrawlerRepo       string                 `json:"crawler_repo,omitempty" bson:"crawler_repo,omitempty"` // The github Repository of MI Crawler
-	CrawlingTimestamp *timestamppb.Timestamp `json:"crawling_ts,omitempty" bson:"crawling_ts,omitempty"`   // Crawling moment (always UTC)
-	ProcInfo          *coleta.ProcInfo       `json:"procinfo,omitempty" bson:"procinfo,omitempty"`         // Making this a pointer because it should be an optional field due to backwards compatibility.
-	Package           *Backup                `json:"package,omitempty" bson:"package,omitempty"`           // Making this a pointer because it should be an optional field due to backwards compatibility.
-	Meta              *Meta                  `json:"meta,omitempty" bson:"meta,omitempy"`
-	Score             *Score                 `json:"score,omitempty" bson:"score,omitempy"`
+	ParserRepo        string                 `json:"parser_repo,omitempty" bson:"parser_repo,omitempty"`   // The github Repository of MI Parser
+	ParserVersion     string                 `json:"parser_version,omitempty" bson:"parser_version,omitempty"`
+	CrawlingTimestamp *timestamppb.Timestamp `json:"crawling_ts,omitempty" bson:"crawling_ts,omitempty"` // Crawling moment (always UTC)
+	ProcInfo          *coleta.ProcInfo       `json:"procinfo,omitempty" bson:"procinfo,omitempty"`       // Making this a pointer because it should be an optional field due to backwards compatibility.
+	Package           *Backup                `json:"package,omitempty" bson:"package,omitempty"`         // Making this a pointer because it should be an optional field due to backwards compatibility.
+	Meta              *Meta                  `json:"meta,omitempty" bson:"meta,omitempty"`
+	Score             *Score                 `json:"score,omitempty" bson:"score,omitempty"`
 	ExectionTime      float64                `json:"exection_time,omitempty" bson:"exection_time,omitempty"`
-}
-
-// Backup contains the URL to download a file and a hash to track if in the future will be changes in the file.
-type Backup struct {
-	URL  string `json:"url" bson:"url,omitempty"`
-	Hash string `json:"hash" bson:"hash,omitempty"`
-	Size int64  `json:"size" bson:"size,omitempty"`
-}
-
-// Summaries contains all summary detailed information
-type Summaries struct {
-	General       Summary `json:"general,omitempty" bson:"general"`
-	MemberActive  Summary `json:"memberactive,omitempty" bson:"memberactive"`
-	Undefined     Summary `json:"undefined,omitempty" bson:"undefined"`
-	ServantActive Summary `json:"servantactive,omitempty" bson:"servantactive"`
-}
-
-// Summary A Struct containing summarized  information about a agency/month stats
-type Summary struct {
-	Count              int         `json:"count" bson:"count,omitempty"`                             // Number of employees
-	BaseRemuneration   DataSummary `json:"base_remuneration" bson:"base_remuneration,omitempty"`     //  Statistics (Max, Min, Median, Total)
-	OtherRemunerations DataSummary `json:"other_remunerations" bson:"other_remunerations,omitempty"` //  Statistics (Max, Min, Median, Total)
-	IncomeHistogram    map[int]int `json:"hist" bson:"hist,omitempty"`
-}
-
-// DataSummary A Struct containing data summary with statistics.
-type DataSummary struct {
-	Max     float64 `json:"max" bson:"max,omitempty"`
-	Min     float64 `json:"min" bson:"min,omitempty"`
-	Average float64 `json:"avg" bson:"avg,omitempty"`
-	Total   float64 `json:"total" bson:"total,omitempty"`
 }
 
 type Meta struct {
@@ -115,4 +65,17 @@ type MonthlyInfoVersion struct {
 	Year      int               `json:"year,omitempty" bson:"year,omitempty"`
 	VersionID int64             `json:"version_id,omitempty" bson:"version_id,omitempty"` // revisão/versão do irem. O tipo é int64 pois podemos querer usar epoch para ficar mais simples.
 	Version   AgencyMonthlyInfo `json:"version,omitempty" bson:"version,omitempty"`
+}
+
+//the GeneralMonthlyInfo is used to struct the agregation used to get the remuneration info from all angencies in a given month
+type GeneralMonthlyInfo struct {
+	Month              int     `json:"_id,omitempty" bson:"_id,omitempty"`
+	Count              int     `json:"count" bson:"count,omitempty"`                             // Number of employees
+	BaseRemuneration   float64 `json:"base_remuneration" bson:"base_remuneration,omitempty"`     //  Statistics (Max, Min, Median, Total)
+	OtherRemunerations float64 `json:"other_remunerations" bson:"other_remunerations,omitempty"` //  Statistics (Max, Min, Median, Total)
+}
+
+type RemmunerationSummary struct {
+	Count int
+	Value float64
 }
