@@ -132,9 +132,20 @@ func (p *PostgresDB) StorePackage(newPackage models.Package) error {
 	panic("implement me")
 }
 
-func (p *PostgresDB) GetOPE(uf string, year int) ([]models.Agency, map[string][]models.AgencyMonthlyInfo, error) {
-	//TODO implement me
-	panic("implement me")
+func (p *PostgresDB) GetOPE(uf string, year int) ([]models.Agency, error) {
+	var dtoOrgaos []dto.AgencyDTO
+	if err := p.db.Model(&dto.AgencyDTO{}).Where("uf = ?",uf).Find(&dtoOrgaos).Error; err != nil {
+		return nil, fmt.Errorf("error getting agencies: %q", err)
+	}
+	var orgaos []models.Agency
+	for _, dtoOrgao := range dtoOrgaos {
+		orgao, err := dtoOrgao.ConvertToModel()
+		if err != nil {
+			return nil, fmt.Errorf("error converting agency dto to model: %q", err)
+		}
+		orgaos = append(orgaos, *orgao)
+	}
+	return orgaos, nil
 }
 
 func (p *PostgresDB) GetAgenciesCount() (int64, error) {
