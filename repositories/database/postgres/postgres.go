@@ -132,6 +132,14 @@ func (p *PostgresDB) StorePackage(newPackage models.Package) error {
 	panic("implement me")
 }
 
+func (p *PostgresDB) StoreRemunerations(remu models.Remunerations) error{
+	remuneracoes := dto.NewRemunerationsDTO(remu)
+	if err := p.db.Model(dto.RemunerationsDTO{}).Create(remuneracoes).Error; err != nil {
+		return fmt.Errorf("error inserting 'remuneracoes_zips': %q", err)
+	}
+	return nil
+}
+
 func (p *PostgresDB) GetOPE(uf string, year int) ([]models.Agency, map[string][]models.AgencyMonthlyInfo, error) {
 	//TODO implement me
 	panic("implement me")

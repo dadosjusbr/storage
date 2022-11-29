@@ -250,6 +250,11 @@ func (c *DBClient) StorePackage(newPackage models.Package) error {
 	return nil
 }
 
+func (p *DBClient) StoreRemunerations(remu models.Remunerations) error{
+	//TODO implement me
+	panic("implement me")
+}
+
 //Collection Changes active collection
 func (c *DBClient) Collection(collectionName string) {
 	c.col = c.mgoClient.Database(c.dbName).Collection(collectionName)
