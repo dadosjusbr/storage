@@ -79,3 +79,13 @@ type RemmunerationSummary struct {
 	Count int
 	Value float64
 }
+
+type Remunerations struct {
+	AgencyID     string `json:"aid,omitempty" bson:"-"`
+	Year         int    `json:"year,omitempty" bson:"-"`
+	Month        int    `json:"month,omitempty" bson:"-"`
+	NumBase      int    `json:"num_base,omitempty" bson:"-"`
+	NumDiscounts int    `json:"num_descontos,omitempty" bson:"-"`
+	NumOther     int    `json:"num_outras,omitempty" bson:"-"`
+	ZipUrl       string `json:"zip_url,omitempty" bson:"-"`
+}

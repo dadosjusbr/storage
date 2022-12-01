@@ -65,6 +65,13 @@ func (c *Client) StorePackage(newPackage models.Package) error {
 	return nil
 }
 
+func (c *Client) StoreRemunerations(remu models.Remunerations) error {
+	if err := c.Db.StoreRemunerations(remu); err != nil {
+		return fmt.Errorf("StoreRemunerations() error: %q", err)
+	}
+	return nil
+}
+
 // GetAgenciesCount Return the Agencies amount
 func (c *Client) GetAgenciesCount() (int64, error) {
 	count, err := c.Db.GetAgenciesCount()
