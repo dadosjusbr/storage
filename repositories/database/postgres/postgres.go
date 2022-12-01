@@ -96,9 +96,9 @@ func (p *PostgresDB) Disconnect() error {
 }
 
 func (p *PostgresDB) Store(agmi models.AgencyMonthlyInfo) error {
-	/*Criando o DTO da coleta a partir de um modelo. É necessário a utilização de 
+	/*Criando o DTO da coleta a partir de um modelo. É necessário a utilização de
 	DTO's para melhor escalabilidade de bancos de dados. Caso não fosse utilizado,
-	não seria possível utilizar outros frameworks/bancos além do GORM, pois ele 
+	não seria possível utilizar outros frameworks/bancos além do GORM, pois ele
 	afeta diretamente os tipos e campos de uma struct.*/
 	coletas, err := dto.NewAgencyMonthlyInfoDTO(agmi)
 	if err != nil {
@@ -133,10 +133,10 @@ func (p *PostgresDB) StorePackage(newPackage models.Package) error {
 	panic("implement me")
 }
 
-func (p *PostgresDB) StoreRemunerations(remu models.Remunerations) error{
+func (p *PostgresDB) StoreRemunerations(remu models.Remunerations) error {
 	remuneracoes := dto.NewRemunerationsDTO(remu)
 	if err := p.db.Model(dto.RemunerationsDTO{}).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id_orgao"},{Name:"mes"},{Name:"ano"}},
+		Columns:   []clause.Column{{Name: "id_orgao"}, {Name: "mes"}, {Name: "ano"}},
 		UpdateAll: true,
 	}).Create(remuneracoes).Error; err != nil {
 		return fmt.Errorf("error inserting 'remuneracoes_zips': %q", err)

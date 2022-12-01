@@ -250,7 +250,7 @@ func (c *DBClient) StorePackage(newPackage models.Package) error {
 	return nil
 }
 
-func (p *DBClient) StoreRemunerations(remu models.Remunerations) error{
+func (p *DBClient) StoreRemunerations(remu models.Remunerations) error {
 	//TODO implement me
 	panic("implement me")
 }
