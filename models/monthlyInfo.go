@@ -24,7 +24,7 @@ type AgencyMonthlyInfo struct {
 	AgencyID          string                 `json:"aid,omitempty" bson:"aid,omitempty"`
 	Month             int                    `json:"month,omitempty" bson:"month,omitempty"`
 	Year              int                    `json:"year,omitempty" bson:"year,omitempty"`
-	Backups           Backup                 `json:"backups,omitempty" bson:"backups,omitempty"`
+	Backups           []Backup               `json:"backups,omitempty" bson:"backups,omitempty"`
 	Summary           Summary                `json:"summary,omitempty" bson:"summary,omitempty"`
 	CrawlerVersion    string                 `json:"crawler_version,omitempty" bson:"crawler_version,omitempty"`
 	CrawlerRepo       string                 `json:"crawler_repo,omitempty" bson:"crawler_repo,omitempty"` // The github Repository of MI Crawler
