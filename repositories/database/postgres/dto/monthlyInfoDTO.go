@@ -127,14 +127,14 @@ func (a AgencyMonthlyInfoDTO) ConvertToModel() (*models.AgencyMonthlyInfo, error
 			OtherRecipes:     a.Meta.OtherRecipes,
 		},
 		Summary:  summary,
-		Backups:  backup,
+		Backups:  []models.Backup{backup},
 		ProcInfo: &procInfo,
 		Package:  &pkg,
 	}, nil
 }
 
 func NewAgencyMonthlyInfoDTO(agmi models.AgencyMonthlyInfo) (*AgencyMonthlyInfoDTO, error) {
-	backup, err := json.Marshal(agmi.Backups)
+	backup, err := json.Marshal(agmi.Backups[0])
 	if err != nil {
 		return nil, fmt.Errorf("error while marshaling backup: %q", err)
 	}

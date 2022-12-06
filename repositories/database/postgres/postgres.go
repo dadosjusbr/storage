@@ -12,6 +12,7 @@ import (
 	_ "github.com/newrelic/go-agent/v3/integrations/nrpq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type PostgresDB struct {
@@ -130,6 +131,17 @@ func (p *PostgresDB) Store(agmi models.AgencyMonthlyInfo) error {
 func (p *PostgresDB) StorePackage(newPackage models.Package) error {
 	//TODO implement me
 	panic("implement me")
+}
+
+func (p *PostgresDB) StoreRemunerations(remu models.Remunerations) error {
+	remuneracoes := dto.NewRemunerationsDTO(remu)
+	if err := p.db.Model(dto.RemunerationsDTO{}).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id_orgao"}, {Name: "mes"}, {Name: "ano"}},
+		UpdateAll: true,
+	}).Create(remuneracoes).Error; err != nil {
+		return fmt.Errorf("error inserting 'remuneracoes_zips': %q", err)
+	}
+	return nil
 }
 
 func (p *PostgresDB) GetOPE(uf string, year int) ([]models.Agency, map[string][]models.AgencyMonthlyInfo, error) {

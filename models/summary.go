@@ -10,8 +10,8 @@ type Summaries struct {
 
 // Summary A Struct containing summarized  information about a agency/month stats
 type Summary struct {
-	Count              int         `json:"membros" bson:"count,omitempty"`                             // Number of employees
-	BaseRemuneration   DataSummary `json:"remuneracao_base" bson:"base_remuneration,omitempty"`     //  Statistics (Max, Min, Median, Total)
+	Count              int         `json:"membros" bson:"count,omitempty"`                           // Number of employees
+	BaseRemuneration   DataSummary `json:"remuneracao_base" bson:"base_remuneration,omitempty"`      //  Statistics (Max, Min, Median, Total)
 	OtherRemunerations DataSummary `json:"outras_remuneracoes" bson:"other_remunerations,omitempty"` //  Statistics (Max, Min, Median, Total)
 	IncomeHistogram    map[int]int `json:"histograma_renda" bson:"hist,omitempty"`
 }
