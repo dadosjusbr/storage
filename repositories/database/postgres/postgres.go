@@ -175,20 +175,21 @@ func (p *PostgresDB) GetAllAgencies() ([]models.Agency, error) {
 }
 
 func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error) {
-	var dtoAgmis []dto.AgencyMonthlyInfoDTO
-	if err := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Where("ano = ? AND atual = ? AND (procinfo::text = 'null' OR procinfo IS NULL) ", year, true).Order("mes ASC").Find(&dtoAgmis).Error; err != nil {
-		return nil, fmt.Errorf("error getting monthly info: %q", err)
-	}
-
-	agmis := make(map[string][]models.AgencyMonthlyInfo)
-	for _, dtoAgmi := range dtoAgmis {
-		agmi, err := dtoAgmi.ConvertToModel()
-		if err != nil {
-			return nil, fmt.Errorf("error converting agency monthly info dto to model: %q", err)
+	var results = make(map[string][]models.AgencyMonthlyInfo)
+	for _, agency := range agencies {
+		var dtoAgmis []dto.AgencyMonthlyInfoDTO
+		if err := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Where("id_orgao = ? AND ano = ? AND atual = ? AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency.ID, year, true).Order("mes ASC").Find(&dtoAgmis).Error; err != nil {
+			return nil, fmt.Errorf("error getting monthly info: %q", err)
 		}
-		agmis[dtoAgmi.AgencyID] = append(agmis[dtoAgmi.AgencyID], *agmi)
+		for _, dtoAgmi := range dtoAgmis {
+			agmi, err := dtoAgmi.ConvertToModel()
+			if err != nil {
+				return nil, fmt.Errorf("error converting dto to model: %q", err)
+			}
+			results[agency.ID] = append(results[agency.ID], *agmi)
+		}
 	}
-	return agmis, nil
+	return results, nil
 }
 
 func (p *PostgresDB) GetMonthlyInfoSummary(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error) {
