@@ -95,9 +95,9 @@ func (p *PostgresDB) Disconnect() error {
 }
 
 func (p *PostgresDB) Store(agmi models.AgencyMonthlyInfo) error {
-	/*Criando o DTO da coleta a partir de um modelo. É necessário a utilização de 
+	/*Criando o DTO da coleta a partir de um modelo. É necessário a utilização de
 	DTO's para melhor escalabilidade de bancos de dados. Caso não fosse utilizado,
-	não seria possível utilizar outros frameworks/bancos além do GORM, pois ele 
+	não seria possível utilizar outros frameworks/bancos além do GORM, pois ele
 	afeta diretamente os tipos e campos de uma struct.*/
 	coletas, err := dto.NewAgencyMonthlyInfoDTO(agmi)
 	if err != nil {
@@ -164,7 +164,7 @@ func (p *PostgresDB) GetAllAgencies() ([]models.Agency, error) {
 
 func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error) {
 	var dtoAgmis []dto.AgencyMonthlyInfoDTO
-	if err := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Where("ano = ? AND atual = ? AND (procinfo::text = null OR procinfo IS NULL) ", year, true).Find(&dtoAgmis).Error; err != nil {
+	if err := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Where("ano = ? AND atual = ? AND (procinfo::text = 'null' OR procinfo IS NULL) ", year, true).Find(&dtoAgmis).Error; err != nil {
 		return nil, fmt.Errorf("error getting monthly info: %q", err)
 	}
 
