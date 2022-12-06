@@ -152,7 +152,7 @@ func NewAgencyMonthlyInfoDTO(agmi models.AgencyMonthlyInfo) (*AgencyMonthlyInfoD
 	}
 
 	return &AgencyMonthlyInfoDTO{
-		ID:             fmt.Sprintf("%s/%s/%d", agmi.AgencyID, addZeroes(agmi.Month), agmi.Year),
+		ID:             fmt.Sprintf("%s/%s/%d", agmi.AgencyID, AddZeroes(agmi.Month), agmi.Year),
 		Actual:         true,
 		AgencyID:       agmi.AgencyID,
 		Month:          agmi.Month,
@@ -188,7 +188,7 @@ func NewAgencyMonthlyInfoDTO(agmi models.AgencyMonthlyInfo) (*AgencyMonthlyInfoD
 }
 
 // Funcão que adiciona um zero a esquerda a um número caso ele seja menor que 10
-func addZeroes(num int) string {
+func AddZeroes(num int) string {
 	numStr := strconv.Itoa(num)
 	if len(numStr) == 1 {
 		numStr = "0" + numStr
