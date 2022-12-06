@@ -180,7 +180,10 @@ func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[str
 	for _, agency := range agencies {
 		var dtoAgmis []dto.AgencyMonthlyInfoDTO
 		//Pegando as coletas do postgres, filtrando por órgão, ano e a coleta atual.
-		if err := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Where("id_orgao = ? AND ano = ? AND atual = ? AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency.ID, year, true).Order("mes ASC").Find(&dtoAgmis).Error; err != nil {
+                 m := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
+                 m = m.Where("id_orgao = ? AND ano = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency.ID, year)
+                 m = m.Order("mes ASC")
+		if err := m.Find(&dtoAgmis).Error; err != nil {
 			return nil, fmt.Errorf("error getting monthly info: %q", err)
 		}
 		//Convertendo os DTO's para modelos
