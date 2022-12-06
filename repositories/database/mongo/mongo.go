@@ -67,16 +67,12 @@ func (c *DBClient) Disconnect() error {
 }
 
 // GetOPE return agmi info to build first screen
-func (c *DBClient) GetOPE(uf string, year int) ([]models.Agency, map[string][]models.AgencyMonthlyInfo, error) {
+func (c *DBClient) GetOPE(uf string, year int) ([]models.Agency, error) {
 	allAgencies, err := c.GetAgencies(uf)
 	if err != nil {
-		return nil, nil, fmt.Errorf("GetOPE() error: %q", err)
+		return nil, fmt.Errorf("GetOPE() error: %q", err)
 	}
-	result, err := c.GetMonthlyInfo(allAgencies, year)
-	if err != nil {
-		return nil, nil, fmt.Errorf("GetOPE() error: %q", err)
-	}
-	return allAgencies, result, nil
+	return allAgencies, nil
 }
 
 // GetAgenciesCount Return the Agencies amount
