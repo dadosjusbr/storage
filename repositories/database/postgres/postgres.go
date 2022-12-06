@@ -165,8 +165,15 @@ func (p *PostgresDB) GetAgencies(uf string) ([]models.Agency, error) {
 }
 
 func (p *PostgresDB) GetAgency(aid string) (*models.Agency, error) {
-	//TODO implement me
-	panic("implement me")
+	var dtoAgency dto.AgencyDTO
+	if err := p.db.Model(dto.AgencyDTO{}).Where("id = ?", aid).First(&dtoAgency).Error; err != nil {
+		return nil, fmt.Errorf("error getting agency: %q", err)
+	}
+	agency, err := dtoAgency.ConvertToModel()
+	if err != nil {
+		return nil, fmt.Errorf("error converting agency dto to model: %q", err)
+	}
+	return agency, nil
 }
 
 func (p *PostgresDB) GetAllAgencies() ([]models.Agency, error) {
@@ -185,8 +192,20 @@ func (p *PostgresDB) GetMonthlyInfoSummary(agencies []models.Agency, year int) (
 }
 
 func (p *PostgresDB) GetOMA(month int, year int, agency string) (*models.AgencyMonthlyInfo, *models.Agency, error) {
-	//TODO implement me
-	panic("implement me")
+	var dtoAgmi dto.AgencyMonthlyInfoDTO
+	id := fmt.Sprintf("%s/%d/%d", agency, month, year)
+	if err := p.db.Model(dto.AgencyMonthlyInfoDTO{}).Where("id = ? AND atual = true", id).First(&dtoAgmi).Error; err != nil {
+		return nil, nil, fmt.Errorf("error getting 'coletas' with id (%s): %q", id, err)
+	}
+	agmi, err := dtoAgmi.ConvertToModel()
+	if err != nil {
+		return nil, nil, fmt.Errorf("error converting agmi dto to model: %q", err)
+	}
+	agencyObject, err := p.GetAgency(agency)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error getting 'orgaos' with id (%s): %q", agency, err)
+	}
+	return agmi, agencyObject, nil
 }
 
 func (p *PostgresDB) GetGeneralMonthlyInfosFromYear(year int) ([]models.GeneralMonthlyInfo, error) {
