@@ -12,6 +12,7 @@ import (
 	_ "github.com/newrelic/go-agent/v3/integrations/nrpq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type PostgresDB struct {
@@ -95,9 +96,9 @@ func (p *PostgresDB) Disconnect() error {
 }
 
 func (p *PostgresDB) Store(agmi models.AgencyMonthlyInfo) error {
-	/*Criando o DTO da coleta a partir de um modelo. É necessário a utilização de 
+	/*Criando o DTO da coleta a partir de um modelo. É necessário a utilização de
 	DTO's para melhor escalabilidade de bancos de dados. Caso não fosse utilizado,
-	não seria possível utilizar outros frameworks/bancos além do GORM, pois ele 
+	não seria possível utilizar outros frameworks/bancos além do GORM, pois ele
 	afeta diretamente os tipos e campos de uma struct.*/
 	coletas, err := dto.NewAgencyMonthlyInfoDTO(agmi)
 	if err != nil {
@@ -134,7 +135,7 @@ func (p *PostgresDB) StorePackage(newPackage models.Package) error {
 
 func (p *PostgresDB) GetOPE(uf string, year int) ([]models.Agency, error) {
 	var dtoOrgaos []dto.AgencyDTO
-	if err := p.db.Model(&dto.AgencyDTO{}).Where("uf = ?",uf).Find(&dtoOrgaos).Error; err != nil {
+	if err := p.db.Model(&dto.AgencyDTO{}).Where("uf = ?", uf).Find(&dtoOrgaos).Error; err != nil {
 		return nil, fmt.Errorf("error getting agencies: %q", err)
 	}
 	var orgaos []models.Agency
@@ -146,6 +147,17 @@ func (p *PostgresDB) GetOPE(uf string, year int) ([]models.Agency, error) {
 		orgaos = append(orgaos, *orgao)
 	}
 	return orgaos, nil
+}
+
+func (p *PostgresDB) StoreRemunerations(remu models.Remunerations) error {
+	remuneracoes := dto.NewRemunerationsDTO(remu)
+	if err := p.db.Model(dto.RemunerationsDTO{}).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id_orgao"}, {Name: "mes"}, {Name: "ano"}},
+		UpdateAll: true,
+	}).Create(remuneracoes).Error; err != nil {
+		return fmt.Errorf("error inserting 'remuneracoes_zips': %q", err)
+	}
+	return nil
 }
 
 func (p *PostgresDB) GetAgenciesCount() (int64, error) {

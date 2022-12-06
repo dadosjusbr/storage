@@ -24,7 +24,7 @@ type AgencyMonthlyInfo struct {
 	AgencyID          string                 `json:"aid,omitempty" bson:"aid,omitempty"`
 	Month             int                    `json:"month,omitempty" bson:"month,omitempty"`
 	Year              int                    `json:"year,omitempty" bson:"year,omitempty"`
-	Backups           Backup                 `json:"backups,omitempty" bson:"backups,omitempty"`
+	Backups           []Backup               `json:"backups,omitempty" bson:"backups,omitempty"`
 	Summary           Summary                `json:"summary,omitempty" bson:"summary,omitempty"`
 	CrawlerVersion    string                 `json:"crawler_version,omitempty" bson:"crawler_version,omitempty"`
 	CrawlerRepo       string                 `json:"crawler_repo,omitempty" bson:"crawler_repo,omitempty"` // The github Repository of MI Crawler
@@ -78,4 +78,14 @@ type GeneralMonthlyInfo struct {
 type RemmunerationSummary struct {
 	Count int
 	Value float64
+}
+
+type Remunerations struct {
+	AgencyID     string `json:"aid,omitempty" bson:"-"`
+	Year         int    `json:"year,omitempty" bson:"-"`
+	Month        int    `json:"month,omitempty" bson:"-"`
+	NumBase      int    `json:"num_base,omitempty" bson:"-"`
+	NumDiscounts int    `json:"num_descontos,omitempty" bson:"-"`
+	NumOther     int    `json:"num_outras,omitempty" bson:"-"`
+	ZipUrl       string `json:"zip_url,omitempty" bson:"-"`
 }

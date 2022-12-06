@@ -9,6 +9,7 @@ type IDatabaseRepository interface {
 	Disconnect() error
 	Store(agmi models.AgencyMonthlyInfo) error
 	StorePackage(newPackage models.Package) error
+	StoreRemunerations(remu models.Remunerations) error
 	// OPE : Órgãos Por Estado
 	GetOPE(uf string, year int) ([]models.Agency, error)
 	GetAgenciesCount() (int64, error)
