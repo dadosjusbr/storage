@@ -176,7 +176,7 @@ func (p *PostgresDB) GetAllAgencies() ([]models.Agency, error) {
 
 func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error) {
 	var dtoAgmis []dto.AgencyMonthlyInfoDTO
-	if err := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Where("ano = ? AND atual = ? AND (procinfo::text = 'null' OR procinfo IS NULL) ", year, true).Find(&dtoAgmis).Error; err != nil {
+	if err := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Where("ano = ? AND atual = ? AND (procinfo::text = 'null' OR procinfo IS NULL) ", year, true).Order("mes ASC").Find(&dtoAgmis).Error; err != nil {
 		return nil, fmt.Errorf("error getting monthly info: %q", err)
 	}
 
