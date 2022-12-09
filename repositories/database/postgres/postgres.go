@@ -181,8 +181,20 @@ func (p *PostgresDB) GetAgency(aid string) (*models.Agency, error) {
 }
 
 func (p *PostgresDB) GetAllAgencies() ([]models.Agency, error) {
-	//TODO implement me
-	panic("implement me")
+	var dtoOrgaos []dto.AgencyDTO
+	if err := p.db.Model(&dto.AgencyDTO{}).Find(&dtoOrgaos).Error; err != nil {
+		return nil, fmt.Errorf("error getting agencies: %q", err)
+	}
+	var orgaos []models.Agency
+	for _, dtoOrgao := range dtoOrgaos {
+		orgao, err := dtoOrgao.ConvertToModel()
+		if err != nil {
+			return nil, fmt.Errorf("error converting agency dto to model: %q", err)
+		}
+		orgao.FlagURL = fmt.Sprintf("v1/orgao/%s", orgao.ID)
+		orgaos = append(orgaos, *orgao)
+	}
+	return orgaos, nil
 }
 
 func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error) {
@@ -191,9 +203,9 @@ func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[str
 	for _, agency := range agencies {
 		var dtoAgmis []dto.AgencyMonthlyInfoDTO
 		//Pegando as coletas do postgres, filtrando por órgão, ano e a coleta atual.
-                 m := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
-                 m = m.Where("id_orgao = ? AND ano = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency.ID, year)
-                 m = m.Order("mes ASC")
+		m := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
+		m = m.Where("id_orgao = ? AND ano = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency.ID, year)
+		m = m.Order("mes ASC")
 		if err := m.Find(&dtoAgmis).Error; err != nil {
 			return nil, fmt.Errorf("error getting monthly info: %q", err)
 		}
