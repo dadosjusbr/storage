@@ -75,3 +75,8 @@ func (cloud *CloudClient) Backup(Files []string, dstFolder string) ([]models.Bac
 	}
 	return backups, nil
 }
+
+func (cloud *CloudClient) GetFile(dstFolder string) (*models.Backup, error) {
+	//TODO implement me
+	panic("implement me")
+}

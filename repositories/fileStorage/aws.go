@@ -51,11 +51,22 @@ func (s S3Client) UploadFile(srcPath string, dstFolder string) (*models.Backup, 
 		return nil, fmt.Errorf("Error trying to upload file in S3 with key (%s): %v", dstFolder, err)
 	}
 
+	backup, err := s.GetFile(dstFolder)
+	if err != nil {
+		return nil, fmt.Errorf("Error getting backup file(%s): %q", dstFolder, err)
+	}
+	return backup, nil
+}
+
+func (s S3Client) GetFile(dstFolder string) (*models.Backup, error) {
+	txn := s.newrelic.StartTransaction("aws.GetFile")
+	defer txn.End()
+	ctx := newrelic.NewContext(aws.BackgroundContext(), txn)
 	headObjectInput := &s3.HeadObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(dstFolder),
 	}
-	headObjectOutput, err := s.s3.HeadObject(headObjectInput)
+	headObjectOutput, err := s.s3.HeadObjectWithContext(ctx, headObjectInput)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting file metadata from (%s): %q", dstFolder, err)
 	}
@@ -64,6 +75,5 @@ func (s S3Client) UploadFile(srcPath string, dstFolder string) (*models.Backup, 
 		Hash: strings.ReplaceAll(*headObjectOutput.ETag, "\"", ""),
 		URL:  fmt.Sprintf("https://%s.s3.amazonaws.com/%s", s.bucket, dstFolder),
 	}
-
 	return backup, nil
 }
