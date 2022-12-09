@@ -166,8 +166,11 @@ func (p *PostgresDB) GetAgenciesCount() (int64, error) {
 }
 
 func (p *PostgresDB) GetNumberOfMonthsCollected() (int64, error) {
-	//TODO implement me
-	panic("implement me")
+	var count int64
+	if err := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Where("atual = true").Count(&count).Error; err != nil {
+		return 0, fmt.Errorf("error getting agencies count: %q", err)
+	}
+	return count, nil
 }
 
 func (p *PostgresDB) GetAgencies(uf string) ([]models.Agency, error) {
@@ -191,9 +194,9 @@ func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[str
 	for _, agency := range agencies {
 		var dtoAgmis []dto.AgencyMonthlyInfoDTO
 		//Pegando as coletas do postgres, filtrando por órgão, ano e a coleta atual.
-                 m := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
-                 m = m.Where("id_orgao = ? AND ano = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency.ID, year)
-                 m = m.Order("mes ASC")
+		m := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
+		m = m.Where("id_orgao = ? AND ano = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency.ID, year)
+		m = m.Order("mes ASC")
 		if err := m.Find(&dtoAgmis).Error; err != nil {
 			return nil, fmt.Errorf("error getting monthly info: %q", err)
 		}
