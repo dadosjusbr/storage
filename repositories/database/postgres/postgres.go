@@ -191,9 +191,9 @@ func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[str
 	for _, agency := range agencies {
 		var dtoAgmis []dto.AgencyMonthlyInfoDTO
 		//Pegando as coletas do postgres, filtrando por órgão, ano e a coleta atual.
-                 m := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
-                 m = m.Where("id_orgao = ? AND ano = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency.ID, year)
-                 m = m.Order("mes ASC")
+		m := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
+		m = m.Where("id_orgao = ? AND ano = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency.ID, year)
+		m = m.Order("mes ASC")
 		if err := m.Find(&dtoAgmis).Error; err != nil {
 			return nil, fmt.Errorf("error getting monthly info: %q", err)
 		}
@@ -220,8 +220,24 @@ func (p *PostgresDB) GetOMA(month int, year int, agency string) (*models.AgencyM
 }
 
 func (p *PostgresDB) GetGeneralMonthlyInfosFromYear(year int) ([]models.GeneralMonthlyInfo, error) {
-	//TODO implement me
-	panic("implement me")
+	var dtoGeneralMonthlyInfos []dto.GeneralMonthlyInfoDTO
+	m := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
+	m = m.Select(
+		`mes as mes,
+		sum(CAST(sumario ->> 'membros' AS INTEGER)) as count,
+		sum(CAST(sumario -> 'remuneracao_base'->> 'total' AS DECIMAL)) as remuneracao_base,
+		sum(CAST(sumario -> 'outras_remuneracoes'->> 'total' AS DECIMAL)) as outras_remuneracoes`)
+	m = m.Where("ano = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", year)
+	m = m.Group("mes").Order("mes").Find(&dtoGeneralMonthlyInfos)
+	if err := m.Error; err != nil {
+		return nil, fmt.Errorf("error getting general monthly info: %q", err)
+	}
+	var generalMonthlyInfos []models.GeneralMonthlyInfo
+	for _, dtoGeneralMonthlyInfo := range dtoGeneralMonthlyInfos {
+		generalMonthlyInfo := dtoGeneralMonthlyInfo.ConvertToModel()
+		generalMonthlyInfos = append(generalMonthlyInfos, *generalMonthlyInfo)
+	}
+	return generalMonthlyInfos, nil
 }
 
 func (p *PostgresDB) GetFirstDateWithMonthlyInfo() (int, int, error) {
