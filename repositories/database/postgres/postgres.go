@@ -171,8 +171,19 @@ func (p *PostgresDB) GetNumberOfMonthsCollected() (int64, error) {
 }
 
 func (p *PostgresDB) GetAgencies(uf string) ([]models.Agency, error) {
-	//TODO implement me
-	panic("implement me")
+	var dtoOrgaos []dto.AgencyDTO
+	if err := p.db.Model(&dto.AgencyDTO{}).Where("uf = ?", uf).Find(&dtoOrgaos).Error; err != nil {
+		return nil, fmt.Errorf("error getting agencies: %q", err)
+	}
+	var orgaos []models.Agency
+	for _, dtoOrgao := range dtoOrgaos {
+		orgao, err := dtoOrgao.ConvertToModel()
+		if err != nil {
+			return nil, fmt.Errorf("error converting agency dto to model: %q", err)
+		}
+		orgaos = append(orgaos, *orgao)
+	}
+	return orgaos, nil
 }
 
 func (p *PostgresDB) GetAgency(aid string) (*models.Agency, error) {
