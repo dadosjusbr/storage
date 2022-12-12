@@ -279,8 +279,13 @@ func (p *PostgresDB) GetFirstDateWithMonthlyInfo() (int, int, error) {
 }
 
 func (p *PostgresDB) GetLastDateWithMonthlyInfo() (int, int, error) {
-	//TODO implement me
-	panic("implement me")
+	var year, month int
+	m := p.db.Table("coletas").Select("MAX(ano),MAX(mes)")
+	m = m.Where("atual=true AND (procinfo IS NULL OR procinfo::text='null')")
+	if err := m.Row().Scan(&year, &month); err != nil {
+		return 0, 0, fmt.Errorf("error getting last date with remuneration records: %q", err)
+	}
+	return month, year, nil
 }
 
 func (p *PostgresDB) GetRemunerationSummary() (*models.RemmunerationSummary, error) {
