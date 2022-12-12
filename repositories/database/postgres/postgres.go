@@ -292,3 +292,19 @@ func (p *PostgresDB) GetPackage(pkgOpts models.PackageFilterOpts) (*models.Packa
 	//TODO implement me
 	panic("implement me")
 }
+
+func (p *PostgresDB) GetGeneralMonthlyInfo() (float64, error) {
+	var dtoAgmi dto.AgencyMonthlyInfoDTO
+	var value float64
+	query := `
+		SUM(
+			CAST(sumario -> 'remuneracao_base' ->> 'total' AS DECIMAL) + 
+			CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)
+		)`
+	m := p.db.Model(&dtoAgmi).Select(query)
+	m = m.Where("atual=true AND (procinfo IS NULL OR procinfo::text = 'null')")
+	if err := m.Scan(&value).Error; err != nil {
+		return 0, fmt.Errorf("error getting general remuneration value: %q", err)
+	}
+	return value, nil
+}
