@@ -161,8 +161,11 @@ func (p *PostgresDB) StoreRemunerations(remu models.Remunerations) error {
 }
 
 func (p *PostgresDB) GetAgenciesCount() (int64, error) {
-	//TODO implement me
-	panic("implement me")
+	var count int64
+	if err := p.db.Model(&dto.AgencyDTO{}).Count(&count).Error; err != nil {
+		return 0, fmt.Errorf("error getting agencies count: %q", err)
+	}
+	return count, nil
 }
 
 func (p *PostgresDB) GetNumberOfMonthsCollected() (int64, error) {
