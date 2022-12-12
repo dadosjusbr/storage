@@ -283,7 +283,7 @@ func (p *PostgresDB) GetLastDateWithMonthlyInfo() (int, int, error) {
 	m := p.db.Table("coletas").Select("MAX(ano),MAX(mes)")
 	m = m.Where("atual=true AND (procinfo IS NULL OR procinfo::text='null')")
 	if err := m.Row().Scan(&year, &month); err != nil {
-		return 0, 0, fmt.Errorf("error getting last date with remuneration records: %q", err)
+		return 0, 0, fmt.Errorf("error getting last date with monthly info: %q", err)
 	}
 	return month, year, nil
 }
