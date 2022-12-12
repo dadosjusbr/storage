@@ -274,8 +274,9 @@ func (p *PostgresDB) GetGeneralMonthlyInfosFromYear(year int) ([]models.GeneralM
 }
 
 func (p *PostgresDB) GetFirstDateWithMonthlyInfo() (int, int, error) {
+	var dtoAgmi dto.AgencyMonthlyInfoDTO
 	var year, month int
-	m := p.db.Table("coletas").Select("MIN(ano), MIN(mes)")
+	m := p.db.Model(&dtoAgmi).Select("MIN(ano), MIN(mes)")
 	m = m.Where("atual=true AND (procinfo IS NULL OR procinfo::text = 'null')")
 	if err := m.Row().Scan(&year, &month); err != nil {
 		return 0, 0, fmt.Errorf("error getting first date with monthly info: %q", err)
