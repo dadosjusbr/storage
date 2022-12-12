@@ -251,8 +251,21 @@ func (p *PostgresDB) GetMonthlyInfoSummary(agencies []models.Agency, year int) (
 }
 
 func (p *PostgresDB) GetOMA(month int, year int, agency string) (*models.AgencyMonthlyInfo, *models.Agency, error) {
-	//TODO implement me
-	panic("implement me")
+	var dtoAgmi dto.AgencyMonthlyInfoDTO
+	id := fmt.Sprintf("%s/%s/%d", agency, dto.AddZeroes(month), year)
+	m := p.db.Model(dto.AgencyMonthlyInfoDTO{}).Where("id = ? AND atual = true", id).First(&dtoAgmi)
+	if err := m.Error; err != nil {
+		return nil, nil, fmt.Errorf("error getting 'coletas' with id (%s): %q", id, err)
+	}
+	agmi, err := dtoAgmi.ConvertToModel()
+	if err != nil {
+		return nil, nil, fmt.Errorf("error converting agmi dto to model: %q", err)
+	}
+	agencyObject, err := p.GetAgency(agency)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error getting 'orgaos' with id (%s): %q", agency, err)
+	}
+	return agmi, agencyObject, nil
 }
 
 func (p *PostgresDB) GetGeneralMonthlyInfosFromYear(year int) ([]models.GeneralMonthlyInfo, error) {
