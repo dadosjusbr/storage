@@ -133,6 +133,22 @@ func (p *PostgresDB) StorePackage(newPackage models.Package) error {
 	panic("implement me")
 }
 
+func (p *PostgresDB) GetOPE(uf string, year int) ([]models.Agency, error) {
+	var dtoOrgaos []dto.AgencyDTO
+	if err := p.db.Model(&dto.AgencyDTO{}).Where("uf = ?", uf).Find(&dtoOrgaos).Error; err != nil {
+		return nil, fmt.Errorf("error getting agencies: %q", err)
+	}
+	var orgaos []models.Agency
+	for _, dtoOrgao := range dtoOrgaos {
+		orgao, err := dtoOrgao.ConvertToModel()
+		if err != nil {
+			return nil, fmt.Errorf("error converting agency dto to model: %q", err)
+		}
+		orgaos = append(orgaos, *orgao)
+	}
+	return orgaos, nil
+}
+
 func (p *PostgresDB) StoreRemunerations(remu models.Remunerations) error {
 	remuneracoes := dto.NewRemunerationsDTO(remu)
 	if err := p.db.Model(dto.RemunerationsDTO{}).Clauses(clause.OnConflict{
@@ -142,11 +158,6 @@ func (p *PostgresDB) StoreRemunerations(remu models.Remunerations) error {
 		return fmt.Errorf("error inserting 'remuneracoes_zips': %q", err)
 	}
 	return nil
-}
-
-func (p *PostgresDB) GetOPE(uf string, year int) ([]models.Agency, map[string][]models.AgencyMonthlyInfo, error) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (p *PostgresDB) GetAgenciesCount() (int64, error) {
@@ -182,8 +193,27 @@ func (p *PostgresDB) GetAllAgencies() ([]models.Agency, error) {
 }
 
 func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error) {
-	//TODO implement me
-	panic("implement me")
+	var results = make(map[string][]models.AgencyMonthlyInfo)
+	//Mapeando os órgãos
+	for _, agency := range agencies {
+		var dtoAgmis []dto.AgencyMonthlyInfoDTO
+		//Pegando as coletas do postgres, filtrando por órgão, ano e a coleta atual.
+                 m := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
+                 m = m.Where("id_orgao = ? AND ano = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency.ID, year)
+                 m = m.Order("mes ASC")
+		if err := m.Find(&dtoAgmis).Error; err != nil {
+			return nil, fmt.Errorf("error getting monthly info: %q", err)
+		}
+		//Convertendo os DTO's para modelos
+		for _, dtoAgmi := range dtoAgmis {
+			agmi, err := dtoAgmi.ConvertToModel()
+			if err != nil {
+				return nil, fmt.Errorf("error converting dto to model: %q", err)
+			}
+			results[agency.ID] = append(results[agency.ID], *agmi)
+		}
+	}
+	return results, nil
 }
 
 func (p *PostgresDB) GetMonthlyInfoSummary(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error) {
