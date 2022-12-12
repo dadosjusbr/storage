@@ -12,7 +12,7 @@ import (
 type AgencyDTO struct {
 	ID         string         `gorm:"column:id"`
 	Name       string         `gorm:"column:nome"`
-	Type       string         `gorm:"column:jurisdição"`
+	Type       string         `gorm:"column:jurisdicao"`
 	Entity     string         `gorm:"column:entidade"`
 	UF         string         `gorm:"column:uf"`
 	Collecting datatypes.JSON `gorm:"column:coletando"`

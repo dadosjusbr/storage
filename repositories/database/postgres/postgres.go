@@ -187,8 +187,15 @@ func (p *PostgresDB) GetAgencies(uf string) ([]models.Agency, error) {
 }
 
 func (p *PostgresDB) GetAgency(aid string) (*models.Agency, error) {
-	//TODO implement me
-	panic("implement me")
+	var dtoOrgao dto.AgencyDTO
+	if err := p.db.Model(&dto.AgencyDTO{}).Where("id = ?", aid).First(&dtoOrgao).Error; err != nil {
+		return nil, fmt.Errorf("error getting agency: %q", err)
+	}
+	orgao, err := dtoOrgao.ConvertToModel()
+	if err != nil {
+		return nil, fmt.Errorf("error converting agency dto to model: %q", err)
+	}
+	return orgao, nil
 }
 
 func (p *PostgresDB) GetAllAgencies() ([]models.Agency, error) {
