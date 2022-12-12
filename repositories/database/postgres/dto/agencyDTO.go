@@ -1,39 +1,59 @@
 package dto
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/dadosjusbr/storage/models"
+	"gorm.io/datatypes"
 )
 
 // Agency A Struct containing the main descriptions of each Agency.
 type AgencyDTO struct {
-	ID         string       `gorm:"column:id"`				
-	Name       string       `gorm:"column:nome"`			
-	Type       string       `gorm:"column:jurisdição"`			
-	Entity     string       `gorm:"column:entidade"`	
-	UF         string       `gorm:"column:uf"`		
-  //TODO: Add Collecting
+	ID         string         `gorm:"column:id"`
+	Name       string         `gorm:"column:nome"`
+	Type       string         `gorm:"column:jurisdição"`
+	Entity     string         `gorm:"column:entidade"`
+	UF         string         `gorm:"column:uf"`
+	Collecting datatypes.JSON `gorm:"column:coletando"`
 }
 
 func (AgencyDTO) TableName() string {
 	return "orgaos"
 }
 
-func (a AgencyDTO) ConvertToModel() (*models.Agency,error) {
-  return &models.Agency{
-    ID: a.ID,
-    Name: a.Name,
-    Type: a.Type,
-    Entity: a.Entity,
-    UF: a.UF,
-  },nil
+func (a AgencyDTO) ConvertToModel() (*models.Agency, error) {
+	var collecting []models.Collecting
+	collectingBytes, err := a.Collecting.MarshalJSON()
+	if err != nil {
+		return nil, fmt.Errorf("error while marshaling collecting: %q", err)
+	}
+	err = json.Unmarshal(collectingBytes, &collecting)
+	if err != nil {
+		return nil, fmt.Errorf("error while unmarshaling collecting: %q", err)
+	}
+	return &models.Agency{
+		ID:         a.ID,
+		Name:       a.Name,
+		Type:       a.Type,
+		Entity:     a.Entity,
+		UF:         a.UF,
+		Collecting: collecting,
+		FlagURL:    fmt.Sprintf("v1/orgao/%s", a.ID),
+	}, nil
 }
 
 func NewAgencyDTO(agency models.Agency) (*AgencyDTO, error) {
-  return &AgencyDTO{
-    ID: agency.ID,
-    Name: agency.Name,
-    Type: agency.Type,
-    Entity: agency.Entity,
-    UF: agency.UF,
-  },nil
+	collecting, err := json.Marshal(agency.Collecting)
+	if err != nil {
+		return nil, fmt.Errorf("error while marshaling collecting: %q", err)
+	}
+	return &AgencyDTO{
+		ID:         agency.ID,
+		Name:       agency.Name,
+		Type:       agency.Type,
+		Entity:     agency.Entity,
+		UF:         agency.UF,
+		Collecting: collecting,
+	}, nil
 }
