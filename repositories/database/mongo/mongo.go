@@ -353,3 +353,8 @@ func (c *DBClient) GetPackage(pkgOpts models.PackageFilterOpts) (*models.Package
 	}
 	return &pkg, nil
 }
+
+func (c *DBClient) GetGeneralMonthlyInfo() (float64, error) {
+	//TODO implement me
+	panic("implement me")
+}
