@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/aws/aws-sdk-go v1.44.127
 	github.com/dadosjusbr/coletores v0.0.0-20201216050911-0186b4dcc191
-	github.com/dadosjusbr/proto v0.0.0-20221129132150-665052871cc7
+	github.com/dadosjusbr/proto v0.0.0-20221212025627-91c60aa3cd12
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/ncw/swift v1.0.52
 	github.com/newrelic/go-agent/v3 v3.19.2

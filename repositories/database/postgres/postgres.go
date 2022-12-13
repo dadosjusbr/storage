@@ -110,7 +110,7 @@ func (p *PostgresDB) Store(agmi models.AgencyMonthlyInfo) error {
 	todos falham. Isso nos dá uma maior segurança ao executar a inserção. */
 	err = p.db.Transaction(func(tx *gorm.DB) error {
 		// Definindo atual como false para todos os registros com o mesmo ID.
-		ID := fmt.Sprintf("%s/%d/%d", agmi.AgencyID, agmi.Month, agmi.Year)
+		ID := fmt.Sprintf("%s/%s/%d", agmi.AgencyID, dto.AddZeroes(agmi.Month), agmi.Year)
 		if err := tx.Model(dto.AgencyMonthlyInfoDTO{}).Where("id = ?", ID).Update("atual", false).Error; err != nil {
 			return fmt.Errorf("error seting 'atual' to false: %q", err)
 		}
