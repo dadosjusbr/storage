@@ -26,4 +26,5 @@ type IDatabaseRepository interface {
 	GetLastDateWithMonthlyInfo() (int, int, error)
 	GetRemunerationSummary() (*models.RemmunerationSummary, error)
 	GetPackage(pkgOpts models.PackageFilterOpts) (*models.Package, error)
+	GetGeneralMonthlyInfo() (float64, error)
 }

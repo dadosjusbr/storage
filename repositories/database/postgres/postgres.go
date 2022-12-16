@@ -110,7 +110,7 @@ func (p *PostgresDB) Store(agmi models.AgencyMonthlyInfo) error {
 	todos falham. Isso nos dá uma maior segurança ao executar a inserção. */
 	err = p.db.Transaction(func(tx *gorm.DB) error {
 		// Definindo atual como false para todos os registros com o mesmo ID.
-		ID := fmt.Sprintf("%s/%d/%d", agmi.AgencyID, agmi.Month, agmi.Year)
+		ID := fmt.Sprintf("%s/%s/%d", agmi.AgencyID, dto.AddZeroes(agmi.Month), agmi.Year)
 		if err := tx.Model(dto.AgencyMonthlyInfoDTO{}).Where("id = ?", ID).Update("atual", false).Error; err != nil {
 			return fmt.Errorf("error seting 'atual' to false: %q", err)
 		}
@@ -161,28 +161,64 @@ func (p *PostgresDB) StoreRemunerations(remu models.Remunerations) error {
 }
 
 func (p *PostgresDB) GetAgenciesCount() (int64, error) {
-	//TODO implement me
-	panic("implement me")
+	var count int64
+	if err := p.db.Model(&dto.AgencyDTO{}).Count(&count).Error; err != nil {
+		return 0, fmt.Errorf("error getting agencies count: %q", err)
+	}
+	return count, nil
 }
 
 func (p *PostgresDB) GetNumberOfMonthsCollected() (int64, error) {
-	//TODO implement me
-	panic("implement me")
+	var count int64
+	if err := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Where("atual = true").Count(&count).Error; err != nil {
+		return 0, fmt.Errorf("error getting agencies count: %q", err)
+	}
+	return count, nil
 }
 
 func (p *PostgresDB) GetAgencies(uf string) ([]models.Agency, error) {
-	//TODO implement me
-	panic("implement me")
+	var dtoOrgaos []dto.AgencyDTO
+	if err := p.db.Model(&dto.AgencyDTO{}).Where("uf = ?", uf).Find(&dtoOrgaos).Error; err != nil {
+		return nil, fmt.Errorf("error getting agencies: %q", err)
+	}
+	var orgaos []models.Agency
+	for _, dtoOrgao := range dtoOrgaos {
+		orgao, err := dtoOrgao.ConvertToModel()
+		if err != nil {
+			return nil, fmt.Errorf("error converting agency dto to model: %q", err)
+		}
+		orgaos = append(orgaos, *orgao)
+	}
+	return orgaos, nil
 }
 
 func (p *PostgresDB) GetAgency(aid string) (*models.Agency, error) {
-	//TODO implement me
-	panic("implement me")
+	var dtoOrgao dto.AgencyDTO
+	if err := p.db.Model(&dto.AgencyDTO{}).Where("id = ?", aid).First(&dtoOrgao).Error; err != nil {
+		return nil, fmt.Errorf("error getting agency: %q", err)
+	}
+	orgao, err := dtoOrgao.ConvertToModel()
+	if err != nil {
+		return nil, fmt.Errorf("error converting agency dto to model: %q", err)
+	}
+	return orgao, nil
 }
 
 func (p *PostgresDB) GetAllAgencies() ([]models.Agency, error) {
-	//TODO implement me
-	panic("implement me")
+	var dtoOrgaos []dto.AgencyDTO
+	if err := p.db.Model(&dto.AgencyDTO{}).Find(&dtoOrgaos).Error; err != nil {
+		return nil, fmt.Errorf("error getting agencies: %q", err)
+	}
+	var orgaos []models.Agency
+	for _, dtoOrgao := range dtoOrgaos {
+		orgao, err := dtoOrgao.ConvertToModel()
+		if err != nil {
+			return nil, fmt.Errorf("error converting agency dto to model: %q", err)
+		}
+		orgao.FlagURL = fmt.Sprintf("v1/orgao/%s", orgao.ID)
+		orgaos = append(orgaos, *orgao)
+	}
+	return orgaos, nil
 }
 
 func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error) {
@@ -191,9 +227,9 @@ func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[str
 	for _, agency := range agencies {
 		var dtoAgmis []dto.AgencyMonthlyInfoDTO
 		//Pegando as coletas do postgres, filtrando por órgão, ano e a coleta atual.
-                 m := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
-                 m = m.Where("id_orgao = ? AND ano = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency.ID, year)
-                 m = m.Order("mes ASC")
+		m := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
+		m = m.Where("id_orgao = ? AND ano = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency.ID, year)
+		m = m.Order("mes ASC")
 		if err := m.Find(&dtoAgmis).Error; err != nil {
 			return nil, fmt.Errorf("error getting monthly info: %q", err)
 		}
@@ -215,8 +251,21 @@ func (p *PostgresDB) GetMonthlyInfoSummary(agencies []models.Agency, year int) (
 }
 
 func (p *PostgresDB) GetOMA(month int, year int, agency string) (*models.AgencyMonthlyInfo, *models.Agency, error) {
-	//TODO implement me
-	panic("implement me")
+	var dtoAgmi dto.AgencyMonthlyInfoDTO
+	id := fmt.Sprintf("%s/%s/%d", agency, dto.AddZeroes(month), year)
+	m := p.db.Model(dto.AgencyMonthlyInfoDTO{}).Where("id = ? AND atual = true", id).First(&dtoAgmi)
+	if err := m.Error; err != nil {
+		return nil, nil, fmt.Errorf("error getting 'coletas' with id (%s): %q", id, err)
+	}
+	agmi, err := dtoAgmi.ConvertToModel()
+	if err != nil {
+		return nil, nil, fmt.Errorf("error converting agmi dto to model: %q", err)
+	}
+	agencyObject, err := p.GetAgency(agency)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error getting 'orgaos' with id (%s): %q", agency, err)
+	}
+	return agmi, agencyObject, nil
 }
 
 func (p *PostgresDB) GetGeneralMonthlyInfosFromYear(year int) ([]models.GeneralMonthlyInfo, error) {
@@ -225,13 +274,25 @@ func (p *PostgresDB) GetGeneralMonthlyInfosFromYear(year int) ([]models.GeneralM
 }
 
 func (p *PostgresDB) GetFirstDateWithMonthlyInfo() (int, int, error) {
-	//TODO implement me
-	panic("implement me")
+	var dtoAgmi dto.AgencyMonthlyInfoDTO
+	var year, month int
+	m := p.db.Model(&dtoAgmi).Select("MIN(ano), MIN(mes)")
+	m = m.Where("atual=true AND (procinfo IS NULL OR procinfo::text = 'null')")
+	if err := m.Row().Scan(&year, &month); err != nil {
+		return 0, 0, fmt.Errorf("error getting first date with monthly info: %q", err)
+	}
+	return month, year, nil
 }
 
 func (p *PostgresDB) GetLastDateWithMonthlyInfo() (int, int, error) {
-	//TODO implement me
-	panic("implement me")
+	var dtoAgmi dto.AgencyMonthlyInfoDTO
+	var year, month int
+	m := p.db.Model(&dtoAgmi).Select("MAX(ano),MAX(mes)")
+	m = m.Where("atual=true AND (procinfo IS NULL OR procinfo::text='null')")
+	if err := m.Row().Scan(&year, &month); err != nil {
+		return 0, 0, fmt.Errorf("error getting last date with monthly info: %q", err)
+	}
+	return month, year, nil
 }
 
 func (p *PostgresDB) GetRemunerationSummary() (*models.RemmunerationSummary, error) {
@@ -242,4 +303,20 @@ func (p *PostgresDB) GetRemunerationSummary() (*models.RemmunerationSummary, err
 func (p *PostgresDB) GetPackage(pkgOpts models.PackageFilterOpts) (*models.Package, error) {
 	//TODO implement me
 	panic("implement me")
+}
+
+func (p *PostgresDB) GetGeneralMonthlyInfo() (float64, error) {
+	var dtoAgmi dto.AgencyMonthlyInfoDTO
+	var value float64
+	query := `
+		SUM(
+			CAST(sumario -> 'remuneracao_base' ->> 'total' AS DECIMAL) + 
+			CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)
+		)`
+	m := p.db.Model(&dtoAgmi).Select(query)
+	m = m.Where("atual=true AND (procinfo IS NULL OR procinfo::text = 'null')")
+	if err := m.Scan(&value).Error; err != nil {
+		return 0, fmt.Errorf("error getting general remuneration value: %q", err)
+	}
+	return value, nil
 }
