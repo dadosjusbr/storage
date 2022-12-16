@@ -126,7 +126,7 @@ func (a AgencyMonthlyInfoDTO) ConvertToModel() (*models.AgencyMonthlyInfo, error
 			BaseRevenue:      a.Meta.BaseRevenue,
 			OtherRecipes:     a.Meta.OtherRecipes,
 		},
-		Summary:  summary,
+		Summary:  &summary,
 		Backups:  []models.Backup{backup},
 		ProcInfo: &procInfo,
 		Package:  &pkg,
@@ -134,11 +134,9 @@ func (a AgencyMonthlyInfoDTO) ConvertToModel() (*models.AgencyMonthlyInfo, error
 }
 
 func NewAgencyMonthlyInfoDTO(agmi models.AgencyMonthlyInfo) (*AgencyMonthlyInfoDTO, error) {
-	var bkp models.Backup
+	var bkp *models.Backup
 	if len(agmi.Backups) > 0 {
-		bkp = agmi.Backups[0]
-	} else {
-		bkp = models.Backup{}
+		bkp = &agmi.Backups[0]
 	}
 	backup, err := json.Marshal(bkp)
 	if err != nil {
@@ -156,6 +154,34 @@ func NewAgencyMonthlyInfoDTO(agmi models.AgencyMonthlyInfo) (*AgencyMonthlyInfoD
 	if err != nil {
 		return nil, fmt.Errorf("error while marshaling package: %q", err)
 	}
+	var score Score
+	if agmi.Score != nil {
+		score = Score{
+			Score:             agmi.Score.Score,
+			CompletenessScore: agmi.Score.CompletenessScore,
+			EasinessScore:     agmi.Score.EasinessScore,
+		}
+	} else {
+		score = Score{}
+	}
+	var meta Meta
+	if agmi.Meta != nil {
+		meta = Meta{
+			OpenFormat:       agmi.Meta.OpenFormat,
+			Expenditure:      agmi.Meta.Expenditure,
+			Access:           agmi.Meta.Access,
+			Extension:        agmi.Meta.Extension,
+			StrictlyTabular:  agmi.Meta.StrictlyTabular,
+			ConsistentFormat: agmi.Meta.ConsistentFormat,
+			HaveEnrollment:   agmi.Meta.HaveEnrollment,
+			ThereIsACapacity: agmi.Meta.ThereIsACapacity,
+			HasPosition:      agmi.Meta.HasPosition,
+			BaseRevenue:      agmi.Meta.BaseRevenue,
+			OtherRecipes:     agmi.Meta.OtherRecipes,
+		}
+	} else {
+		meta = Meta{}
+	}
 
 	return &AgencyMonthlyInfoDTO{
 		ID:             fmt.Sprintf("%s/%s/%d", agmi.AgencyID, AddZeroes(agmi.Month), agmi.Year),
@@ -168,28 +194,12 @@ func NewAgencyMonthlyInfoDTO(agmi models.AgencyMonthlyInfo) (*AgencyMonthlyInfoD
 		ParserRepo:     agmi.ParserRepo,
 		ParserVersion:  agmi.ParserVersion,
 		Timestamp:      time.Unix(agmi.CrawlingTimestamp.Seconds, int64(agmi.CrawlingTimestamp.Nanos)),
-		Score: Score{
-			Score:             agmi.Score.Score,
-			CompletenessScore: agmi.Score.CompletenessScore,
-			EasinessScore:     agmi.Score.EasinessScore,
-		},
-		Meta: Meta{
-			OpenFormat:       agmi.Meta.OpenFormat,
-			Expenditure:      agmi.Meta.Expenditure,
-			Access:           agmi.Meta.Access,
-			Extension:        agmi.Meta.Extension,
-			StrictlyTabular:  agmi.Meta.StrictlyTabular,
-			ConsistentFormat: agmi.Meta.ConsistentFormat,
-			HaveEnrollment:   agmi.Meta.HaveEnrollment,
-			ThereIsACapacity: agmi.Meta.ThereIsACapacity,
-			HasPosition:      agmi.Meta.HasPosition,
-			BaseRevenue:      agmi.Meta.BaseRevenue,
-			OtherRecipes:     agmi.Meta.OtherRecipes,
-		},
-		Summary:  summary,
-		Backup:   backup,
-		ProcInfo: procInfo,
-		Package:  pkg,
+		Score:          score,
+		Meta:           meta,
+		Summary:        summary,
+		Backup:         backup,
+		ProcInfo:       procInfo,
+		Package:        pkg,
 	}, nil
 }
 

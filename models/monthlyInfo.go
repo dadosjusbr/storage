@@ -25,7 +25,7 @@ type AgencyMonthlyInfo struct {
 	Month             int                    `json:"month,omitempty" bson:"month,omitempty"`
 	Year              int                    `json:"year,omitempty" bson:"year,omitempty"`
 	Backups           []Backup               `json:"backups,omitempty" bson:"backups,omitempty"`
-	Summary           Summary                `json:"summary,omitempty" bson:"summary,omitempty"`
+	Summary           *Summary               `json:"summary,omitempty" bson:"summary,omitempty"`
 	CrawlerVersion    string                 `json:"crawler_version,omitempty" bson:"crawler_version,omitempty"`
 	CrawlerRepo       string                 `json:"crawler_repo,omitempty" bson:"crawler_repo,omitempty"` // The github Repository of MI Crawler
 	ParserRepo        string                 `json:"parser_repo,omitempty" bson:"parser_repo,omitempty"`   // The github Repository of MI Parser
@@ -67,7 +67,7 @@ type MonthlyInfoVersion struct {
 	Version   AgencyMonthlyInfo `json:"version,omitempty" bson:"version,omitempty"`
 }
 
-//the GeneralMonthlyInfo is used to struct the agregation used to get the remuneration info from all angencies in a given month
+// the GeneralMonthlyInfo is used to struct the agregation used to get the remuneration info from all angencies in a given month
 type GeneralMonthlyInfo struct {
 	Month              int     `json:"_id,omitempty" bson:"_id,omitempty"`
 	Count              int     `json:"count" bson:"count,omitempty"`                             // Number of employees
