@@ -95,6 +95,13 @@ func (p *PostgresDB) Disconnect() error {
 	return nil
 }
 
+func (p *PostgresDB) GetConnection() (*gorm.DB, error) {
+	if p.db == nil {
+		return nil, fmt.Errorf("database not connected!")
+	}
+	return p.db, nil
+}
+
 func (p *PostgresDB) Store(agmi models.AgencyMonthlyInfo) error {
 	/*Criando o DTO da coleta a partir de um modelo. É necessário a utilização de
 	DTO's para melhor escalabilidade de bancos de dados. Caso não fosse utilizado,
