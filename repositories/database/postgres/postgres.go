@@ -276,8 +276,24 @@ func (p *PostgresDB) GetOMA(month int, year int, agency string) (*models.AgencyM
 }
 
 func (p *PostgresDB) GetGeneralMonthlyInfosFromYear(year int) ([]models.GeneralMonthlyInfo, error) {
-	//TODO implement me
-	panic("implement me")
+	var dtoAgmi dto.AgencyMonthlyInfoDTO
+	var dtoGmi []dto.GeneralMonthlyInfoDTO
+	query := `
+		mes,
+		SUM((sumario -> 'membros')::text::int) AS num_membros,
+		SUM(CAST(sumario -> 'remuneracao_base' ->> 'total' AS DECIMAL)) AS remuneracao_base,
+		SUM(CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)) AS outras_remuneracoes`
+	m := p.db.Model(&dtoAgmi).Select(query)
+	m = m.Where("ano = ? AND atual=true AND (procinfo IS NULL OR procinfo::text = 'null')", year)
+	m = m.Group("mes").Order("mes ASC")
+	if err := m.Scan(&dtoGmi).Error; err != nil {
+		return nil, fmt.Errorf("error getting general remuneration value: %q", err)
+	}
+	var gmis []models.GeneralMonthlyInfo
+	for _, gmi := range dtoGmi {
+		gmis = append(gmis, *gmi.ConvertToModel())
+	}
+	return gmis, nil
 }
 
 func (p *PostgresDB) GetFirstDateWithMonthlyInfo() (int, int, error) {
