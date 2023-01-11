@@ -159,6 +159,14 @@ func (p *PostgresDB) GetOPE(group string, uf string, year int) ([]models.Agency,
 
 func (p *PostgresDB) GetOPT(group string, year int) ([]models.Agency, error) {
 	var dtoOrgaos []dto.AgencyDTO
+	// Esse trecho [164-169] é para garantir que o site não vai quebrar antes do front ser modificado.
+	// Posteriormente isso será apagado pq não será mais necessário.
+	values := [27]string{"AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"}
+	for k := range values {
+		if group == values[k] {
+			return p.GetOPE("Estadual", group, year)
+		}
+	}
 	if err := p.db.Model(&dto.AgencyDTO{}).Where("jurisdicao = ?", group).Find(&dtoOrgaos).Error; err != nil {
 		return nil, fmt.Errorf("error getting agencies by type: %q", err)
 	}
