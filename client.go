@@ -28,8 +28,8 @@ func (c *Client) Close() error {
 }
 
 // GetOPE Connect to db to collect data to build 'Órgao por estado' screen
-func (c *Client) GetOPE(Group string, Uf string, Year int) ([]models.Agency, error) {
-	ags, err := c.Db.GetOPE(Group, Uf, Year)
+func (c *Client) GetOPE(group string, uf string, year int) ([]models.Agency, error) {
+	ags, err := c.Db.GetOPE(group, uf, year)
 	if err != nil {
 		return nil, fmt.Errorf("GetOPE() error: %q", err)
 	}
@@ -37,8 +37,8 @@ func (c *Client) GetOPE(Group string, Uf string, Year int) ([]models.Agency, err
 }
 
 // GetOPT Connect to db to collect data to build 'Órgao por grupo' screen
-func (c *Client) GetOPT(Group string, Year int) ([]models.Agency, error) {
-	ags, err := c.Db.GetOPT(Group, Year)
+func (c *Client) GetOPT(group string, year int) ([]models.Agency, error) {
+	ags, err := c.Db.GetOPT(group, year)
 	if err != nil {
 		return nil, fmt.Errorf("GetOPT() error: %q", err)
 	}
