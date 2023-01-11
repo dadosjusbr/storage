@@ -67,10 +67,19 @@ func (c *DBClient) Disconnect() error {
 }
 
 // GetOPE return agmi info to build first screen
-func (c *DBClient) GetOPE(uf string, year int) ([]models.Agency, error) {
+func (c *DBClient) GetOPE(group string, uf string, year int) ([]models.Agency, error) {
 	allAgencies, err := c.GetAgencies(uf)
 	if err != nil {
 		return nil, fmt.Errorf("GetOPE() error: %q", err)
+	}
+	return allAgencies, nil
+}
+
+// GetOPT Return the Agencies by group (Federal, Estadual, Militar...)
+func (c *DBClient) GetOPT(group string, year int) ([]models.Agency, error) {
+	allAgencies, err := c.GetAgenciesByType(group)
+	if err != nil {
+		return nil, fmt.Errorf("GetOPT() error: %q", err)
 	}
 	return allAgencies, nil
 }
@@ -99,6 +108,21 @@ func (c *DBClient) GetNumberOfMonthsCollected() (int64, error) {
 func (c *DBClient) GetAgencies(uf string) ([]models.Agency, error) {
 	c.Collection(c.agencyCol)
 	resultAgencies, err := c.col.Find(context.TODO(), bson.M{"$and": []bson.M{{"uf": uf}}}, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error in getAgencies %v", err)
+	}
+	var allAgencies []models.Agency
+	resultAgencies.All(context.TODO(), &allAgencies)
+	if err := resultAgencies.Err(); err != nil {
+		return nil, fmt.Errorf("error in getAgencies %v", err)
+	}
+	return allAgencies, nil
+}
+
+//GetAgenciesByType Return TYPE Agencies
+func (c *DBClient) GetAgenciesByType(group string) ([]models.Agency, error) {
+	c.Collection(c.agencyCol)
+	resultAgencies, err := c.col.Find(context.TODO(), bson.M{"$and": []bson.M{{"type": group}}}, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error in getAgencies %v", err)
 	}
