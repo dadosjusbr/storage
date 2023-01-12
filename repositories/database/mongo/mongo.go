@@ -67,7 +67,7 @@ func (c *DBClient) Disconnect() error {
 }
 
 // GetOPE return agmi info to build first screen
-func (c *DBClient) GetOPE(group string, uf string, year int) ([]models.Agency, error) {
+func (c *DBClient) GetOPE(uf string, year int) ([]models.Agency, error) {
 	allAgencies, err := c.GetAgencies(uf)
 	if err != nil {
 		return nil, fmt.Errorf("GetOPE() error: %q", err)

@@ -11,9 +11,9 @@ type IDatabaseRepository interface {
 	StorePackage(newPackage models.Package) error
 	StoreRemunerations(remu models.Remunerations) error
 	// OPE : Órgãos Por Estado
-	GetOPE(group string, uf string, year int) ([]models.Agency, error)
+	GetOPE(uf string, year int) ([]models.Agency, error)
 	// OPT: Órgãos por tipo.
-	GetOPT(group string, year int) ([]models.Agency, error)
+	GetOPJ(group string, year int) ([]models.Agency, error)
 	GetAgenciesCount() (int64, error)
 	GetNumberOfMonthsCollected() (int64, error)
 	GetAgencies(uf string) ([]models.Agency, error)
