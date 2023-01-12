@@ -12,7 +12,7 @@ type IDatabaseRepository interface {
 	StoreRemunerations(remu models.Remunerations) error
 	// OPE : Órgãos Por Estado
 	GetOPE(uf string, year int) ([]models.Agency, error)
-	// OPT: Órgãos por tipo.
+	// OPJ: Órgãos por jurisdição.
 	GetOPJ(group string, year int) ([]models.Agency, error)
 	GetAgenciesCount() (int64, error)
 	GetNumberOfMonthsCollected() (int64, error)
