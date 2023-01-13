@@ -28,9 +28,9 @@ type AgencyMonthlyInfoDTO struct {
 	Timestamp      time.Time      `gorm:"column:timestamp"`
 	ProcInfo       datatypes.JSON `gorm:"column:procinfo"`
 	Package        datatypes.JSON `gorm:"column:package"`
+	Duration       time.Duration  `gorm:"column:tempo_coleta"` // Tempo de execução da coleta
 	Meta
 	Score
-	//TODO: Add ExectionTime
 }
 
 func (AgencyMonthlyInfoDTO) TableName() string {
@@ -130,6 +130,7 @@ func (a AgencyMonthlyInfoDTO) ConvertToModel() (*models.AgencyMonthlyInfo, error
 		Backups:  []models.Backup{backup},
 		ProcInfo: &procInfo,
 		Package:  &pkg,
+		Duration: a.Duration,
 	}, nil
 }
 
@@ -200,6 +201,7 @@ func NewAgencyMonthlyInfoDTO(agmi models.AgencyMonthlyInfo) (*AgencyMonthlyInfoD
 		Backup:         backup,
 		ProcInfo:       procInfo,
 		Package:        pkg,
+		Duration:       agmi.Duration,
 	}, nil
 }
 
