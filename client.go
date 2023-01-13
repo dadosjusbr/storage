@@ -28,10 +28,19 @@ func (c *Client) Close() error {
 }
 
 // GetOPE Connect to db to collect data to build 'Órgao por estado' screen
-func (c *Client) GetOPE(Uf string, Year int) ([]models.Agency, error) {
-	ags, err := c.Db.GetOPE(Uf, Year)
+func (c *Client) GetOPE(uf string, year int) ([]models.Agency, error) {
+	ags, err := c.Db.GetOPE(uf, year)
 	if err != nil {
 		return nil, fmt.Errorf("GetOPE() error: %q", err)
+	}
+	return ags, err
+}
+
+// GetOPJ Connect to db to collect data to build 'Órgao por jurisdição' screen
+func (c *Client) GetOPJ(group string, year int) ([]models.Agency, error) {
+	ags, err := c.Db.GetOPJ(group, year)
+	if err != nil {
+		return nil, fmt.Errorf("GetOPJ() error: %q", err)
 	}
 	return ags, err
 }
