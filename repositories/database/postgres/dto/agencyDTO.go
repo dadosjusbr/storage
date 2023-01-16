@@ -39,6 +39,7 @@ func (a AgencyDTO) ConvertToModel() (*models.Agency, error) {
 		Entity:     a.Entity,
 		UF:         a.UF,
 		Collecting: collecting,
+		FlagURL:    fmt.Sprintf("v1/orgao/%s", a.ID),
 	}, nil
 }
 
