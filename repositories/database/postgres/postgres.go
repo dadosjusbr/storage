@@ -240,7 +240,6 @@ func (p *PostgresDB) GetAllAgencies() ([]models.Agency, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error converting agency dto to model: %q", err)
 		}
-		orgao.FlagURL = fmt.Sprintf("v1/orgao/%s", orgao.ID)
 		orgaos = append(orgaos, *orgao)
 	}
 	return orgaos, nil
