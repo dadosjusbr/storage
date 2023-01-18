@@ -12,6 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestAll(t *testing.T) {
+	TestGetOPE(t)
+}
+
 func TestGetOPE(t *testing.T) {
 	tests := getOPE{}
 	t.Run("Test GetOPE when repository return agencies", tests.testWhenRepositoryReturnAgencies)
