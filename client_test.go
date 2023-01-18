@@ -12,10 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAll(t *testing.T) {
-	TestGetOPE(t)
-}
-
 func TestGetOPE(t *testing.T) {
 	tests := getOPE{}
 	t.Run("Test GetOPE when repository return agencies", tests.testWhenRepositoryReturnAgencies)
@@ -31,20 +27,18 @@ func (getOPE) testWhenRepositoryReturnAgencies(t *testing.T) {
 	fsMock := mocks.NewMockIStorageRepository(mockCrl)
 
 	tjsp := models.Agency{
-		ID:      "tjsp",
-		Name:    "Tribunal de Justiça do Estado de São Paulo",
-		Type:    "Estadual",
-		Entity:  "Tribunal",
-		UF:      "SP",
-		FlagURL: "v1/orgao/tjsp",
+		ID:     "tjsp",
+		Name:   "Tribunal de Justiça do Estado de São Paulo",
+		Type:   "Estadual",
+		Entity: "Tribunal",
+		UF:     "SP",
 	}
 	mpsp := models.Agency{
-		ID:      "mpsp",
-		Name:    "Ministério Público do Estado de São Paulo",
-		Type:    "Estadual",
-		Entity:  "Ministério",
-		UF:      "SP",
-		FlagURL: "v1/orgao/mpsp",
+		ID:     "mpsp",
+		Name:   "Ministério Público do Estado de São Paulo",
+		Type:   "Estadual",
+		Entity: "Ministério",
+		UF:     "SP",
 	}
 	agencies := []models.Agency{tjsp, mpsp}
 	uf := "SP"
