@@ -12,4 +12,3 @@ services:
       POSTGRES_USER: dadosjusbr_test
       POSTGRES_PASSWORD: dadosjusbr_test
       POSTGRES_DB: dadosjusbr_test
-      POSTGRES_HOST: localhost
