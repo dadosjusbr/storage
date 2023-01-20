@@ -5,8 +5,10 @@ jobs:
     runs-on: ubuntu-latest
     container: golang:1.19
     services:
-      postgres:
+      postgres_test:
         image: postgres
+        ports:
+          - "5432:5432"
         env:
           POSTGRES_USER: dadosjusbr_test
           POSTGRES_PASSWORD: dadosjusbr_test
