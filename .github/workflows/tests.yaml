@@ -24,4 +24,4 @@ jobs:
           go-version: "1.19"
       - run: "go test --race ./..."
         env:
-          TEST_DATABASE_URL: host=localhost port=5432 user=dadosjusbr_test dbname=dadosjusbr_test password=dadosjusbr_test sslmode=disable
+          POSTGRES_TEST_URL: host=localhost port=5432 user=dadosjusbr_test dbname=dadosjusbr_test password=dadosjusbr_test sslmode=disable
