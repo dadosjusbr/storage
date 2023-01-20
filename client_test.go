@@ -6,8 +6,9 @@ import (
 	"testing"
 
 	"github.com/dadosjusbr/storage"
-	"github.com/dadosjusbr/storage/mocks"
 	"github.com/dadosjusbr/storage/models"
+	"github.com/dadosjusbr/storage/repo/database"
+	"github.com/dadosjusbr/storage/repo/file_storage"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,8 +24,8 @@ type getOPE struct{}
 
 func (getOPE) testWhenRepositoryReturnAgencies(t *testing.T) {
 	mockCrl := gomock.NewController(t)
-	dbMock := mocks.NewMockIDatabaseRepository(mockCrl)
-	fsMock := mocks.NewMockIStorageRepository(mockCrl)
+	dbMock := database.NewMockIDatabaseRepository(mockCrl)
+	fsMock := file_storage.NewMockIStorageRepository(mockCrl)
 
 	tjsp := models.Agency{
 		ID:     "tjsp",
@@ -42,14 +43,13 @@ func (getOPE) testWhenRepositoryReturnAgencies(t *testing.T) {
 	}
 	agencies := []models.Agency{tjsp, mpsp}
 	uf := "SP"
-	year := 2018
 
-	dbMock.EXPECT().GetOPE(uf, year).Return(agencies, nil)
+	dbMock.EXPECT().GetOPE(uf).Return(agencies, nil)
 	dbMock.EXPECT().Connect().Return(nil)
 
 	client, err := storage.NewClient(dbMock, fsMock)
 
-	returnedAgencies, err := client.GetOPE(uf, year)
+	returnedAgencies, err := client.GetOPE(uf)
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
@@ -57,15 +57,15 @@ func (getOPE) testWhenRepositoryReturnAgencies(t *testing.T) {
 
 func (getOPE) testWhenRepositoryReturnError(t *testing.T) {
 	mockCrl := gomock.NewController(t)
-	dbMock := mocks.NewMockIDatabaseRepository(mockCrl)
-	fsMock := mocks.NewMockIStorageRepository(mockCrl)
+	dbMock := database.NewMockIDatabaseRepository(mockCrl)
+	fsMock := file_storage.NewMockIStorageRepository(mockCrl)
 
 	repoErr := errors.New("error getting agencies")
-	dbMock.EXPECT().GetOPE("SP", 2018).Return(nil, repoErr)
+	dbMock.EXPECT().GetOPE("SP").Return(nil, repoErr)
 	dbMock.EXPECT().Connect().Return(nil)
 
 	client, err := storage.NewClient(dbMock, fsMock)
-	returnedAgencies, err := client.GetOPE("SP", 2018)
+	returnedAgencies, err := client.GetOPE("SP")
 	expectedErr := errors.New(fmt.Sprintf("GetOPE() error: \"%s\"", repoErr.Error()))
 
 	assert.Equal(t, expectedErr, err)
@@ -74,15 +74,15 @@ func (getOPE) testWhenRepositoryReturnError(t *testing.T) {
 
 func (getOPE) testWhenRepositoryReturnEmptyArray(t *testing.T) {
 	mockCrl := gomock.NewController(t)
-	dbMock := mocks.NewMockIDatabaseRepository(mockCrl)
-	fsMock := mocks.NewMockIStorageRepository(mockCrl)
+	dbMock := database.NewMockIDatabaseRepository(mockCrl)
+	fsMock := file_storage.NewMockIStorageRepository(mockCrl)
 
 	agencies := []models.Agency{}
-	dbMock.EXPECT().GetOPE("SP", 2018).Return(agencies, nil)
+	dbMock.EXPECT().GetOPE("SP").Return(agencies, nil)
 	dbMock.EXPECT().Connect().Return(nil)
 
 	client, err := storage.NewClient(dbMock, fsMock)
-	returnedAgencies, err := client.GetOPE("SP", 2018)
+	returnedAgencies, err := client.GetOPE("SP")
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)

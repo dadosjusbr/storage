@@ -1,4 +1,4 @@
-package postgres_test
+package database
 
 import (
 	"context"
@@ -9,8 +9,7 @@ import (
 	"time"
 
 	"github.com/dadosjusbr/storage/models"
-	"github.com/dadosjusbr/storage/repositories/database/postgres"
-	"github.com/dadosjusbr/storage/repositories/database/postgres/dto"
+	"github.com/dadosjusbr/storage/repo/database/dto"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +19,7 @@ import (
 )
 
 var conn *gorm.DB
-var postgresDb *postgres.PostgresDB
+var postgresDb *PostgresDB
 
 func TestGetOPE(t *testing.T) {
 	if err := getDbTestConnection(); err != nil {
@@ -102,7 +101,7 @@ func (getOPE) insertAgencies() ([]models.Agency, error) {
 }
 
 func truncateAgencies() error {
-	tx := conn.Exec(`TRUNCATE TABLE "orgaos"`)
+	tx := conn.Exec(`TRUNCATE TABLE "coletas", "remuneracoes_zips","orgaos"`)
 	if tx.Error != nil {
 		return fmt.Errorf("error truncating agencies: %q", tx.Error)
 	}
@@ -110,7 +109,7 @@ func truncateAgencies() error {
 }
 
 func getDbTestConnection() error {
-	godotenv.Load(".env.test")
+	godotenv.Load("../../.env")
 	uri := os.Getenv("POSTGRES_TEST_URL")
 	db, err := sql.Open("postgres", uri)
 	if err != nil {
@@ -128,7 +127,7 @@ func getDbTestConnection() error {
 		return fmt.Errorf("error initializing gorm: %q", err)
 	}
 	conn = gormDb
-	postgresDb = &postgres.PostgresDB{}
+	postgresDb = &PostgresDB{}
 	postgresDb.SetConnection(conn)
 	return nil
 }

@@ -1,4 +1,4 @@
-package postgres
+package database
 
 import (
 	"context"
@@ -7,9 +7,8 @@ import (
 	"strings"
 	"time"
 
-	dto "github.com/dadosjusbr/storage/repositories/database/postgres/dto"
-
 	"github.com/dadosjusbr/storage/models"
+	"github.com/dadosjusbr/storage/repo/database/dto"
 	_ "github.com/newrelic/go-agent/v3/integrations/nrpq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

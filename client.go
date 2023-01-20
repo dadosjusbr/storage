@@ -4,17 +4,18 @@ import (
 	"fmt"
 
 	"github.com/dadosjusbr/storage/models"
-	"github.com/dadosjusbr/storage/repositories/interfaces"
+	"github.com/dadosjusbr/storage/repo/database"
+	"github.com/dadosjusbr/storage/repo/file_storage"
 )
 
-//Client is composed by mongoDbClient and Cloud5 client (used for backup).
+// Client is composed by mongoDbClient and Cloud5 client (used for backup).
 type Client struct {
-	Db    interfaces.IDatabaseRepository
-	Cloud interfaces.IStorageRepository
+	Db    database.Interface
+	Cloud file_storage.Interface
 }
 
 // NewClient NewClient
-func NewClient(db interfaces.IDatabaseRepository, cloud interfaces.IStorageRepository) (*Client, error) {
+func NewClient(db database.Interface, cloud file_storage.Interface) (*Client, error) {
 	c := Client{Db: db, Cloud: cloud}
 	if err := c.Db.Connect(); err != nil {
 		return nil, err
@@ -28,8 +29,8 @@ func (c *Client) Close() error {
 }
 
 // GetOPE Connect to db to collect data to build 'Órgao por estado' screen
-func (c *Client) GetOPE(uf string, year int) ([]models.Agency, error) {
-	ags, err := c.Db.GetOPE(uf, year)
+func (c *Client) GetOPE(uf string) ([]models.Agency, error) {
+	ags, err := c.Db.GetOPE(uf)
 	if err != nil {
 		return nil, fmt.Errorf("GetOPE() error: %q", err)
 	}
@@ -99,7 +100,7 @@ func (c *Client) GetNumberOfMonthsCollected() (int64, error) {
 	return count, nil
 }
 
-//GetLastDateWithMonthlyInfo return the latest year and month with collected data
+// GetLastDateWithMonthlyInfo return the latest year and month with collected data
 func (c *Client) GetLastDateWithMonthlyInfo() (int, int, error) {
 	month, year, err := c.Db.GetLastDateWithMonthlyInfo()
 	if err != nil {
@@ -108,7 +109,7 @@ func (c *Client) GetLastDateWithMonthlyInfo() (int, int, error) {
 	return month, year, nil
 }
 
-//GetFirstDateWithMonthlyInfo return the initial year and month with collected data
+// GetFirstDateWithMonthlyInfo return the initial year and month with collected data
 func (c *Client) GetFirstDateWithMonthlyInfo() (int, int, error) {
 	month, year, err := c.Db.GetFirstDateWithMonthlyInfo()
 	if err != nil {

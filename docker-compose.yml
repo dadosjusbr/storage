@@ -3,6 +3,9 @@ services:
   postgres_test:
     image: postgres
     container_name: postgres_test
+    build:
+      dockerfile: ./Dockerfile
+      context: "."
     ports:
       - "5432:5432"
     environment:
