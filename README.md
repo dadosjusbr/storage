@@ -19,7 +19,7 @@ Com o mockgen instalado, basta executar os seguintes comandos:
 - Para gerar os mocks a partir da interface do database:
 
 ```
-mockgen --source ./repo/database/idatabase_repository.go --destination ./repo/database/database_mock.go
+mockgen --source ./repo/database/interface.go --destination ./repo/database/database_mock.go
 ```
 
 - Para gerar os mocks a partir da interface do file storage:
