@@ -32,7 +32,7 @@ Com esses comandos, os mocks antigos são sobrescritos por novos e atualizados.
 
 > ## Subir o banco de teste com o Docker
 
-Para conseguir testar as funcionalidades que acessam diretamente o banco de dados, em /repo/database/postgres_test.go, é necessário ter o banco de dados rodando. Os passos são:
+Para conseguir testar as funcionalidades que acessam diretamente o banco de dados, em `repo/database/postgres_test.go`, é necessário ter o banco de dados rodando. Os passos são:
 
 - Renomeie o arquivo .env.example para .env
 - Execute o seguinte comando:
