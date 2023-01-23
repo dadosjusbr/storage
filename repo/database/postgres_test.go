@@ -10,9 +10,10 @@ import (
 
 	"github.com/dadosjusbr/storage/models"
 	"github.com/dadosjusbr/storage/repo/database/dto"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
-	pgdriver "gorm.io/driver/postgres"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -113,10 +114,11 @@ func truncateAgencies() error {
 }
 
 func getDbTestConnection() error {
-	/*Credenciais do banco de dados que serão utilizadas nos testes. Esse é o
-	formato que o GoORM utiliza para se conectar ao banco de dados. É importante
-	que os valores dessas credenciais sejam iguais as que estão no Dockerfile*/
-	credentials := "port=5432 user=dadosjusbr_test dbname=dadosjusbr_test password=dadosjusbr_test sslmode=disable"
+	godotenv.Load()
+	/*Credenciais do banco de dados que serão utilizadas nos testes. É importante
+	que os valores dessas credenciais sejam iguais as que estão no Dockerfile.*/
+	credentials := os.Getenv("POSTGRES_CREDENTIALS")
+
 	db, err := sql.Open("postgres", credentials)
 	if err != nil {
 		panic(err)
@@ -126,14 +128,13 @@ func getDbTestConnection() error {
 	if err := db.PingContext(ctx); err != nil {
 		return fmt.Errorf("error connecting to postgres (creds:%s):%q", credentials, err)
 	}
-	gormDb, err := gorm.Open(pgdriver.New(pgdriver.Config{
+	gormDb, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: db,
 	}))
 	if err != nil {
-		return fmt.Errorf("error initializing gorm: %q", err)
+		return fmt.Errorf("error initializing gorm (creds: %s): %q", credentials, err)
 	}
-	conn := gormDb
 	postgresDb = &PostgresDB{}
-	postgresDb.SetConnection(conn)
+	postgresDb.SetConnection(gormDb)
 	return nil
 }

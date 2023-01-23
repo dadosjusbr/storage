@@ -7,6 +7,7 @@ require (
 	github.com/dadosjusbr/proto v0.0.0-20221212025627-91c60aa3cd12
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.10.2
 	github.com/newrelic/go-agent/v3 v3.19.2
 	github.com/newrelic/go-agent/v3/integrations/nrpq v1.1.1
