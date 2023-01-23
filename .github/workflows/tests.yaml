@@ -20,8 +20,10 @@ jobs:
     #       --health-retries 5
     steps:
       - uses: actions/checkout@v3
-      - run: "docker build -t dadosjusbr_test repo/database"
-      - run: "docker run -d --name dadosjusbr_test -p 5432:5432 dadosjusbr_test"
+      - name: Build the Docker image
+        run: "docker build repo/database --tag dadosjusbr_test:$(date +%s)"
+      - name: Run the Docker image
+        run: "docker run -d --name dadosjusbr_test -p 5432:5432 dadosjusbr_test"
       - run: "go test -v ./..."
         env:
           POSTGRES_CREDENTIALS: postgres://dadosjusbr_test:dadosjusbr_test@dadosjusbr_test:5432/dadosjusbr_test?sslmode=disable
