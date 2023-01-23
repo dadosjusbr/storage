@@ -20,14 +20,6 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v3
-      - name: Install PostgreSQL client
-        run: |
-          apt-get update
-          apt-get install --yes postgresql-client
-      - name: Create Tables
-        run: psql -h postgres_test -d dadosjusbr_test -U dadosjusbr_test -f repo/database/init_db.sql'
-        env:
-          PGPASSWORD: postgres_password
       - run: "go test -v ./..."
         env:
           POSTGRES_CREDENTIALS: postgres://dadosjusbr_test:dadosjusbr_test@postgres_test:5432/dadosjusbr_test?sslmode=disable
