@@ -19,32 +19,49 @@ Com o mockgen instalado, basta executar os seguintes comandos:
 - Para gerar os mocks a partir da interface do database:
 
 ```
-mockgen --source ./repo/database/interface.go --destination ./repo/database/database_mock.go
+mockgen --source ./repo/database/idatabase_repository.go --destination ./repo/database/database_mock.go
 ```
 
 - Para gerar os mocks a partir da interface do file storage:
 
 ```
-mockgen --source ./repo/file_storage/interface.go --destination ./repo/file_storage/file_storage_mock.go
+mockgen --source ./repo/file_storage/istorage_repository.go --destination ./repo/file_storage/file_storage_mock.go
 ```
 
 Com esses comandos, os mocks antigos são sobrescritos por novos e atualizados.
 
 > ## Subir o banco de teste com o Docker
 
-Para conseguir testar as funcionalidades que acessam diretamente o banco de dados, em `repo/database/postgres_test.go`, é necessário ter o banco de dados rodando. Os passos são:
+Para conseguir testar as funcionalidades que acessam diretamente o banco de dados, em /repo/database/postgres_test.go, é necessário ter o banco de dados rodando. Execute os seguintes comandos:
 
-- Renomeie o arquivo .env.example para .env
-- Execute o seguinte comando:
+Para buildar a imagem do banco de teste:
 
 ```
-docker compose up -d --build
+docker build -t dadosjusbr_test repo/database
+```
+
+Para subir o banco de dados:
+
+```
+docker run -d --name dadosjusbr_test -p 5432:5432 dadosjusbr_test
 ```
 
 Em caso de erro, você pode verificar os logs com o seguinte comando:
 
 ```
-docker logs postgres_test
+docker logs dadosjusbr_test
+```
+
+Para parar o container com o banco de dados, utilize o seguinte comando:
+
+```
+docker stop dadosjusbr_test
+```
+
+Para remover o container, utilize o seguinte comando:
+
+```
+docker rm dadosjusbr_test
 ```
 
 ### Iniciando banco de dados local a partir de seu container
@@ -52,13 +69,7 @@ docker logs postgres_test
 - Após levantar o banco de dados uma única vez, você poderá dar start nele, todas as vezes que ligar o computador, executando o seguinte comando:
 
 ```sh
-docker start postgres_test
-```
-
-### Removendo banco de dados local (a partir do docker-compose deste repositório)
-
-```sh
-docker-compose  rm -sf
+docker start dadosjusbr_test
 ```
 
 > ## Rodando os testes

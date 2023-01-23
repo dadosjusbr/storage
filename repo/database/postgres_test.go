@@ -10,7 +10,6 @@ import (
 
 	"github.com/dadosjusbr/storage/models"
 	"github.com/dadosjusbr/storage/repo/database/dto"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	pgdriver "gorm.io/driver/postgres"
@@ -18,13 +17,18 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-var conn *gorm.DB
 var postgresDb *PostgresDB
 
-func TestGetOPE(t *testing.T) {
+func TestMain(m *testing.M) {
 	if err := getDbTestConnection(); err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
+	exitValue := m.Run()
+	postgresDb.Disconnect()
+	os.Exit(exitValue)
+}
+
+func TestGetOPE(t *testing.T) {
 	tests := getOPE{}
 	t.Run("Test GetOPE when agencies exists", tests.testWhenAgenciesExists)
 	t.Run("Test GetOPE when UF not exists", tests.testWhenUFNotExists)
@@ -89,7 +93,7 @@ func (getOPE) insertAgencies() ([]models.Agency, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error creating agency dto %s: %q", agency.ID, err)
 		}
-		tx := conn.Model(dto.AgencyDTO{}).Clauses(clause.OnConflict{
+		tx := postgresDb.db.Model(dto.AgencyDTO{}).Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "id"}},
 			DoNothing: true,
 		}).Create(agencyDto)
@@ -101,7 +105,7 @@ func (getOPE) insertAgencies() ([]models.Agency, error) {
 }
 
 func truncateAgencies() error {
-	tx := conn.Exec(`TRUNCATE TABLE "coletas", "remuneracoes_zips","orgaos"`)
+	tx := postgresDb.db.Exec(`TRUNCATE TABLE "coletas", "remuneracoes_zips","orgaos"`)
 	if tx.Error != nil {
 		return fmt.Errorf("error truncating agencies: %q", tx.Error)
 	}
@@ -109,16 +113,18 @@ func truncateAgencies() error {
 }
 
 func getDbTestConnection() error {
-	godotenv.Load("../../.env")
-	uri := os.Getenv("POSTGRES_TEST_URL")
-	db, err := sql.Open("postgres", uri)
+	/*Credenciais do banco de dados que serão utilizadas nos testes. Esse é o
+	formato que o GoORM utiliza para se conectar ao banco de dados. É importante
+	que os valores dessas credenciais sejam iguais as que estão no Dockerfile*/
+	credentials := "port=5432 user=dadosjusbr_test dbname=dadosjusbr_test password=dadosjusbr_test sslmode=disable"
+	db, err := sql.Open("postgres", credentials)
 	if err != nil {
 		panic(err)
 	}
 	ctx, canc := context.WithTimeout(context.Background(), 30*time.Second)
 	defer canc()
 	if err := db.PingContext(ctx); err != nil {
-		return fmt.Errorf("error connecting to postgres (creds:%s):%q", uri, err)
+		return fmt.Errorf("error connecting to postgres (creds:%s):%q", credentials, err)
 	}
 	gormDb, err := gorm.Open(pgdriver.New(pgdriver.Config{
 		Conn: db,
@@ -126,7 +132,7 @@ func getDbTestConnection() error {
 	if err != nil {
 		return fmt.Errorf("error initializing gorm: %q", err)
 	}
-	conn = gormDb
+	conn := gormDb
 	postgresDb = &PostgresDB{}
 	postgresDb.SetConnection(conn)
 	return nil
