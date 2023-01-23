@@ -28,7 +28,7 @@ type AgencyMonthlyInfoDTO struct {
 	Timestamp      time.Time      `gorm:"column:timestamp"`
 	ProcInfo       datatypes.JSON `gorm:"column:procinfo"`
 	Package        datatypes.JSON `gorm:"column:package"`
-	Duration       time.Duration  `gorm:"column:tempo_coleta"` // Tempo de execução da coleta
+	Duration       string         `gorm:"column:tempo_coleta"` // Tempo de execução da coleta
 	Meta
 	Score
 }
@@ -62,6 +62,7 @@ func (a AgencyMonthlyInfoDTO) ConvertToModel() (*models.AgencyMonthlyInfo, error
 	var summary models.Summary
 	var procInfo coleta.ProcInfo
 	var pkg models.Backup
+	var duration time.Duration
 
 	backupBytes, err := a.Backup.MarshalJSON()
 	if err != nil {
@@ -99,6 +100,13 @@ func (a AgencyMonthlyInfoDTO) ConvertToModel() (*models.AgencyMonthlyInfo, error
 		return nil, fmt.Errorf("error while unmarshaling package: %q", err)
 	}
 
+	if a.Duration != "" {
+		duration, err = clockDuration(a.Duration)
+		if err != nil {
+			return nil, fmt.Errorf("error while converting string to time.Duration: %q", err)
+		}
+	}
+
 	return &models.AgencyMonthlyInfo{
 		AgencyID:          a.AgencyID,
 		Month:             a.Month,
@@ -130,7 +138,7 @@ func (a AgencyMonthlyInfoDTO) ConvertToModel() (*models.AgencyMonthlyInfo, error
 		Backups:  []models.Backup{backup},
 		ProcInfo: &procInfo,
 		Package:  &pkg,
-		Duration: a.Duration,
+		Duration: duration,
 	}, nil
 }
 
@@ -201,7 +209,7 @@ func NewAgencyMonthlyInfoDTO(agmi models.AgencyMonthlyInfo) (*AgencyMonthlyInfoD
 		Backup:         backup,
 		ProcInfo:       procInfo,
 		Package:        pkg,
-		Duration:       agmi.Duration,
+		Duration:       agmi.Duration.String(),
 	}, nil
 }
 
@@ -212,4 +220,18 @@ func AddZeroes(num int) string {
 		numStr = "0" + numStr
 	}
 	return numStr
+}
+
+// Não conseguimos formatar []uint8 para int64 (time.Duration).
+// A solução encontrada foi receber esse valor como string para então formatá-lo para int64.
+func clockDuration(clock string) (time.Duration, error) {
+	c, err := time.Parse("15:04:05", clock)
+	if err != nil {
+		return 0, err
+	}
+	h, m, s := c.Clock()
+	d := time.Duration(h)*time.Hour +
+		time.Duration(m)*time.Minute +
+		time.Duration(s)*time.Second
+	return d, nil
 }
