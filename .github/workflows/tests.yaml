@@ -4,26 +4,22 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container: golang:1.19
-    # services:
-    #   postgres_test:
-    #     image: postgres
-    #     ports:
-    #       - "5432:5432"
-    #     env:
-    #       POSTGRES_USER: dadosjusbr_test
-    #       POSTGRES_PASSWORD: dadosjusbr_test
-    #       POSTGRES_DB: dadosjusbr_test
-    #     options: >-
-    #       --health-cmd pg_isready
-    #       --health-interval 10s
-    #       --health-timeout 5s
-    #       --health-retries 5
+    services:
+      postgres_test:
+        image: postgres
+        ports:
+          - "5432:5432"
+        env:
+          POSTGRES_USER: dadosjusbr_test
+          POSTGRES_PASSWORD: dadosjusbr_test
+          POSTGRES_DB: dadosjusbr_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v3
-      - name: Build the Docker image
-        run: "docker build repo/database --tag dadosjusbr_test:$(date +%s)"
-      - name: Run the Docker image
-        run: "docker run -d --name dadosjusbr_test -p 5432:5432 dadosjusbr_test"
       - run: "go test -v ./..."
         env:
-          POSTGRES_CREDENTIALS: postgres://dadosjusbr_test:dadosjusbr_test@dadosjusbr_test:5432/dadosjusbr_test?sslmode=disable
+          POSTGRES_CREDENTIALS: postgres://dadosjusbr_test:dadosjusbr_test@postgres_test:5432/dadosjusbr_test?sslmode=disable
