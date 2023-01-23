@@ -32,4 +32,4 @@ jobs:
         run: docker run -d --name dadosjusbr_test -p 5432:5432 dadosjusbr_test
       - run: "go test -v ./..."
         env:
-          POSTGRES_CREDENTIALS: postgres://dadosjusbr_test:dadosjusbr_test@postgres_test:5432/dadosjusbr_test?sslmode=disable
+          POSTGRES_CREDENTIALS: postgres://dadosjusbr_test:dadosjusbr_test@dadosjusbr_test:5432/dadosjusbr_test?sslmode=disable
