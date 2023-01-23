@@ -20,7 +20,6 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v3
-      - run: "docker --version"
       - run: "go test -v ./..."
         env:
           POSTGRES_CREDENTIALS: postgres://dadosjusbr_test:dadosjusbr_test@postgres_test:5432/dadosjusbr_test?sslmode=disable
