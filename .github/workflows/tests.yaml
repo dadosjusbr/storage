@@ -29,6 +29,7 @@ jobs:
           apt-get update && apt-get install --no-install-recommends -y docker-ce docker-ce-cli containerd.io
       - run: docker exec -d dadosjusbr_test mkdir docker-entrypoint-initdb.d
       - run: docker cp ./repo/database/init_db.sql dadosjusbr_test:./docker-entrypoint-initdb.d/
+      - run: docker exec -it dadosjusbr_test psql -U dadosjusbr_test -d dadosjusbr_test -h localhost -p 5432 -f ./docker-entrypoint-initdb.d/init_db.sql
       # - name: Build Dockerfile
       #   run: docker build -t dadosjusbr_test repo/database
       # - name: Run Dockerfile
