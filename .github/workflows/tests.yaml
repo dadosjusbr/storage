@@ -29,7 +29,8 @@ jobs:
       - name: Build Dockerfile
         run: docker build -t dadosjusbr_test repo/database
       - name: Run Dockerfile
-        run: docker run -d --name dadosjusbr_test -p 5432:5432 dadosjusbr_test
+        run: |
+          docker run -d --name dadosjusbr_test -p 5432:5432 dadosjusbr_test | docker ps
       - run: "go test -v ./..."
         env:
           POSTGRES_CREDENTIALS: postgres://dadosjusbr_test:dadosjusbr_test@postgres_test:5432/dadosjusbr_test?sslmode=disable
