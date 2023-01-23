@@ -3,7 +3,7 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: golang:1.19
+    # container: golang:1.19
     # services:
     #   postgres_test:
     #     image: postgres
@@ -20,6 +20,9 @@ jobs:
     #       --health-retries 5
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "1.14"
       - name: Install docker
         run: |
           apt-get update && apt-get install --no-install-recommends -y ca-certificates curl gnupg lsb-release sudo
