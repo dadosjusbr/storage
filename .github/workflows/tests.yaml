@@ -27,13 +27,11 @@ jobs:
           curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
           echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
           apt-get update && apt-get install --no-install-recommends -y docker-ce docker-ce-cli containerd.io
-      - run: docker exec -d dadosjusbr_test mkdir docker-entrypoint-initdb.d
-      - run: docker cp ./repo/database/init_db.sql dadosjusbr_test:./docker-entrypoint-initdb.d/
-      - run: docker exec dadosjusbr_test psql postgres://dadosjusbr_test:dadosjusbr_test@postgres_test:5432/dadosjusbr_test?sslmode=disable -f ./docker-entrypoint-initdb.d/init_db.sql
-      # - name: Build Dockerfile
-      #   run: docker build -t dadosjusbr_test repo/database
-      # - name: Run Dockerfile
-      #   run: docker run -d --name dadosjusbr_test -p 5432:5432 dadosjusbr_test
+      - name: Criando tabelas
+        run: |
+          docker exec -d dadosjusbr_test mkdir docker-entrypoint-initdb.d |
+          docker cp ./repo/database/init_db.sql dadosjusbr_test:./docker-entrypoint-initdb.d/ |
+          docker exec dadosjusbr_test psql postgres://dadosjusbr_test:dadosjusbr_test@postgres_test:5432/dadosjusbr_test?sslmode=disable -f ./docker-entrypoint-initdb.d/init_db.sql
       - run: "go test -v ./..."
         env:
-          POSTGRES_CREDENTIALS: postgres://dadosjusbr_test:dadosjusbr_test@postgres_test:5432/dadosjusbr_test?sslmode=disable
+          POSTGRES_CONNECTION_URL: postgres://dadosjusbr_test:dadosjusbr_test@postgres_test:5432/dadosjusbr_test?sslmode=disable

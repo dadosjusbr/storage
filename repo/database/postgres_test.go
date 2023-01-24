@@ -114,25 +114,26 @@ func truncateAgencies() error {
 }
 
 func getDbTestConnection() error {
-	godotenv.Load()
-	/*Credenciais do banco de dados que serão utilizadas nos testes. É importante
-	que os valores dessas credenciais sejam iguais as que estão no Dockerfile.*/
-	credentials := os.Getenv("POSTGRES_CREDENTIALS")
+	godotenv.Load(".env.test")
+	/*Url do banco de dados que será utilizada nos testes. É importante
+	que os valores das credenciais dessa Url sejam iguais as que estão no Dockerfile.
+	Formato da URL: postgres://{usuario}:{senha}@{host}:{porta}/{banco_de_dados}?sslmode=disable*/
+	url := os.Getenv("POSTGRES_CONNECTION_URL")
 
-	db, err := sql.Open("postgres", credentials)
+	db, err := sql.Open("postgres", url)
 	if err != nil {
 		panic(err)
 	}
 	ctx, canc := context.WithTimeout(context.Background(), 30*time.Second)
 	defer canc()
 	if err := db.PingContext(ctx); err != nil {
-		return fmt.Errorf("error connecting to postgres (creds:%s):%q", credentials, err)
+		return fmt.Errorf("error connecting to postgres (creds:%s):%q", url, err)
 	}
 	gormDb, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: db,
 	}))
 	if err != nil {
-		return fmt.Errorf("error initializing gorm (creds: %s): %q", credentials, err)
+		return fmt.Errorf("error initializing gorm (creds: %s): %q", url, err)
 	}
 	postgresDb = &PostgresDB{}
 	postgresDb.SetConnection(gormDb)
