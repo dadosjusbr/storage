@@ -1,17 +1,17 @@
-package interfaces
+package database
 
 import (
 	"github.com/dadosjusbr/storage/models"
 )
 
-type IDatabaseRepository interface {
+type Interface interface {
 	Connect() error
 	Disconnect() error
 	Store(agmi models.AgencyMonthlyInfo) error
 	StorePackage(newPackage models.Package) error
 	StoreRemunerations(remu models.Remunerations) error
 	// OPE : Órgãos Por Estado
-	GetOPE(uf string, year int) ([]models.Agency, error)
+	GetOPE(uf string) ([]models.Agency, error)
 	// OPJ: Órgãos por jurisdição.
 	GetOPJ(group string, year int) ([]models.Agency, error)
 	GetAgenciesCount() (int64, error)

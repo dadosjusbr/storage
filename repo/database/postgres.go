@@ -1,14 +1,14 @@
-package postgres
+package database
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
-	dto "github.com/dadosjusbr/storage/repositories/database/postgres/dto"
-
 	"github.com/dadosjusbr/storage/models"
+	"github.com/dadosjusbr/storage/repo/database/dto"
 	_ "github.com/newrelic/go-agent/v3/integrations/nrpq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -102,6 +102,10 @@ func (p *PostgresDB) GetConnection() (*gorm.DB, error) {
 	return p.db, nil
 }
 
+func (p *PostgresDB) SetConnection(conn *gorm.DB) {
+	p.db = conn
+}
+
 func (p *PostgresDB) Store(agmi models.AgencyMonthlyInfo) error {
 	/*Criando o DTO da coleta a partir de um modelo. É necessário a utilização de
 	DTO's para melhor escalabilidade de bancos de dados. Caso não fosse utilizado,
@@ -140,7 +144,8 @@ func (p *PostgresDB) StorePackage(newPackage models.Package) error {
 	panic("implement me")
 }
 
-func (p *PostgresDB) GetOPE(uf string, year int) ([]models.Agency, error) {
+func (p *PostgresDB) GetOPE(uf string) ([]models.Agency, error) {
+	uf = strings.ToUpper(uf)
 	var dtoOrgaos []dto.AgencyDTO
 	if err := p.db.Model(&dto.AgencyDTO{}).Where("jurisdicao = 'Estadual' AND uf = ?", uf).Find(&dtoOrgaos).Error; err != nil {
 		return nil, fmt.Errorf("error getting agencies: %q", err)
@@ -240,7 +245,6 @@ func (p *PostgresDB) GetAllAgencies() ([]models.Agency, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error converting agency dto to model: %q", err)
 		}
-		orgao.FlagURL = fmt.Sprintf("v1/orgao/%s", orgao.ID)
 		orgaos = append(orgaos, *orgao)
 	}
 	return orgaos, nil

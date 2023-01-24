@@ -7,7 +7,7 @@ type Agency struct {
 	Type       string       `json:"type"`   // "R" for Regional, "M" for Municipal, "F" for Federal, "E" for State.
 	Entity     string       `json:"entity"` // "J" For Judiciário, "M" for Ministério Público, "P" for Procuradorias and "D" for Defensorias.
 	UF         string       `json:"uf"`     // Short code for federative unity.
-	FlagURL    string       `json:"url"`    // Link for state url
+	URL        string       `json:"url"`    // Link for state url
 	Collecting []Collecting `json:"collecting"`
 }
 
