@@ -26,6 +26,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	exitValue := m.Run()
+	truncateTables()
 	postgresDb.Disconnect()
 	os.Exit(exitValue)
 }
@@ -49,11 +50,10 @@ func (g getOPE) testWhenAgenciesExists(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
-	truncateAgencies()
 }
 
 func (g getOPE) testWhenUFNotExists(t *testing.T) {
-	truncateAgencies()
+	truncateTables()
 
 	returnedAgencies, err := postgresDb.GetOPE("SP")
 
@@ -82,12 +82,87 @@ func (getOPE) insertAgencies() ([]models.Agency, error) {
 			Entity: "Tribunal",
 			UF:     "SP",
 		},
+	}
+	for _, agency := range agencies {
+		agencyDto, err := dto.NewAgencyDTO(agency)
+		if err != nil {
+			return nil, fmt.Errorf("error creating agency dto %s: %q", agency.ID, err)
+		}
+		tx := postgresDb.db.Model(dto.AgencyDTO{}).Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "id"}},
+			DoNothing: true,
+		}).Create(agencyDto)
+		if tx.Error != nil {
+			return nil, fmt.Errorf("error inserting agency %s: %q", agency.ID, tx.Error)
+		}
+	}
+	return agencies, nil
+}
+
+func TestGetOPJ(t *testing.T) {
+	tests := getOPJ{}
+	t.Run("Test GetOPJ when agencies exists", tests.testWhenAgenciesExists)
+	t.Run("Test GetOPJ when group not exists", tests.testWhenGroupNotExists)
+	t.Run("Test GetOPJ when Group is in irregular case", tests.testWhenGroupIsInIrregularCase)
+}
+
+type getOPJ struct{}
+
+func (g getOPJ) testWhenAgenciesExists(t *testing.T) {
+	agencies, err := g.insertAgencies()
+	if err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	returnedAgencies, err := postgresDb.GetOPJ("Estadual")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agencies, returnedAgencies)
+}
+
+func (g getOPJ) testWhenGroupNotExists(t *testing.T) {
+	truncateTables()
+
+	returnedAgencies, err := postgresDb.GetOPJ("Estadual")
+
+	assert.Nil(t, err)
+	assert.Empty(t, returnedAgencies)
+}
+
+func (g getOPJ) testWhenGroupIsInIrregularCase(t *testing.T) {
+	agencies, err := g.insertAgencies()
+	if err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	returnedAgencies, err := postgresDb.GetOPJ("eStAdUaL")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agencies, returnedAgencies)
+}
+
+func (getOPJ) insertAgencies() ([]models.Agency, error) {
+	agencies := []models.Agency{
 		{
-			ID:     "mpsp",
-			Name:   "Ministério Público do Estado de São Paulo",
+			ID:     "tjsp",
+			Name:   "Tribunal de Justiça do Estado de São Paulo",
 			Type:   "Estadual",
-			Entity: "Ministério",
+			Entity: "Tribunal",
 			UF:     "SP",
+		},
+		{
+			ID:     "tjal",
+			Name:   "Tribunal de Justiça do Estado de Alagoas",
+			Type:   "Estadual",
+			Entity: "Tribunal",
+			UF:     "AL",
+		},
+		{
+			ID:     "tjba",
+			Name:   "Tribunal de Justiça do Estado da Bahia",
+			Type:   "Estadual",
+			Entity: "Tribunal",
+			UF:     "BA",
 		},
 	}
 	for _, agency := range agencies {
@@ -175,7 +250,7 @@ func TestStore(t *testing.T) {
 	assert.Equal(t, true, count == 1)
 }
 
-func truncateAgencies() error {
+func truncateTables() error {
 	tx := postgresDb.db.Exec(`TRUNCATE TABLE "coletas", "remuneracoes_zips","orgaos"`)
 	if tx.Error != nil {
 		return fmt.Errorf("error truncating agencies: %q", tx.Error)
