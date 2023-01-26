@@ -24,8 +24,8 @@ type getOPE struct{}
 
 func (getOPE) testWhenRepositoryReturnAgencies(t *testing.T) {
 	mockCrl := gomock.NewController(t)
-	dbMock := database.NewMockIDatabaseRepository(mockCrl)
-	fsMock := file_storage.NewMockIStorageRepository(mockCrl)
+	dbMock := database.NewMockInterface(mockCrl)
+	fsMock := file_storage.NewMockInterface(mockCrl)
 
 	tjsp := models.Agency{
 		ID:     "tjsp",
@@ -57,8 +57,8 @@ func (getOPE) testWhenRepositoryReturnAgencies(t *testing.T) {
 
 func (getOPE) testWhenRepositoryReturnError(t *testing.T) {
 	mockCrl := gomock.NewController(t)
-	dbMock := database.NewMockIDatabaseRepository(mockCrl)
-	fsMock := file_storage.NewMockIStorageRepository(mockCrl)
+	dbMock := database.NewMockInterface(mockCrl)
+	fsMock := file_storage.NewMockInterface(mockCrl)
 
 	repoErr := errors.New("error getting agencies")
 	dbMock.EXPECT().GetOPE("SP").Return(nil, repoErr)
@@ -74,8 +74,8 @@ func (getOPE) testWhenRepositoryReturnError(t *testing.T) {
 
 func (getOPE) testWhenRepositoryReturnEmptyArray(t *testing.T) {
 	mockCrl := gomock.NewController(t)
-	dbMock := database.NewMockIDatabaseRepository(mockCrl)
-	fsMock := file_storage.NewMockIStorageRepository(mockCrl)
+	dbMock := database.NewMockInterface(mockCrl)
+	fsMock := file_storage.NewMockInterface(mockCrl)
 
 	agencies := []models.Agency{}
 	dbMock.EXPECT().GetOPE("SP").Return(agencies, nil)
