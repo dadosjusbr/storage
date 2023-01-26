@@ -13,6 +13,7 @@ import (
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -34,6 +35,10 @@ func TestGetOPE(t *testing.T) {
 	t.Run("Test GetOPE when agencies exists", tests.testWhenAgenciesExists)
 	t.Run("Test GetOPE when UF not exists", tests.testWhenUFNotExists)
 	t.Run("Test GetOPE when UF is in lower case", tests.testWhenUFIsInLowerCase)
+}
+
+func testingStore(t *testing.T) {
+	t.Run("Test Store", testStore)
 }
 
 type getOPE struct{}
@@ -103,6 +108,68 @@ func (getOPE) insertAgencies() ([]models.Agency, error) {
 		}
 	}
 	return agencies, nil
+}
+
+func testStore(t *testing.T) {
+	timestamp, _ := time.Parse("2006-01-02 15:04:00.000", "2023-01-16 03:14:17.635") // convertendo string para time.Time
+	agmi := models.AgencyMonthlyInfo{
+		AgencyID: "stf",
+		Month:    12,
+		Year:     2022,
+		Backups: []models.Backup{
+			{
+				URL:  "https://dadosjusbr-public.s3.amazonaws.com/stf/backups/stf-2022-12.zip",
+				Hash: "67e0928dbb026752637ad489bdbf9045",
+				Size: 140939,
+			},
+		},
+		Summary: &models.Summary{
+			Count: 11,
+			BaseRemuneration: models.DataSummary{
+				Max:     45710.19,
+				Min:     39293.32,
+				Average: 43376.78272727273,
+				Total:   477144.61000000004,
+			},
+			OtherRemunerations: models.DataSummary{
+				Max:     34727.98,
+				Min:     13097.77,
+				Average: 17030.535454545454,
+				Total:   187335.88999999998,
+			},
+			IncomeHistogram: map[int]int{-1: 0, 10000: 0, 20000: 0, 30000: 0, 40000: 4, 50000: 7},
+		},
+		CrawlerVersion:    "sha256:28763548a598f7b2754c770735453bdc94c400d2d923636fb52d64b851a2055d",
+		CrawlerRepo:       "https://github.com/dadosjusbr/coletor-stf",
+		CrawlingTimestamp: timestamppb.New(timestamp),
+		Package: &models.Backup{
+			URL:  "https://dadosjusbr-public.s3.amazonaws.com/stf/datapackage/stf-2022-12.zip",
+			Hash: "3f500b7d2d99b02ff5f4a4e58a6e04b7",
+			Size: 5653,
+		},
+		Meta: &models.Meta{
+			OpenFormat:       true,
+			Access:           "ACESSO_DIRETO",
+			Extension:        "HTML",
+			StrictlyTabular:  true,
+			ConsistentFormat: true,
+			HaveEnrollment:   true,
+			ThereIsACapacity: true,
+			HasPosition:      true,
+			BaseRevenue:      "DETALHADO",
+			OtherRecipes:     "SUMARIZADO",
+			Expenditure:      "DETALHADO",
+		},
+		Score: &models.Score{
+			Score:             0.95652174949646,
+			CompletenessScore: 0.9166666865348816,
+			EasinessScore:     1,
+		},
+		Duration: 114,
+	}
+
+	err := postgresDb.Store(agmi)
+	assert.Nil(t, err)
 }
 
 func truncateAgencies() error {
