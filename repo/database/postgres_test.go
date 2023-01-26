@@ -185,7 +185,7 @@ func TestStore(t *testing.T) {
 	var count int64
 	timestamp, _ := time.Parse("2006-01-02 15:04:00.000", "2023-01-16 03:14:17.635") // convertendo string para time.Time
 	agmi := models.AgencyMonthlyInfo{
-		AgencyID: "mpsp",
+		AgencyID: "tjal",
 		Month:    12,
 		Year:     2022,
 		Backups: []models.Backup{
@@ -240,7 +240,7 @@ func TestStore(t *testing.T) {
 		Duration: 114,
 	}
 	err := postgresDb.Store(agmi)
-	m := postgresDb.db.Model(dto.AgencyMonthlyInfoDTO{}).Where("id = 'mpsp/12/2022' AND atual = true").Count(&count)
+	m := postgresDb.db.Model(dto.AgencyMonthlyInfoDTO{}).Where("id = 'tjal/12/2022' AND atual = true").Count(&count)
 	if m.Error != nil {
 		fmt.Errorf("error finding agmi: %v", err)
 	}
