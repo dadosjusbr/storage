@@ -10,7 +10,7 @@ jobs:
         ports:
           - "5432:5432"
         env:
-          POSTGRES_USER: dadosjusbr_test
+          POSTGRES_USER: root
           POSTGRES_PASSWORD: dadosjusbr_test
           POSTGRES_DB: dadosjusbr_test
         options: >-
@@ -31,7 +31,7 @@ jobs:
         run: |
           docker exec -d dadosjusbr_test mkdir docker-entrypoint-initdb.d |
           docker cp ./repo/database/init_db.sql dadosjusbr_test:./docker-entrypoint-initdb.d/ |
-          docker exec dadosjusbr_test psql postgres://dadosjusbr_test:dadosjusbr_test@postgres_test:5432/dadosjusbr_test?sslmode=disable -f ./docker-entrypoint-initdb.d/init_db.sql
+          docker exec dadosjusbr_test psql postgres://root:dadosjusbr_test@postgres_test:5432/dadosjusbr_test?sslmode=disable -f ./docker-entrypoint-initdb.d/init_db.sql
       - run: "go test -v ./..."
         env:
-          POSTGRES_CONNECTION_URL: postgres://dadosjusbr_test:dadosjusbr_test@postgres_test:5432/dadosjusbr_test?sslmode=disable
+          POSTGRES_CONNECTION_URL: postgres://root:dadosjusbr_test@postgres_test:5432/dadosjusbr_test?sslmode=disable

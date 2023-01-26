@@ -162,9 +162,10 @@ func (p *PostgresDB) GetOPE(uf string) ([]models.Agency, error) {
 	return orgaos, nil
 }
 
-func (p *PostgresDB) GetOPJ(group string, year int) ([]models.Agency, error) {
+func (p *PostgresDB) GetOPJ(group string) ([]models.Agency, error) {
 	var dtoOrgaos []dto.AgencyDTO
-	if err := p.db.Model(&dto.AgencyDTO{}).Where("jurisdicao = ?", group).Find(&dtoOrgaos).Error; err != nil {
+	group = strings.ToLower(group)
+	if err := p.db.Model(&dto.AgencyDTO{}).Where("LOWER(jurisdicao) = ?", group).Find(&dtoOrgaos).Error; err != nil {
 		return nil, fmt.Errorf("error getting agencies by type: %q", err)
 	}
 

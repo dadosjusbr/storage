@@ -38,8 +38,8 @@ func (c *Client) GetOPE(uf string) ([]models.Agency, error) {
 }
 
 // GetOPJ Connect to db to collect data to build 'Órgao por jurisdição' screen
-func (c *Client) GetOPJ(group string, year int) ([]models.Agency, error) {
-	ags, err := c.Db.GetOPJ(group, year)
+func (c *Client) GetOPJ(group string) ([]models.Agency, error) {
+	ags, err := c.Db.GetOPJ(group)
 	if err != nil {
 		return nil, fmt.Errorf("GetOPJ() error: %q", err)
 	}
