@@ -37,10 +37,6 @@ func TestGetOPE(t *testing.T) {
 	t.Run("Test GetOPE when UF is in lower case", tests.testWhenUFIsInLowerCase)
 }
 
-func testingStore(t *testing.T) {
-	t.Run("Test Store", testStore)
-}
-
 type getOPE struct{}
 
 func (g getOPE) testWhenAgenciesExists(t *testing.T) {
@@ -110,10 +106,11 @@ func (getOPE) insertAgencies() ([]models.Agency, error) {
 	return agencies, nil
 }
 
-func testStore(t *testing.T) {
+func TestStore(t *testing.T) {
+	var count int64
 	timestamp, _ := time.Parse("2006-01-02 15:04:00.000", "2023-01-16 03:14:17.635") // convertendo string para time.Time
 	agmi := models.AgencyMonthlyInfo{
-		AgencyID: "stf",
+		AgencyID: "mpsp",
 		Month:    12,
 		Year:     2022,
 		Backups: []models.Backup{
@@ -167,9 +164,15 @@ func testStore(t *testing.T) {
 		},
 		Duration: 114,
 	}
-
 	err := postgresDb.Store(agmi)
+	m := postgresDb.db.Model(dto.AgencyMonthlyInfoDTO{}).Where("id = 'mpsp/12/2022' AND atual = true").Count(&count)
+	if m.Error != nil {
+		fmt.Errorf("error finding agmi: %v", err)
+	}
+	// Verificando se o método Store deu erro
 	assert.Nil(t, err)
+	// Verificando se realmente foi armazenado e se tem apenas 1 com atual = true.
+	assert.Equal(t, true, count == 1)
 }
 
 func truncateAgencies() error {
