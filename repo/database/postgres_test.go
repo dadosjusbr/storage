@@ -262,7 +262,6 @@ func TestStore(t *testing.T) {
 	assert.Equal(t, int64(1), count)
 	assert.Equal(t, agmi.AgencyID, result.AgencyID)
 	assert.Equal(t, agmi.Backups, result.Backups)
-	assert.Equal(t, agmi.Summary.BaseRemuneration, result.Summary.BaseRemuneration)
 	assert.Equal(t, agmi.Package.Hash, result.Package.Hash)
 	assert.Equal(t, agmi.Summary.BaseRemuneration, result.Summary.BaseRemuneration)
 	assert.Equal(t, agmi.Meta.Extension, result.Meta.Extension)
