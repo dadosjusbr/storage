@@ -182,72 +182,92 @@ func (getOPJ) insertAgencies() ([]models.Agency, error) {
 }
 
 func TestStore(t *testing.T) {
-	var count int64
-	timestamp, _ := time.Parse("2006-01-02 15:04:00.000", "2023-01-16 03:14:17.635") // convertendo string para time.Time
+	timestamp, _ := time.Parse("2006-01-02 15:04:05.999", "2023-01-16 04:55:11.930") // convertendo string para time.Time
 	agmi := models.AgencyMonthlyInfo{
-		AgencyID: "tjal",
+		AgencyID: "tjba",
 		Month:    12,
 		Year:     2022,
 		Backups: []models.Backup{
 			{
-				URL:  "https://dadosjusbr-public.s3.amazonaws.com/stf/backups/stf-2022-12.zip",
-				Hash: "67e0928dbb026752637ad489bdbf9045",
-				Size: 140939,
+				URL:  "https://dadosjusbr-public.s3.amazonaws.com/tjba/backups/tjba-2022-12.zip",
+				Hash: "2cc54da4571ca9ff2d416a198cd09669",
+				Size: 173253,
 			},
 		},
 		Summary: &models.Summary{
-			Count: 11,
+			Count: 662,
 			BaseRemuneration: models.DataSummary{
-				Max:     45710.19,
-				Min:     39293.32,
-				Average: 43376.78272727273,
-				Total:   477144.61000000004,
+				Max:     35462.22,
+				Min:     27098.07,
+				Average: 31930.475453172014,
+				Total:   21137974.749999873,
 			},
 			OtherRemunerations: models.DataSummary{
-				Max:     34727.98,
-				Min:     13097.77,
-				Average: 17030.535454545454,
-				Total:   187335.88999999998,
+				Max:     243308.90999999997,
+				Min:     35974.35,
+				Average: 96290.11472809668,
+				Total:   63744055.95,
 			},
-			IncomeHistogram: map[int]int{-1: 0, 10000: 0, 20000: 0, 30000: 0, 40000: 4, 50000: 7},
+			IncomeHistogram: map[int]int{-1: 0, 10000: 0, 20000: 0, 30000: 116, 40000: 546, 50000: 0},
 		},
-		CrawlerVersion:    "sha256:28763548a598f7b2754c770735453bdc94c400d2d923636fb52d64b851a2055d",
-		CrawlerRepo:       "https://github.com/dadosjusbr/coletor-stf",
+		CrawlerVersion:    "b9ec52df612cda045544543a3b0387842475764d",
+		CrawlerRepo:       "https://github.com/dadosjusbr/coletor-cnj",
+		ParserVersion:     "sha256:e0b5858e2d11a2e4183a32c490517ec440020ad8ca549ae86544dbc7683dcfbb",
+		ParserRepo:        "https://github.com/dadosjusbr/parser-cnj",
 		CrawlingTimestamp: timestamppb.New(timestamp),
 		Package: &models.Backup{
-			URL:  "https://dadosjusbr-public.s3.amazonaws.com/stf/datapackage/stf-2022-12.zip",
-			Hash: "3f500b7d2d99b02ff5f4a4e58a6e04b7",
-			Size: 5653,
+			URL:  "https://dadosjusbr-public.s3.amazonaws.com/tjba/datapackage/tjba-2022-12.zip",
+			Hash: "ec2651e8e9068a1c2f7e1bfec10ce718",
+			Size: 94219,
 		},
 		Meta: &models.Meta{
-			OpenFormat:       true,
-			Access:           "ACESSO_DIRETO",
-			Extension:        "HTML",
+			OpenFormat:       false,
+			Access:           "NECESSITA_SIMULACAO_USUARIO",
+			Extension:        "XLS",
 			StrictlyTabular:  true,
 			ConsistentFormat: true,
-			HaveEnrollment:   true,
-			ThereIsACapacity: true,
-			HasPosition:      true,
+			HaveEnrollment:   false,
+			ThereIsACapacity: false,
+			HasPosition:      false,
 			BaseRevenue:      "DETALHADO",
-			OtherRecipes:     "SUMARIZADO",
+			OtherRecipes:     "DETALHADO",
 			Expenditure:      "DETALHADO",
 		},
 		Score: &models.Score{
-			Score:             0.95652174949646,
-			CompletenessScore: 0.9166666865348816,
-			EasinessScore:     1,
+			Score:             0.5,
+			CompletenessScore: 0.5,
+			EasinessScore:     0.5,
 		},
-		Duration: 114,
+		Duration: 305,
 	}
+
 	err := postgresDb.Store(agmi)
-	m := postgresDb.db.Model(dto.AgencyMonthlyInfoDTO{}).Where("id = 'tjal/12/2022' AND atual = true").Count(&count)
+
+	var count int64
+	var dtoAgmi dto.AgencyMonthlyInfoDTO
+
+	m := postgresDb.db.Model(dto.AgencyMonthlyInfoDTO{}).Where("id = 'tjba/12/2022' AND atual = true").Count(&count).Find(&dtoAgmi)
 	if m.Error != nil {
 		fmt.Errorf("error finding agmi: %v", err)
 	}
-	// Verificando se o método Store deu erro
+
+	result, err := dtoAgmi.ConvertToModel()
+	if err != nil {
+		fmt.Errorf("error converting agmi dto to model: %q", err)
+	}
+
+	// Verificando se o método Store deu erro,
+	// se tem apenas 1 com atual == true e se todos os campos foram armazenados.
 	assert.Nil(t, err)
-	// Verificando se realmente foi armazenado e se tem apenas 1 com atual = true.
-	assert.Equal(t, true, count == 1)
+	assert.Equal(t, int64(1), count)
+	assert.Equal(t, agmi.AgencyID, result.AgencyID)
+	assert.Equal(t, agmi.Backups, result.Backups)
+	assert.Equal(t, agmi.Summary.BaseRemuneration, result.Summary.BaseRemuneration)
+	assert.Equal(t, agmi.Package.Hash, result.Package.Hash)
+	assert.Equal(t, agmi.Summary.BaseRemuneration, result.Summary.BaseRemuneration)
+	assert.Equal(t, agmi.Meta.Extension, result.Meta.Extension)
+	assert.Equal(t, agmi.Score.Score, result.Score.Score)
+	assert.Equal(t, agmi.Duration, result.Duration)
 }
 
 func truncateTables() error {
