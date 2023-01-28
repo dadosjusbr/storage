@@ -180,6 +180,63 @@ func (getOPJ) insertAgencies() ([]models.Agency, error) {
 	return agencies, nil
 }
 
+func TestGetAgenciesCount(t *testing.T) {
+	tests := getAgenciesCount{}
+	t.Run("Test GetAgenciesCount when agencies exists", tests.testWhenAgenciesExists)
+	t.Run("Test GetAgenciesCount when agencies not exists", tests.testWhenAgenciesNotExists)
+}
+
+type getAgenciesCount struct{}
+
+func (g getAgenciesCount) testWhenAgenciesExists(t *testing.T) {
+	agencies, err := g.insertAgencies()
+	if err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	count, err := postgresDb.GetAgenciesCount()
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(agencies), count)
+}
+
+func (g getAgenciesCount) testWhenAgenciesNotExists(t *testing.T) {
+	truncateTables()
+
+	count, err := postgresDb.GetAgenciesCount()
+
+	assert.Nil(t, err)
+	assert.Equal(t, 0, count)
+}
+
+func (getAgenciesCount) insertAgencies() ([]models.Agency, error) {
+	agencies := []models.Agency{
+		{
+			ID: "tjsp",
+		},
+		{
+			ID: "tjal",
+		},
+		{
+			ID: "tjba",
+		},
+	}
+	for _, agency := range agencies {
+		agencyDto, err := dto.NewAgencyDTO(agency)
+		if err != nil {
+			return nil, fmt.Errorf("error creating agency dto %s: %q", agency.ID, err)
+		}
+		tx := postgresDb.db.Model(dto.AgencyDTO{}).Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "id"}},
+			DoNothing: true,
+		}).Create(agencyDto)
+		if tx.Error != nil {
+			return nil, fmt.Errorf("error inserting agency %s: %q", agency.ID, tx.Error)
+		}
+	}
+	return agencies, nil
+}
+
 func truncateTables() error {
 	tx := postgresDb.db.Exec(`TRUNCATE TABLE "coletas", "remuneracoes_zips","orgaos"`)
 	if tx.Error != nil {
