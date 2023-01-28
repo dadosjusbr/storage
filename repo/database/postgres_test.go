@@ -214,3 +214,63 @@ func getDbTestConnection() error {
 	postgresDb.SetConnection(gormDb)
 	return nil
 }
+
+func TestGetNumberOfMonthsCollected(t *testing.T) {
+	tests := getNumberOfMonthsCollected{}
+	t.Run("Test GetNumberOfMonthsCollected when monthly infos exists", tests.testWhenMonthlyInfosExists)
+	t.Run("Test GetNumberOfMonthsCollected when monthly infos not exists", tests.testWhenMonthlyInfosNotExists)
+}
+
+type getNumberOfMonthsCollected struct{}
+
+func (g getNumberOfMonthsCollected) testWhenMonthlyInfosExists(t *testing.T) {
+	monthlyInfos, err := g.insertMonthlyInfos()
+	if err != nil {
+		t.Fatalf("error inserting monthly infos: %q", err)
+	}
+
+	count, err := postgresDb.GetNumberOfMonthsCollected()
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(monthlyInfos), count)
+}
+
+func (g getNumberOfMonthsCollected) testWhenMonthlyInfosNotExists(t *testing.T) {
+	truncateTables()
+
+	count, err := postgresDb.GetNumberOfMonthsCollected()
+
+	assert.Nil(t, err)
+	assert.Equal(t, 0, count)
+}
+
+func (getNumberOfMonthsCollected) insertMonthlyInfos() ([]models.AgencyMonthlyInfo, error) {
+	monthlyInfos := []models.AgencyMonthlyInfo{
+		{
+			AgencyID: "tjsp",
+			Year:     2020,
+			Month:    1,
+		},
+		{
+			AgencyID: "tjal",
+			Year:     2020,
+			Month:    2,
+		},
+		{
+			AgencyID: "tjba",
+			Year:     2020,
+			Month:    3,
+		},
+	}
+	for _, monthlyInfo := range monthlyInfos {
+		monthlyInfoDto, err := dto.NewAgencyMonthlyInfoDTO(monthlyInfo)
+		if err != nil {
+			return nil, fmt.Errorf("error creating monthly info dto: %q", err)
+		}
+		tx := postgresDb.db.Model(dto.AgencyMonthlyInfoDTO{}).Create(monthlyInfoDto)
+		if tx.Error != nil {
+			return nil, fmt.Errorf("error inserting monthly info: %q", tx.Error)
+		}
+	}
+	return monthlyInfos, nil
+}

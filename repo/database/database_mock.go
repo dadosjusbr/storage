@@ -215,10 +215,10 @@ func (mr *MockInterfaceMockRecorder) GetMonthlyInfoSummary(agencies, year interf
 }
 
 // GetNumberOfMonthsCollected mocks base method.
-func (m *MockInterface) GetNumberOfMonthsCollected() (int64, error) {
+func (m *MockInterface) GetNumberOfMonthsCollected() (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNumberOfMonthsCollected")
-	ret0, _ := ret[0].(int64)
+	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
