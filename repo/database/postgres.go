@@ -225,8 +225,9 @@ func (p *PostgresDB) GetAgencies(uf string) ([]models.Agency, error) {
 
 func (p *PostgresDB) GetAgency(aid string) (*models.Agency, error) {
 	var dtoOrgao dto.AgencyDTO
+	aid = strings.ToLower(aid)
 	if err := p.db.Model(&dto.AgencyDTO{}).Where("id = ?", aid).First(&dtoOrgao).Error; err != nil {
-		return nil, fmt.Errorf("error getting agency: %q", err)
+		return nil, fmt.Errorf("error getting agency '%s': %q", aid, err)
 	}
 	orgao, err := dtoOrgao.ConvertToModel()
 	if err != nil {

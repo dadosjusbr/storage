@@ -180,6 +180,71 @@ func (getOPJ) insertAgencies() ([]models.Agency, error) {
 	return agencies, nil
 }
 
+func TestGetAgency(t *testing.T) {
+	tests := getAgency{}
+	t.Run("Test GetAgency when agency exists", tests.testWhenAgencyExists)
+	t.Run("Test GetAgency when agency not exists", tests.testWhenAgencyNotExists)
+	t.Run("Test GetAgency when agency is in irregular case", tests.testWhenAgencyIsInIrregularCase)
+}
+
+type getAgency struct{}
+
+func (g getAgency) testWhenAgencyExists(t *testing.T) {
+	agency, err := g.insertAgency()
+	if err != nil {
+		t.Fatalf("error inserting agency: %q", err)
+	}
+
+	returnedAgency, err := postgresDb.GetAgency("tjsp")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agency, returnedAgency)
+}
+
+func (g getAgency) testWhenAgencyNotExists(t *testing.T) {
+	truncateTables()
+
+	returnedAgency, err := postgresDb.GetAgency("tjsp")
+
+	expectedErr := fmt.Errorf("error getting agency 'tjsp': %q", gorm.ErrRecordNotFound)
+	assert.Nil(t, returnedAgency)
+	assert.Equal(t, expectedErr, err)
+}
+
+func (g getAgency) testWhenAgencyIsInIrregularCase(t *testing.T) {
+	agency, err := g.insertAgency()
+	if err != nil {
+		t.Fatalf("error inserting agency: %q", err)
+	}
+
+	returnedAgency, err := postgresDb.GetAgency("tJsp")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agency, returnedAgency)
+}
+
+func (getAgency) insertAgency() (*models.Agency, error) {
+	agency := models.Agency{
+		ID:     "tjsp",
+		Name:   "Tribunal de Justiça do Estado de São Paulo",
+		Type:   "Estadual",
+		Entity: "Tribunal",
+		UF:     "SP",
+	}
+	agencyDto, err := dto.NewAgencyDTO(agency)
+	if err != nil {
+		return nil, fmt.Errorf("error creating agency dto %s: %q", agency.ID, err)
+	}
+	tx := postgresDb.db.Model(dto.AgencyDTO{}).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
+		DoNothing: true,
+	}).Create(agencyDto)
+	if tx.Error != nil {
+		return nil, fmt.Errorf("error inserting agency %s: %q", agency.ID, tx.Error)
+	}
+	return &agency, nil
+}
+
 func truncateTables() error {
 	tx := postgresDb.db.Exec(`TRUNCATE TABLE "coletas", "remuneracoes_zips","orgaos"`)
 	if tx.Error != nil {
