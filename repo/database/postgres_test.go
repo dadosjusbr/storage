@@ -175,23 +175,6 @@ func (g getOPJ) testWhenGroupIsInIrregularCase(t *testing.T) {
 	assert.Equal(t, agencies, returnedAgencies)
 }
 
-func insertAgencies(agencies []models.Agency) error {
-	for _, agency := range agencies {
-		agencyDto, err := dto.NewAgencyDTO(agency)
-		if err != nil {
-			return fmt.Errorf("error creating agency dto %s: %q", agency.ID, err)
-		}
-		tx := postgresDb.db.Model(dto.AgencyDTO{}).Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "id"}},
-			DoNothing: true,
-		}).Create(agencyDto)
-		if tx.Error != nil {
-			return fmt.Errorf("error inserting agency %s: %q", agency.ID, tx.Error)
-		}
-	}
-	return nil
-}
-
 func TestGetFirstDateWithMonthlyInfo(t *testing.T) {
 	tests := getFirstDateWithMonthlyInfo{}
 	t.Run("Test GetFirstDateWithMonthlyInfo when monthly infos exists", tests.testWhenMonthlyInfosExists)
@@ -305,6 +288,23 @@ func insertMonthlyInfos(agmis []models.AgencyMonthlyInfo) error {
 		tx := postgresDb.db.Model(dto.AgencyMonthlyInfoDTO{}).Create(agmiDTO)
 		if tx.Error != nil {
 			return fmt.Errorf("error inserting agency: %q", tx.Error)
+		}
+	}
+	return nil
+}
+
+func insertAgencies(agencies []models.Agency) error {
+	for _, agency := range agencies {
+		agencyDto, err := dto.NewAgencyDTO(agency)
+		if err != nil {
+			return fmt.Errorf("error creating agency dto %s: %q", agency.ID, err)
+		}
+		tx := postgresDb.db.Model(dto.AgencyDTO{}).Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "id"}},
+			DoNothing: true,
+		}).Create(agencyDto)
+		if tx.Error != nil {
+			return fmt.Errorf("error inserting agency %s: %q", agency.ID, tx.Error)
 		}
 	}
 	return nil

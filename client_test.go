@@ -162,3 +162,48 @@ func (getOPJ) testWhenRepositoryReturnEmptyArray(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
 }
+
+func TestGetFirstDateWithMonthlyInfo(t *testing.T) {
+	tests := getFirstDateWithMonthlyInfo{}
+	t.Run("Test GetFirstDateWithMonthlyInfo when repository return date", tests.testWhenRepositoryReturnDate)
+	t.Run("Test GetFirstDateWithMonthlyInfo when repository return error", tests.testWhenRepositoryReturnError)
+}
+
+type getFirstDateWithMonthlyInfo struct{}
+
+func (getFirstDateWithMonthlyInfo) testWhenRepositoryReturnDate(t *testing.T) {
+	mockCrl := gomock.NewController(t)
+	dbMock := database.NewMockInterface(mockCrl)
+	fsMock := file_storage.NewMockInterface(mockCrl)
+
+	expecMonth := 1
+	expecYear := 2018
+	dbMock.EXPECT().GetFirstDateWithMonthlyInfo().Return(expecMonth, expecYear, nil)
+	dbMock.EXPECT().Connect().Return(nil)
+
+	client, err := storage.NewClient(dbMock, fsMock)
+
+	month, year, err := client.GetFirstDateWithMonthlyInfo()
+
+	assert.Nil(t, err)
+	assert.Equal(t, month, expecMonth)
+	assert.Equal(t, year, expecYear)
+}
+
+func (getFirstDateWithMonthlyInfo) testWhenRepositoryReturnError(t *testing.T) {
+	mockCrl := gomock.NewController(t)
+	dbMock := database.NewMockInterface(mockCrl)
+	fsMock := file_storage.NewMockInterface(mockCrl)
+
+	repoErr := errors.New("error getting first date")
+	dbMock.EXPECT().GetFirstDateWithMonthlyInfo().Return(0, 0, repoErr)
+	dbMock.EXPECT().Connect().Return(nil)
+
+	client, err := storage.NewClient(dbMock, fsMock)
+	month, year, err := client.GetFirstDateWithMonthlyInfo()
+	expectedErr := errors.New(fmt.Sprintf("GetFirstDateWithMonthlyInfo() error: \"%s\"", repoErr.Error()))
+
+	assert.Equal(t, expectedErr, err)
+	assert.Equal(t, 0, month)
+	assert.Equal(t, 0, year)
+}
