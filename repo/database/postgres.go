@@ -355,10 +355,13 @@ func (p *PostgresDB) GetGeneralMonthlyInfo() (float64, error) {
 	var dtoAgmi dto.AgencyMonthlyInfoDTO
 	var value float64
 	query := `
-		SUM(
-			CAST(sumario -> 'remuneracao_base' ->> 'total' AS DECIMAL) + 
-			CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)
-		)`
+		COALESCE(
+			SUM(
+				CAST(sumario -> 'remuneracao_base' ->> 'total' AS DECIMAL) + 
+				CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)
+			), 0
+		)
+		`
 	m := p.db.Model(&dtoAgmi).Select(query)
 	m = m.Where("atual=true AND (procinfo IS NULL OR procinfo::text = 'null')")
 	if err := m.Scan(&value).Error; err != nil {

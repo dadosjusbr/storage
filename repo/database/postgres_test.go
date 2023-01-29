@@ -13,6 +13,7 @@ import (
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -40,8 +41,16 @@ func TestGetOPE(t *testing.T) {
 type getOPE struct{}
 
 func (g getOPE) testWhenAgenciesExists(t *testing.T) {
-	agencies, err := g.insertAgencies()
-	if err != nil {
+	agencies := []models.Agency{
+		{
+			ID:     "tjsp",
+			Name:   "Tribunal de Justiça do Estado de São Paulo",
+			Type:   "Estadual",
+			Entity: "Tribunal",
+			UF:     "SP",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
 
@@ -61,18 +70,6 @@ func (g getOPE) testWhenUFNotExists(t *testing.T) {
 }
 
 func (g getOPE) testWhenUFIsInLowerCase(t *testing.T) {
-	agencies, err := g.insertAgencies()
-	if err != nil {
-		t.Fatalf("error inserting agencies: %q", err)
-	}
-
-	returnedAgencies, err := postgresDb.GetOPE("sp")
-
-	assert.Nil(t, err)
-	assert.Equal(t, agencies, returnedAgencies)
-}
-
-func (getOPE) insertAgencies() ([]models.Agency, error) {
 	agencies := []models.Agency{
 		{
 			ID:     "tjsp",
@@ -82,20 +79,14 @@ func (getOPE) insertAgencies() ([]models.Agency, error) {
 			UF:     "SP",
 		},
 	}
-	for _, agency := range agencies {
-		agencyDto, err := dto.NewAgencyDTO(agency)
-		if err != nil {
-			return nil, fmt.Errorf("error creating agency dto %s: %q", agency.ID, err)
-		}
-		tx := postgresDb.db.Model(dto.AgencyDTO{}).Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "id"}},
-			DoNothing: true,
-		}).Create(agencyDto)
-		if tx.Error != nil {
-			return nil, fmt.Errorf("error inserting agency %s: %q", agency.ID, tx.Error)
-		}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
 	}
-	return agencies, nil
+
+	returnedAgencies, err := postgresDb.GetOPE("sp")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agencies, returnedAgencies)
 }
 
 func TestGetOPJ(t *testing.T) {
@@ -108,39 +99,6 @@ func TestGetOPJ(t *testing.T) {
 type getOPJ struct{}
 
 func (g getOPJ) testWhenAgenciesExists(t *testing.T) {
-	agencies, err := g.insertAgencies()
-	if err != nil {
-		t.Fatalf("error inserting agencies: %q", err)
-	}
-
-	returnedAgencies, err := postgresDb.GetOPJ("Estadual")
-
-	assert.Nil(t, err)
-	assert.Equal(t, agencies, returnedAgencies)
-}
-
-func (g getOPJ) testWhenGroupNotExists(t *testing.T) {
-	truncateTables()
-
-	returnedAgencies, err := postgresDb.GetOPJ("Estadual")
-
-	assert.Nil(t, err)
-	assert.Empty(t, returnedAgencies)
-}
-
-func (g getOPJ) testWhenGroupIsInIrregularCase(t *testing.T) {
-	agencies, err := g.insertAgencies()
-	if err != nil {
-		t.Fatalf("error inserting agencies: %q", err)
-	}
-
-	returnedAgencies, err := postgresDb.GetOPJ("eStAdUaL")
-
-	assert.Nil(t, err)
-	assert.Equal(t, agencies, returnedAgencies)
-}
-
-func (getOPJ) insertAgencies() ([]models.Agency, error) {
 	agencies := []models.Agency{
 		{
 			ID:     "tjsp",
@@ -164,20 +122,162 @@ func (getOPJ) insertAgencies() ([]models.Agency, error) {
 			UF:     "BA",
 		},
 	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	returnedAgencies, err := postgresDb.GetOPJ("Estadual")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agencies, returnedAgencies)
+}
+
+func (g getOPJ) testWhenGroupNotExists(t *testing.T) {
+	truncateTables()
+
+	returnedAgencies, err := postgresDb.GetOPJ("Estadual")
+
+	assert.Nil(t, err)
+	assert.Empty(t, returnedAgencies)
+}
+
+func (g getOPJ) testWhenGroupIsInIrregularCase(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID:     "tjsp",
+			Name:   "Tribunal de Justiça do Estado de São Paulo",
+			Type:   "Estadual",
+			Entity: "Tribunal",
+			UF:     "SP",
+		},
+		{
+			ID:     "tjal",
+			Name:   "Tribunal de Justiça do Estado de Alagoas",
+			Type:   "Estadual",
+			Entity: "Tribunal",
+			UF:     "AL",
+		},
+		{
+			ID:     "tjba",
+			Name:   "Tribunal de Justiça do Estado da Bahia",
+			Type:   "Estadual",
+			Entity: "Tribunal",
+			UF:     "BA",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	returnedAgencies, err := postgresDb.GetOPJ("eStAdUaL")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agencies, returnedAgencies)
+}
+func TestGetGeneralMonthlyInfo(t *testing.T) {
+	tests := getGeneralMonthlyInfo{}
+	t.Run("Test GetGeneralMonthlyInfo when monthly info exists", tests.testWhenMonthlyInfoExists)
+	t.Run("Test GetGeneralMonthlyInfo when monthly info not exists", tests.testWhenMonthlyInfoNotExists)
+}
+
+type getGeneralMonthlyInfo struct{}
+
+func (g getGeneralMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID: "tjsp",
+		},
+		{
+			ID: "tjal",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+	agmis := []models.AgencyMonthlyInfo{
+		{
+			AgencyID:          "tjal",
+			Year:              2020,
+			Month:             3,
+			CrawlingTimestamp: timestamppb.Now(),
+			Summary: &models.Summary{
+				BaseRemuneration: models.DataSummary{
+					Total: 1200,
+				},
+				OtherRemunerations: models.DataSummary{
+					Total: 700,
+				},
+			},
+		},
+		{
+			AgencyID:          "tjsp",
+			Year:              2020,
+			Month:             3,
+			CrawlingTimestamp: timestamppb.Now(),
+			Summary: &models.Summary{
+				BaseRemuneration: models.DataSummary{
+					Total: 2000,
+				},
+				OtherRemunerations: models.DataSummary{
+					Total: 1000,
+				},
+			},
+		},
+	}
+
+	var total float64
+	for _, agmi := range agmis {
+		total += agmi.Summary.BaseRemuneration.Total
+		total += agmi.Summary.OtherRemunerations.Total
+	}
+
+	if err := insertMonthlyInfos(agmis); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+	value, err := postgresDb.GetGeneralMonthlyInfo()
+
+	assert.Nil(t, err)
+	assert.Equal(t, value, total)
+}
+
+func (g getGeneralMonthlyInfo) testWhenMonthlyInfoNotExists(t *testing.T) {
+	truncateTables()
+
+	value, err := postgresDb.GetGeneralMonthlyInfo()
+
+	assert.Nil(t, err)
+	assert.Equal(t, value, float64(0))
+}
+
+func insertMonthlyInfos(agmis []models.AgencyMonthlyInfo) error {
+	for _, agmi := range agmis {
+		agmiDTO, err := dto.NewAgencyMonthlyInfoDTO(agmi)
+		if err != nil {
+			return fmt.Errorf("error creating agency dto: %q", err)
+		}
+		tx := postgresDb.db.Model(dto.AgencyMonthlyInfoDTO{}).Create(agmiDTO)
+		if tx.Error != nil {
+			return fmt.Errorf("error inserting agency: %q", tx.Error)
+		}
+	}
+	return nil
+}
+
+func insertAgencies(agencies []models.Agency) error {
 	for _, agency := range agencies {
 		agencyDto, err := dto.NewAgencyDTO(agency)
 		if err != nil {
-			return nil, fmt.Errorf("error creating agency dto %s: %q", agency.ID, err)
+			return fmt.Errorf("error creating agency dto %s: %q", agency.ID, err)
 		}
 		tx := postgresDb.db.Model(dto.AgencyDTO{}).Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "id"}},
 			DoNothing: true,
 		}).Create(agencyDto)
 		if tx.Error != nil {
-			return nil, fmt.Errorf("error inserting agency %s: %q", agency.ID, tx.Error)
+			return fmt.Errorf("error inserting agency %s: %q", agency.ID, tx.Error)
 		}
 	}
-	return agencies, nil
+	return nil
 }
 
 func truncateTables() error {
