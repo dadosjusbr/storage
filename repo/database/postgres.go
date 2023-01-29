@@ -335,6 +335,7 @@ func (p *PostgresDB) GetLastDateWithMonthlyInfo() (int, int, error) {
 	var year, month int
 	m := p.db.Model(&dtoAgmi).Select("MAX(ano),MAX(mes)")
 	m = m.Where("atual=true AND (procinfo IS NULL OR procinfo::text='null')")
+	m = m.Where("ano = (SELECT MAX(ano) FROM coletas)")
 	if err := m.Row().Scan(&year, &month); err != nil {
 		return 0, 0, fmt.Errorf("error getting last date with monthly info: %q", err)
 	}
