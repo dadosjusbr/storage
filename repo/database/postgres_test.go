@@ -29,16 +29,16 @@ func TestMain(m *testing.M) {
 	os.Exit(exitValue)
 }
 
-func TestGetOPE(t *testing.T) {
-	tests := getOPE{}
-	t.Run("Test GetOPE when agencies exists", tests.testWhenAgenciesExists)
-	t.Run("Test GetOPE when UF not exists", tests.testWhenUFNotExists)
-	t.Run("Test GetOPE when UF is in lower case", tests.testWhenUFIsInLowerCase)
+func TestGetStateAgencies(t *testing.T) {
+	tests := getStateAgencies{}
+	t.Run("Test TestGetStateAgencies when agencies exists", tests.testWhenAgenciesExists)
+	t.Run("Test TestGetStateAgencies when UF not exists", tests.testWhenUFNotExists)
+	t.Run("Test TestGetStateAgencies when UF is in lower case", tests.testWhenUFIsInLowerCase)
 }
 
-type getOPE struct{}
+type getStateAgencies struct{}
 
-func (g getOPE) testWhenAgenciesExists(t *testing.T) {
+func (g getStateAgencies) testWhenAgenciesExists(t *testing.T) {
 	agencies := []models.Agency{
 		{
 			ID:   "tjsp",
@@ -49,23 +49,23 @@ func (g getOPE) testWhenAgenciesExists(t *testing.T) {
 	if err := insertAgencies(agencies); err != nil {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
-	returnedAgencies, err := postgresDb.GetOPE("SP")
+	returnedAgencies, err := postgresDb.GetStateAgencies("SP")
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
 	truncateTables()
 }
 
-func (g getOPE) testWhenUFNotExists(t *testing.T) {
+func (g getStateAgencies) testWhenUFNotExists(t *testing.T) {
 	truncateTables()
 
-	returnedAgencies, err := postgresDb.GetOPE("SP")
+	returnedAgencies, err := postgresDb.GetStateAgencies("SP")
 
 	assert.Nil(t, err)
 	assert.Empty(t, returnedAgencies)
 }
 
-func (g getOPE) testWhenUFIsInLowerCase(t *testing.T) {
+func (g getStateAgencies) testWhenUFIsInLowerCase(t *testing.T) {
 	agencies := []models.Agency{
 		{
 			ID:   "tjsp",
@@ -77,7 +77,7 @@ func (g getOPE) testWhenUFIsInLowerCase(t *testing.T) {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
 
-	returnedAgencies, err := postgresDb.GetOPE("sp")
+	returnedAgencies, err := postgresDb.GetStateAgencies("sp")
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
@@ -160,6 +160,92 @@ func (g getOPJ) testWhenGroupIsInIrregularCase(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
+	truncateTables()
+}
+
+func TestGetAgenciesByUF(t *testing.T) {
+	tests := getAgenciesByUF{}
+	t.Run("Test GetAgenciesByUF when agencies exists", tests.testWhenAgenciesExists)
+	t.Run("Test GetAgenciesByUF when UF not exists", tests.testWhenUFNotExists)
+	t.Run("Test GetAgenciesByUF when UF is in irregular case", tests.testWhenUFIsInIrregularCase)
+}
+
+type getAgenciesByUF struct{}
+
+func (g getAgenciesByUF) testWhenAgenciesExists(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID:   "mpsp",
+			Type: "Ministério",
+			UF:   "SP",
+		},
+		{
+			ID:   "tjsp",
+			Type: "Estadual",
+			UF:   "SP",
+		},
+		{
+			ID:   "tjmsp",
+			Type: "Militar",
+			UF:   "SP",
+		},
+		{
+			ID:   "tjal",
+			Type: "Estadual",
+			UF:   "AL",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	returnedAgencies, err := postgresDb.GetAgenciesByUF("SP")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agencies[:3], returnedAgencies)
+	truncateTables()
+}
+
+func (g getAgenciesByUF) testWhenUFNotExists(t *testing.T) {
+	truncateTables()
+
+	returnedAgencies, err := postgresDb.GetAgenciesByUF("SP")
+
+	assert.Nil(t, err)
+	assert.Empty(t, returnedAgencies)
+}
+
+func (g getAgenciesByUF) testWhenUFIsInIrregularCase(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID:   "mpsp",
+			Type: "Ministério",
+			UF:   "SP",
+		},
+		{
+			ID:   "tjsp",
+			Type: "Estadual",
+			UF:   "SP",
+		},
+		{
+			ID:   "tjmsp",
+			Type: "Militar",
+			UF:   "SP",
+		},
+		{
+			ID:   "tjal",
+			Type: "Estadual",
+			UF:   "AL",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	returnedAgencies, err := postgresDb.GetAgenciesByUF("sP")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agencies[:3], returnedAgencies)
 	truncateTables()
 }
 

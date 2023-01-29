@@ -11,12 +11,12 @@ type Interface interface {
 	StorePackage(newPackage models.Package) error
 	StoreRemunerations(remu models.Remunerations) error
 	// OPE : Órgãos Por Estado
-	GetOPE(uf string) ([]models.Agency, error)
+	GetStateAgencies(uf string) ([]models.Agency, error)
 	// OPJ: Órgãos por jurisdição.
 	GetOPJ(group string) ([]models.Agency, error)
 	GetAgenciesCount() (int64, error)
 	GetNumberOfMonthsCollected() (int64, error)
-	GetAgencies(uf string) ([]models.Agency, error)
+	GetAgenciesByUF(uf string) ([]models.Agency, error)
 	GetAgency(aid string) (*models.Agency, error)
 	GetAllAgencies() ([]models.Agency, error)
 	GetMonthlyInfo(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error)

@@ -44,12 +44,12 @@ func (getOPE) testWhenRepositoryReturnAgencies(t *testing.T) {
 	agencies := []models.Agency{tjsp, mpsp}
 	uf := "SP"
 
-	dbMock.EXPECT().GetOPE(uf).Return(agencies, nil)
+	dbMock.EXPECT().GetStateAgencies(uf).Return(agencies, nil)
 	dbMock.EXPECT().Connect().Return(nil)
 
 	client, err := storage.NewClient(dbMock, fsMock)
 
-	returnedAgencies, err := client.GetOPE(uf)
+	returnedAgencies, err := client.GetStateAgencies(uf)
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
@@ -61,11 +61,11 @@ func (getOPE) testWhenRepositoryReturnError(t *testing.T) {
 	fsMock := file_storage.NewMockInterface(mockCrl)
 
 	repoErr := errors.New("error getting agencies")
-	dbMock.EXPECT().GetOPE("SP").Return(nil, repoErr)
+	dbMock.EXPECT().GetStateAgencies("SP").Return(nil, repoErr)
 	dbMock.EXPECT().Connect().Return(nil)
 
 	client, err := storage.NewClient(dbMock, fsMock)
-	returnedAgencies, err := client.GetOPE("SP")
+	returnedAgencies, err := client.GetStateAgencies("SP")
 	expectedErr := errors.New(fmt.Sprintf("GetOPE() error: \"%s\"", repoErr.Error()))
 
 	assert.Equal(t, expectedErr, err)
@@ -78,11 +78,11 @@ func (getOPE) testWhenRepositoryReturnEmptyArray(t *testing.T) {
 	fsMock := file_storage.NewMockInterface(mockCrl)
 
 	agencies := []models.Agency{}
-	dbMock.EXPECT().GetOPE("SP").Return(agencies, nil)
+	dbMock.EXPECT().GetStateAgencies("SP").Return(agencies, nil)
 	dbMock.EXPECT().Connect().Return(nil)
 
 	client, err := storage.NewClient(dbMock, fsMock)
-	returnedAgencies, err := client.GetOPE("SP")
+	returnedAgencies, err := client.GetStateAgencies("SP")
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
