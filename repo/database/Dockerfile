@@ -8,4 +8,6 @@ ENV POSTGRES_DB dadosjusbr_test
 
 COPY ./init_db.sql /docker-entrypoint-initdb.d/
 
+
 USER root
+

@@ -191,20 +191,20 @@ func (p *PostgresDB) StoreRemunerations(remu models.Remunerations) error {
 	return nil
 }
 
-func (p *PostgresDB) GetAgenciesCount() (int64, error) {
+func (p *PostgresDB) GetAgenciesCount() (int, error) {
 	var count int64
 	if err := p.db.Model(&dto.AgencyDTO{}).Count(&count).Error; err != nil {
 		return 0, fmt.Errorf("error getting agencies count: %q", err)
 	}
-	return count, nil
+	return int(count), nil
 }
 
-func (p *PostgresDB) GetNumberOfMonthsCollected() (int64, error) {
+func (p *PostgresDB) GetNumberOfMonthsCollected() (int, error) {
 	var count int64
 	if err := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Where("atual = true").Count(&count).Error; err != nil {
 		return 0, fmt.Errorf("error getting agencies count: %q", err)
 	}
-	return count, nil
+	return int(count), nil
 }
 
 func (p *PostgresDB) GetAgencies(uf string) ([]models.Agency, error) {
