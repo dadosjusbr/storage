@@ -13,16 +13,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetOPE(t *testing.T) {
-	tests := getOPE{}
-	t.Run("Test GetOPE when repository return agencies", tests.testWhenRepositoryReturnAgencies)
-	t.Run("Test GetOPE when database connection fails", tests.testWhenRepositoryReturnError)
-	t.Run("Test GetOPE when repository return empty array", tests.testWhenRepositoryReturnEmptyArray)
+func TestGetStateAgencies(t *testing.T) {
+	tests := getStateAgencies{}
+	t.Run("Test GetStateAgencies when repository return agencies", tests.testWhenRepositoryReturnAgencies)
+	t.Run("Test GetStateAgencies when database connection fails", tests.testWhenRepositoryReturnError)
+	t.Run("Test GetStateAgencies when repository return empty array", tests.testWhenRepositoryReturnEmptyArray)
 }
 
-type getOPE struct{}
+type getStateAgencies struct{}
 
-func (getOPE) testWhenRepositoryReturnAgencies(t *testing.T) {
+func (getStateAgencies) testWhenRepositoryReturnAgencies(t *testing.T) {
 	mockCrl := gomock.NewController(t)
 	dbMock := database.NewMockInterface(mockCrl)
 	fsMock := file_storage.NewMockInterface(mockCrl)
@@ -55,7 +55,7 @@ func (getOPE) testWhenRepositoryReturnAgencies(t *testing.T) {
 	assert.Equal(t, agencies, returnedAgencies)
 }
 
-func (getOPE) testWhenRepositoryReturnError(t *testing.T) {
+func (getStateAgencies) testWhenRepositoryReturnError(t *testing.T) {
 	mockCrl := gomock.NewController(t)
 	dbMock := database.NewMockInterface(mockCrl)
 	fsMock := file_storage.NewMockInterface(mockCrl)
@@ -66,13 +66,13 @@ func (getOPE) testWhenRepositoryReturnError(t *testing.T) {
 
 	client, err := storage.NewClient(dbMock, fsMock)
 	returnedAgencies, err := client.GetStateAgencies("SP")
-	expectedErr := errors.New(fmt.Sprintf("GetOPE() error: \"%s\"", repoErr.Error()))
+	expectedErr := errors.New(fmt.Sprintf("GetStateAgencies() error: \"%s\"", repoErr.Error()))
 
 	assert.Equal(t, expectedErr, err)
 	assert.Nil(t, returnedAgencies)
 }
 
-func (getOPE) testWhenRepositoryReturnEmptyArray(t *testing.T) {
+func (getStateAgencies) testWhenRepositoryReturnEmptyArray(t *testing.T) {
 	mockCrl := gomock.NewController(t)
 	dbMock := database.NewMockInterface(mockCrl)
 	fsMock := file_storage.NewMockInterface(mockCrl)
