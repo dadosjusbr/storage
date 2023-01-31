@@ -14,7 +14,7 @@ type Interface interface {
 	GetOPE(uf string) ([]models.Agency, error)
 	// OPJ: Órgãos por jurisdição.
 	GetOPJ(group string) ([]models.Agency, error)
-	GetAgenciesCount() (int64, error)
+	GetAgenciesCount() (int, error)
 	GetNumberOfMonthsCollected() (int64, error)
 	GetAgencies(uf string) ([]models.Agency, error)
 	GetAgency(aid string) (*models.Agency, error)
