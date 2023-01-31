@@ -10,12 +10,11 @@ type Interface interface {
 	Store(agmi models.AgencyMonthlyInfo) error
 	StorePackage(newPackage models.Package) error
 	StoreRemunerations(remu models.Remunerations) error
-	// OPE : Órgãos Por Estado
 	GetStateAgencies(uf string) ([]models.Agency, error)
 	// OPJ: Órgãos por jurisdição.
 	GetOPJ(group string) ([]models.Agency, error)
-	GetAgenciesCount() (int64, error)
-	GetNumberOfMonthsCollected() (int64, error)
+	GetNumberOfMonthsCollected() (int, error)
+	GetAgenciesCount() (int, error)
 	GetAgenciesByUF(uf string) ([]models.Agency, error)
 	GetAgency(aid string) (*models.Agency, error)
 	GetAllAgencies() ([]models.Agency, error)
