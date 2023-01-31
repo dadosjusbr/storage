@@ -28,9 +28,9 @@ func (c *Client) Close() error {
 	return c.Db.Disconnect()
 }
 
-// GetOPE Connect to db to collect data to build 'Órgao por estado' screen
-func (c *Client) GetOPE(uf string) ([]models.Agency, error) {
-	ags, err := c.Db.GetOPE(uf)
+// GetStateAgencies Connect to db to collect state agencies by UF
+func (c *Client) GetStateAgencies(uf string) ([]models.Agency, error) {
+	ags, err := c.Db.GetStateAgencies(uf)
 	if err != nil {
 		return nil, fmt.Errorf("GetOPE() error: %q", err)
 	}

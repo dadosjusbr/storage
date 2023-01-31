@@ -27,66 +27,63 @@ func TestMain(m *testing.M) {
 	}
 	truncateTables()
 	exitValue := m.Run()
-	truncateTables()
 	postgresDb.Disconnect()
 	os.Exit(exitValue)
 }
 
-func TestGetOPE(t *testing.T) {
-	tests := getOPE{}
-	t.Run("Test GetOPE when agencies exists", tests.testWhenAgenciesExists)
-	t.Run("Test GetOPE when UF not exists", tests.testWhenUFNotExists)
-	t.Run("Test GetOPE when UF is in lower case", tests.testWhenUFIsInLowerCase)
+func TestGetStateAgencies(t *testing.T) {
+	tests := getStateAgencies{}
+	t.Run("Test TestGetStateAgencies when agencies exists", tests.testWhenAgenciesExists)
+	t.Run("Test TestGetStateAgencies when UF not exists", tests.testWhenUFNotExists)
+	t.Run("Test TestGetStateAgencies when UF is in lower case", tests.testWhenUFIsInLowerCase)
 }
 
-type getOPE struct{}
+type getStateAgencies struct{}
 
-func (g getOPE) testWhenAgenciesExists(t *testing.T) {
+func (g getStateAgencies) testWhenAgenciesExists(t *testing.T) {
 	agencies := []models.Agency{
 		{
-			ID:     "tjsp",
-			Name:   "Tribunal de Justiça do Estado de São Paulo",
-			Type:   "Estadual",
-			Entity: "Tribunal",
-			UF:     "SP",
+			ID:   "tjsp",
+			Type: "Estadual",
+			UF:   "SP",
 		},
 	}
 	if err := insertAgencies(agencies); err != nil {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
-
-	returnedAgencies, err := postgresDb.GetOPE("SP")
+	returnedAgencies, err := postgresDb.GetStateAgencies("SP")
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
+	truncateTables()
 }
 
-func (g getOPE) testWhenUFNotExists(t *testing.T) {
+func (g getStateAgencies) testWhenUFNotExists(t *testing.T) {
 	truncateTables()
 
-	returnedAgencies, err := postgresDb.GetOPE("SP")
+	returnedAgencies, err := postgresDb.GetStateAgencies("SP")
 
 	assert.Nil(t, err)
 	assert.Empty(t, returnedAgencies)
 }
 
-func (g getOPE) testWhenUFIsInLowerCase(t *testing.T) {
+func (g getStateAgencies) testWhenUFIsInLowerCase(t *testing.T) {
 	agencies := []models.Agency{
 		{
-			ID:     "tjsp",
-			Name:   "Tribunal de Justiça do Estado de São Paulo",
-			Type:   "Estadual",
-			Entity: "Tribunal",
-			UF:     "SP",
+			ID:   "tjsp",
+			Type: "Estadual",
+			UF:   "SP",
 		},
 	}
 	if err := insertAgencies(agencies); err != nil {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
-	returnedAgencies, err := postgresDb.GetOPE("sp")
+
+	returnedAgencies, err := postgresDb.GetStateAgencies("sp")
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
+	truncateTables()
 }
 
 func TestGetOPJ(t *testing.T) {
@@ -101,27 +98,19 @@ type getOPJ struct{}
 func (g getOPJ) testWhenAgenciesExists(t *testing.T) {
 	agencies := []models.Agency{
 		{
-			ID:     "tjsp",
-			Name:   "Tribunal de Justiça do Estado de São Paulo",
-			Type:   "Estadual",
-			Entity: "Tribunal",
-			UF:     "SP",
+			ID:   "tjsp",
+			Type: "Estadual",
 		},
 		{
-			ID:     "tjal",
-			Name:   "Tribunal de Justiça do Estado de Alagoas",
-			Type:   "Estadual",
-			Entity: "Tribunal",
-			UF:     "AL",
+			ID:   "tjal",
+			Type: "Estadual",
 		},
 		{
-			ID:     "tjba",
-			Name:   "Tribunal de Justiça do Estado da Bahia",
-			Type:   "Estadual",
-			Entity: "Tribunal",
-			UF:     "BA",
+			ID:   "tjba",
+			Type: "Estadual",
 		},
 	}
+
 	if err := insertAgencies(agencies); err != nil {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
@@ -130,6 +119,7 @@ func (g getOPJ) testWhenAgenciesExists(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
+	truncateTables()
 }
 
 func (g getOPJ) testWhenGroupNotExists(t *testing.T) {
@@ -173,6 +163,7 @@ func (g getOPJ) testWhenGroupIsInIrregularCase(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
+	truncateTables()
 }
 
 func TestGetAgenciesCount(t *testing.T) {
@@ -203,6 +194,7 @@ func (g getAgenciesCount) testWhenAgenciesExists(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, len(agencies), count)
+	truncateTables()
 }
 
 func (g getAgenciesCount) testWhenAgenciesNotExists(t *testing.T) {
@@ -262,6 +254,7 @@ func (g getNumberOfMonthsCollected) testWhenMonthlyInfosExists(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, len(monthlyInfos), count)
+	truncateTables()
 }
 
 func (g getNumberOfMonthsCollected) testWhenMonthlyInfosNotExists(t *testing.T) {
@@ -299,6 +292,7 @@ func (g getAgency) testWhenAgencyExists(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies[0], *returnedAgency)
+	truncateTables()
 }
 
 func (g getAgency) testWhenAgencyNotExists(t *testing.T) {
@@ -328,6 +322,7 @@ func (g getAgency) testWhenAgencyIsInIrregularCase(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies[0], *returnedAgency)
+	truncateTables()
 }
 
 func TestGetAllAgencies(t *testing.T) {
@@ -341,8 +336,9 @@ type getAllAgencies struct{}
 func (g getAllAgencies) testWhenAgenciesExists(t *testing.T) {
 	agencies := []models.Agency{
 		{
-			ID:     "tjsp",
-			Name:   "Tribunal de Justiça do Estado de São Paulo",
+			ID:   "tjsp",
+			Name: "Tribunal de Justiça do Estado de São Paulo",
+
 			Type:   "Estadual",
 			Entity: "Tribunal",
 			UF:     "SP",
@@ -366,10 +362,11 @@ func (g getAllAgencies) testWhenAgenciesExists(t *testing.T) {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
 
-	returnedAgencies, err := postgresDb.GetAllAgencies()
+	returnedAgencies, err := postgresDb.GetOPJ("eStAdUaL")
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
+	truncateTables()
 }
 
 func (g getAllAgencies) testWhenAgenciesNotExists(t *testing.T) {
@@ -482,6 +479,91 @@ func (g getFirstDateWithMonthlyInfo) testWhenMonthlyInfosIsEqual(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, agmis[0].Month, month)
 	assert.Equal(t, agmis[0].Year, year)
+	truncateTables()
+}
+func TestGetAgenciesByUF(t *testing.T) {
+	tests := getAgenciesByUF{}
+	t.Run("Test GetAgenciesByUF when agencies exists", tests.testWhenAgenciesExists)
+	t.Run("Test GetAgenciesByUF when UF not exists", tests.testWhenUFNotExists)
+	t.Run("Test GetAgenciesByUF when UF is in irregular case", tests.testWhenUFIsInIrregularCase)
+}
+
+type getAgenciesByUF struct{}
+
+func (g getAgenciesByUF) testWhenAgenciesExists(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID:   "mpsp",
+			Type: "Ministério",
+			UF:   "SP",
+		},
+		{
+			ID:   "tjsp",
+			Type: "Estadual",
+			UF:   "SP",
+		},
+		{
+			ID:   "tjmsp",
+			Type: "Militar",
+			UF:   "SP",
+		},
+		{
+			ID:   "tjal",
+			Type: "Estadual",
+			UF:   "AL",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	returnedAgencies, err := postgresDb.GetAgenciesByUF("SP")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agencies[:3], returnedAgencies)
+	truncateTables()
+}
+
+func (g getAgenciesByUF) testWhenUFNotExists(t *testing.T) {
+	truncateTables()
+
+	returnedAgencies, err := postgresDb.GetAgenciesByUF("SP")
+
+	assert.Nil(t, err)
+	assert.Empty(t, returnedAgencies)
+}
+
+func (g getAgenciesByUF) testWhenUFIsInIrregularCase(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID:   "mpsp",
+			Type: "Ministério",
+			UF:   "SP",
+		},
+		{
+			ID:   "tjsp",
+			Type: "Estadual",
+			UF:   "SP",
+		},
+		{
+			ID:   "tjmsp",
+			Type: "Militar",
+			UF:   "SP",
+		},
+		{
+			ID:   "tjal",
+			Type: "Estadual",
+			UF:   "AL",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	returnedAgencies, err := postgresDb.GetAgenciesByUF("sP")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agencies[:3], returnedAgencies)
 	truncateTables()
 }
 
@@ -608,7 +690,7 @@ func insertMonthlyInfos(monthlyInfos []models.AgencyMonthlyInfo) error {
 }
 
 func truncateTables() error {
-	tx := postgresDb.db.Exec(`TRUNCATE TABLE "coletas", "remuneracoes_zips","orgaos"`)
+	tx := postgresDb.db.Exec(`TRUNCATE TABLE coletas, remuneracoes_zips,orgaos CASCADE`)
 	if tx.Error != nil {
 		return fmt.Errorf("error truncating agencies: %q", tx.Error)
 	}
