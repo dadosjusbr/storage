@@ -15,8 +15,6 @@
 package models
 
 import (
-	"time"
-
 	"github.com/dadosjusbr/proto/coleta"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -37,7 +35,7 @@ type AgencyMonthlyInfo struct {
 	Package           *Backup                `json:"package,omitempty"`     // Making this a pointer because it should be an optional field due to backwards compatibility.
 	Meta              *Meta                  `json:"meta,omitempty"`
 	Score             *Score                 `json:"score,omitempty"`
-	Duration          time.Duration          `json:"duration,omitempty"` // Crawling duration
+	Duration          float64                `json:"duration,omitempty"` // Crawling duration (seconds)
 }
 
 type Meta struct {
