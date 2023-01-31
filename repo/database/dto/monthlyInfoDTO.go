@@ -28,7 +28,7 @@ type AgencyMonthlyInfoDTO struct {
 	Timestamp      time.Time      `gorm:"column:timestamp"`
 	ProcInfo       datatypes.JSON `gorm:"column:procinfo"`
 	Package        datatypes.JSON `gorm:"column:package"`
-	Duration       time.Duration  `gorm:"column:tempo_coleta"` // Tempo de execução da coleta
+	Duration       float64        `gorm:"column:duracao_segundos"` // Tempo de execução da coleta em segundos
 	Meta
 	Score
 }
@@ -183,6 +183,12 @@ func NewAgencyMonthlyInfoDTO(agmi models.AgencyMonthlyInfo) (*AgencyMonthlyInfoD
 	} else {
 		meta = Meta{}
 	}
+	var timestamp time.Time
+	if agmi.CrawlingTimestamp != nil {
+		timestamp = time.Unix(agmi.CrawlingTimestamp.Seconds, int64(agmi.CrawlingTimestamp.Nanos))
+	} else {
+		timestamp = time.Now()
+	}
 
 	return &AgencyMonthlyInfoDTO{
 		ID:             fmt.Sprintf("%s/%s/%d", agmi.AgencyID, AddZeroes(agmi.Month), agmi.Year),
@@ -194,7 +200,7 @@ func NewAgencyMonthlyInfoDTO(agmi models.AgencyMonthlyInfo) (*AgencyMonthlyInfoD
 		CrawlerRepo:    agmi.CrawlerRepo,
 		ParserRepo:     agmi.ParserRepo,
 		ParserVersion:  agmi.ParserVersion,
-		Timestamp:      time.Unix(agmi.CrawlingTimestamp.Seconds, int64(agmi.CrawlingTimestamp.Nanos)),
+		Timestamp:      timestamp,
 		Score:          score,
 		Meta:           meta,
 		Summary:        summary,

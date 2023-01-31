@@ -62,26 +62,26 @@ func (mr *MockInterfaceMockRecorder) Disconnect() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Disconnect", reflect.TypeOf((*MockInterface)(nil).Disconnect))
 }
 
-// GetAgencies mocks base method.
-func (m *MockInterface) GetAgencies(uf string) ([]models.Agency, error) {
+// GetAgenciesByUF mocks base method.
+func (m *MockInterface) GetAgenciesByUF(uf string) ([]models.Agency, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAgencies", uf)
+	ret := m.ctrl.Call(m, "GetAgenciesByUF", uf)
 	ret0, _ := ret[0].([]models.Agency)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAgencies indicates an expected call of GetAgencies.
-func (mr *MockInterfaceMockRecorder) GetAgencies(uf interface{}) *gomock.Call {
+// GetAgenciesByUF indicates an expected call of GetAgenciesByUF.
+func (mr *MockInterfaceMockRecorder) GetAgenciesByUF(uf interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgencies", reflect.TypeOf((*MockInterface)(nil).GetAgencies), uf)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgenciesByUF", reflect.TypeOf((*MockInterface)(nil).GetAgenciesByUF), uf)
 }
 
 // GetAgenciesCount mocks base method.
-func (m *MockInterface) GetAgenciesCount() (int64, error) {
+func (m *MockInterface) GetAgenciesCount() (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAgenciesCount")
-	ret0, _ := ret[0].(int64)
+	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -215,10 +215,10 @@ func (mr *MockInterfaceMockRecorder) GetMonthlyInfoSummary(agencies, year interf
 }
 
 // GetNumberOfMonthsCollected mocks base method.
-func (m *MockInterface) GetNumberOfMonthsCollected() (int64, error) {
+func (m *MockInterface) GetNumberOfMonthsCollected() (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNumberOfMonthsCollected")
-	ret0, _ := ret[0].(int64)
+	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -243,21 +243,6 @@ func (m *MockInterface) GetOMA(month, year int, agency string) (*models.AgencyMo
 func (mr *MockInterfaceMockRecorder) GetOMA(month, year, agency interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOMA", reflect.TypeOf((*MockInterface)(nil).GetOMA), month, year, agency)
-}
-
-// GetOPE mocks base method.
-func (m *MockInterface) GetOPE(uf string) ([]models.Agency, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOPE", uf)
-	ret0, _ := ret[0].([]models.Agency)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetOPE indicates an expected call of GetOPE.
-func (mr *MockInterfaceMockRecorder) GetOPE(uf interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOPE", reflect.TypeOf((*MockInterface)(nil).GetOPE), uf)
 }
 
 // GetOPJ mocks base method.
@@ -303,6 +288,21 @@ func (m *MockInterface) GetRemunerationSummary() (*models.RemmunerationSummary, 
 func (mr *MockInterfaceMockRecorder) GetRemunerationSummary() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRemunerationSummary", reflect.TypeOf((*MockInterface)(nil).GetRemunerationSummary))
+}
+
+// GetStateAgencies mocks base method.
+func (m *MockInterface) GetStateAgencies(uf string) ([]models.Agency, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetStateAgencies", uf)
+	ret0, _ := ret[0].([]models.Agency)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStateAgencies indicates an expected call of GetStateAgencies.
+func (mr *MockInterfaceMockRecorder) GetStateAgencies(uf interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStateAgencies", reflect.TypeOf((*MockInterface)(nil).GetStateAgencies), uf)
 }
 
 // Store mocks base method.

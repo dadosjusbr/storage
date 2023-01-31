@@ -28,11 +28,11 @@ func (c *Client) Close() error {
 	return c.Db.Disconnect()
 }
 
-// GetOPE Connect to db to collect data to build 'Órgao por estado' screen
-func (c *Client) GetOPE(uf string) ([]models.Agency, error) {
-	ags, err := c.Db.GetOPE(uf)
+// GetStateAgencies Connect to db to collect state agencies by UF
+func (c *Client) GetStateAgencies(uf string) ([]models.Agency, error) {
+	ags, err := c.Db.GetStateAgencies(uf)
 	if err != nil {
-		return nil, fmt.Errorf("GetOPE() error: %q", err)
+		return nil, fmt.Errorf("GetStateAgencies() error: %q", err)
 	}
 	return ags, err
 }
@@ -83,7 +83,7 @@ func (c *Client) StoreRemunerations(remu models.Remunerations) error {
 }
 
 // GetAgenciesCount Return the Agencies amount
-func (c *Client) GetAgenciesCount() (int64, error) {
+func (c *Client) GetAgenciesCount() (int, error) {
 	count, err := c.Db.GetAgenciesCount()
 	if err != nil {
 		return count, fmt.Errorf("GetAgenciesCount() error: %q", err)
@@ -92,7 +92,7 @@ func (c *Client) GetAgenciesCount() (int64, error) {
 }
 
 // GetNumberOfMonthsCollected Return the Agencies amount
-func (c *Client) GetNumberOfMonthsCollected() (int64, error) {
+func (c *Client) GetNumberOfMonthsCollected() (int, error) {
 	count, err := c.Db.GetNumberOfMonthsCollected()
 	if err != nil {
 		return count, fmt.Errorf("GetNumberOfMonthsCollected() error: %q", err)

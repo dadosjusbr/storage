@@ -144,7 +144,7 @@ func (p *PostgresDB) StorePackage(newPackage models.Package) error {
 	panic("implement me")
 }
 
-func (p *PostgresDB) GetOPE(uf string) ([]models.Agency, error) {
+func (p *PostgresDB) GetStateAgencies(uf string) ([]models.Agency, error) {
 	uf = strings.ToUpper(uf)
 	var dtoOrgaos []dto.AgencyDTO
 	if err := p.db.Model(&dto.AgencyDTO{}).Where("jurisdicao = 'Estadual' AND uf = ?", uf).Find(&dtoOrgaos).Error; err != nil {
@@ -191,24 +191,25 @@ func (p *PostgresDB) StoreRemunerations(remu models.Remunerations) error {
 	return nil
 }
 
-func (p *PostgresDB) GetAgenciesCount() (int64, error) {
+func (p *PostgresDB) GetAgenciesCount() (int, error) {
 	var count int64
 	if err := p.db.Model(&dto.AgencyDTO{}).Count(&count).Error; err != nil {
 		return 0, fmt.Errorf("error getting agencies count: %q", err)
 	}
-	return count, nil
+	return int(count), nil
 }
 
-func (p *PostgresDB) GetNumberOfMonthsCollected() (int64, error) {
+func (p *PostgresDB) GetNumberOfMonthsCollected() (int, error) {
 	var count int64
 	if err := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Where("atual = true").Count(&count).Error; err != nil {
 		return 0, fmt.Errorf("error getting agencies count: %q", err)
 	}
-	return count, nil
+	return int(count), nil
 }
 
-func (p *PostgresDB) GetAgencies(uf string) ([]models.Agency, error) {
+func (p *PostgresDB) GetAgenciesByUF(uf string) ([]models.Agency, error) {
 	var dtoOrgaos []dto.AgencyDTO
+	uf = strings.ToUpper(uf)
 	if err := p.db.Model(&dto.AgencyDTO{}).Where("uf = ?", uf).Find(&dtoOrgaos).Error; err != nil {
 		return nil, fmt.Errorf("error getting agencies: %q", err)
 	}
@@ -225,8 +226,9 @@ func (p *PostgresDB) GetAgencies(uf string) ([]models.Agency, error) {
 
 func (p *PostgresDB) GetAgency(aid string) (*models.Agency, error) {
 	var dtoOrgao dto.AgencyDTO
+	aid = strings.ToLower(aid)
 	if err := p.db.Model(&dto.AgencyDTO{}).Where("id = ?", aid).First(&dtoOrgao).Error; err != nil {
-		return nil, fmt.Errorf("error getting agency: %q", err)
+		return nil, fmt.Errorf("error getting agency '%s': %q", aid, err)
 	}
 	orgao, err := dtoOrgao.ConvertToModel()
 	if err != nil {
@@ -324,6 +326,7 @@ func (p *PostgresDB) GetFirstDateWithMonthlyInfo() (int, int, error) {
 	var year, month int
 	m := p.db.Model(&dtoAgmi).Select("MIN(ano), MIN(mes)")
 	m = m.Where("atual=true AND (procinfo IS NULL OR procinfo::text = 'null')")
+	m = m.Where("ano = (SELECT min(ano) FROM coletas)")
 	if err := m.Row().Scan(&year, &month); err != nil {
 		return 0, 0, fmt.Errorf("error getting first date with monthly info: %q", err)
 	}
