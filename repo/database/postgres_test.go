@@ -377,6 +377,82 @@ func (g getAllAgencies) testWhenAgenciesNotExists(t *testing.T) {
 	assert.Empty(t, returnedAgencies)
 }
 
+func TestGetGeneralMonthlyInfo(t *testing.T) {
+	tests := getGeneralMonthlyInfo{}
+	t.Run("Test GetGeneralMonthlyInfo when monthly info exists", tests.testWhenMonthlyInfoExists)
+	t.Run("Test GetGeneralMonthlyInfo when monthly info not exists", tests.testWhenMonthlyInfoNotExists)
+}
+
+type getGeneralMonthlyInfo struct{}
+
+func (g getGeneralMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID: "tjsp",
+		},
+		{
+			ID: "tjal",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+	agmis := []models.AgencyMonthlyInfo{
+		{
+			AgencyID:          "tjal",
+			Year:              2020,
+			Month:             3,
+			CrawlingTimestamp: timestamppb.Now(),
+			Summary: &models.Summary{
+				BaseRemuneration: models.DataSummary{
+					Total: 1200,
+				},
+				OtherRemunerations: models.DataSummary{
+					Total: 700,
+				},
+			},
+		},
+		{
+			AgencyID:          "tjsp",
+			Year:              2020,
+			Month:             3,
+			CrawlingTimestamp: timestamppb.Now(),
+			Summary: &models.Summary{
+				BaseRemuneration: models.DataSummary{
+					Total: 2000,
+				},
+				OtherRemunerations: models.DataSummary{
+					Total: 1000,
+				},
+			},
+		},
+	}
+
+	var total float64
+	for _, agmi := range agmis {
+		total += agmi.Summary.BaseRemuneration.Total
+		total += agmi.Summary.OtherRemunerations.Total
+	}
+
+	if err := insertMonthlyInfos(agmis); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+	value, err := postgresDb.GetGeneralMonthlyInfo()
+
+	assert.Nil(t, err)
+	assert.Equal(t, value, total)
+	truncateTables()
+}
+
+func (g getGeneralMonthlyInfo) testWhenMonthlyInfoNotExists(t *testing.T) {
+	truncateTables()
+
+	value, err := postgresDb.GetGeneralMonthlyInfo()
+
+	assert.Nil(t, err)
+	assert.Equal(t, value, float64(0))
+}
+
 func TestGetLastDateWithMonthlyInfo(t *testing.T) {
 	tests := getLastDateWithMonthlyInfo{}
 	t.Run("Test GetLastDateWithMonthlyInfo when monthly infos exists", tests.testWhenMonthlyInfosExists)
