@@ -144,7 +144,7 @@ func (p *PostgresDB) StorePackage(newPackage models.Package) error {
 	panic("implement me")
 }
 
-func (p *PostgresDB) GetOPE(uf string) ([]models.Agency, error) {
+func (p *PostgresDB) GetStateAgencies(uf string) ([]models.Agency, error) {
 	uf = strings.ToUpper(uf)
 	var dtoOrgaos []dto.AgencyDTO
 	if err := p.db.Model(&dto.AgencyDTO{}).Where("jurisdicao = 'Estadual' AND uf = ?", uf).Find(&dtoOrgaos).Error; err != nil {
@@ -207,8 +207,9 @@ func (p *PostgresDB) GetNumberOfMonthsCollected() (int, error) {
 	return int(count), nil
 }
 
-func (p *PostgresDB) GetAgencies(uf string) ([]models.Agency, error) {
+func (p *PostgresDB) GetAgenciesByUF(uf string) ([]models.Agency, error) {
 	var dtoOrgaos []dto.AgencyDTO
+	uf = strings.ToUpper(uf)
 	if err := p.db.Model(&dto.AgencyDTO{}).Where("uf = ?", uf).Find(&dtoOrgaos).Error; err != nil {
 		return nil, fmt.Errorf("error getting agencies: %q", err)
 	}
