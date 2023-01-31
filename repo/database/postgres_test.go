@@ -788,7 +788,7 @@ func (g getOMA) testWhenDataExists(t *testing.T) {
 
 func (g getOMA) testWhenDataNotExists(t *testing.T) {
 	truncateTables()
-	expecErr := fmt.Errorf("error getting 'coletas' with id (tjba/12/2022): %q", gorm.ErrRecordNotFound)
+	expecErr := fmt.Errorf("there is no data with this parameters")
 	returnedAgmi, agency, err := postgresDb.GetOMA(12, 2022, "tjba")
 
 	assert.Equal(t, err, expecErr)
