@@ -40,7 +40,7 @@ create table coletas
     atual                        boolean,
     backups                      json,
     formato_aberto               boolean,
-    tempo_coleta                 interval,
+    duracao_segundos             double precision,
 
     constraint coleta_pk primary key (id,timestamp),
     constraint coleta_orgao_fk foreign key (id_orgao) references orgaos(id) on delete cascade

@@ -83,7 +83,7 @@ func (c *Client) StoreRemunerations(remu models.Remunerations) error {
 }
 
 // GetAgenciesCount Return the Agencies amount
-func (c *Client) GetAgenciesCount() (int64, error) {
+func (c *Client) GetAgenciesCount() (int, error) {
 	count, err := c.Db.GetAgenciesCount()
 	if err != nil {
 		return count, fmt.Errorf("GetAgenciesCount() error: %q", err)

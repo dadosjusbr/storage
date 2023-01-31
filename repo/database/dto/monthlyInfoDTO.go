@@ -28,7 +28,7 @@ type AgencyMonthlyInfoDTO struct {
 	Timestamp      time.Time      `gorm:"column:timestamp"`
 	ProcInfo       datatypes.JSON `gorm:"column:procinfo"`
 	Package        datatypes.JSON `gorm:"column:package"`
-	Duration       time.Duration  `gorm:"column:tempo_coleta"` // Tempo de execução da coleta
+	Duration       float64        `gorm:"column:duracao_segundos"` // Tempo de execução da coleta em segundos
 	Meta
 	Score
 }
