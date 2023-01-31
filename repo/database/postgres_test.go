@@ -272,6 +272,63 @@ func (g getNumberOfMonthsCollected) testWhenMonthlyInfosNotExists(t *testing.T) 
 	assert.Equal(t, 0, count)
 }
 
+func TestGetAgency(t *testing.T) {
+	tests := getAgency{}
+	t.Run("Test GetAgency when agency exists", tests.testWhenAgencyExists)
+	t.Run("Test GetAgency when agency not exists", tests.testWhenAgencyNotExists)
+	t.Run("Test GetAgency when agency is in irregular case", tests.testWhenAgencyIsInIrregularCase)
+}
+
+type getAgency struct{}
+
+func (g getAgency) testWhenAgencyExists(t *testing.T) {
+	agencies := []models.Agency{
+		{ID: "tjsp",
+			Name:   "Tribunal de Justiça do Estado de São Paulo",
+			Type:   "Estadual",
+			Entity: "Tribunal",
+			UF:     "SP",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agency: %q", err)
+	}
+
+	returnedAgency, err := postgresDb.GetAgency("tjsp")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agencies[0], *returnedAgency)
+}
+
+func (g getAgency) testWhenAgencyNotExists(t *testing.T) {
+	truncateTables()
+
+	returnedAgency, err := postgresDb.GetAgency("tjsp")
+
+	expectedErr := fmt.Errorf("error getting agency 'tjsp': %q", gorm.ErrRecordNotFound)
+	assert.Nil(t, returnedAgency)
+	assert.Equal(t, expectedErr, err)
+}
+
+func (g getAgency) testWhenAgencyIsInIrregularCase(t *testing.T) {
+	agencies := []models.Agency{
+		{ID: "tjsp",
+			Name:   "Tribunal de Justiça do Estado de São Paulo",
+			Type:   "Estadual",
+			Entity: "Tribunal",
+			UF:     "SP",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agency: %q", err)
+	}
+
+	returnedAgency, err := postgresDb.GetAgency("tJsp")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agencies[0], *returnedAgency)
+}
+
 func TestStore(t *testing.T) {
 	if err := insertAgencies([]models.Agency{{ID: "tjba"}}); err != nil {
 		t.Fatalf("error inserting agencies: %q", err)
