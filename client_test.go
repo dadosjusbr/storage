@@ -162,6 +162,7 @@ func (getOPJ) testWhenRepositoryReturnEmptyArray(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
 }
+
 func TestGetFirstDateWithMonthlyInfo(t *testing.T) {
 	tests := getFirstDateWithMonthlyInfo{}
 	t.Run("Test GetFirstDateWithMonthlyInfo when repository return date", tests.testWhenRepositoryReturnDate)
@@ -169,6 +170,32 @@ func TestGetFirstDateWithMonthlyInfo(t *testing.T) {
 }
 
 type getFirstDateWithMonthlyInfo struct{}
+
+func TestGetLastDateWithMonthlyInfo(t *testing.T) {
+	tests := getLastDateWithMonthlyInfo{}
+	t.Run("Test GetLastDateWithMonthlyInfo when repository return date", tests.testWhenRepositoryReturnDate)
+	t.Run("Test GetLastDateWithMonthlyInfo when repository return error", tests.testWhenRepositoryReturnError)
+}
+
+type getLastDateWithMonthlyInfo struct{}
+
+func (getLastDateWithMonthlyInfo) testWhenRepositoryReturnDate(t *testing.T) {
+	mockCrl := gomock.NewController(t)
+	dbMock := database.NewMockInterface(mockCrl)
+	fsMock := file_storage.NewMockInterface(mockCrl)
+
+	expecMonth := 12
+	expecYear := 2022
+	dbMock.EXPECT().GetLastDateWithMonthlyInfo().Return(expecMonth, expecYear, nil)
+	dbMock.EXPECT().Connect().Return(nil)
+
+	client, err := storage.NewClient(dbMock, fsMock)
+	month, year, err := client.GetLastDateWithMonthlyInfo()
+
+	assert.Nil(t, err)
+	assert.Equal(t, month, expecMonth)
+	assert.Equal(t, year, expecYear)
+}
 
 func (getFirstDateWithMonthlyInfo) testWhenRepositoryReturnDate(t *testing.T) {
 	mockCrl := gomock.NewController(t)
@@ -186,6 +213,24 @@ func (getFirstDateWithMonthlyInfo) testWhenRepositoryReturnDate(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, month, expecMonth)
 	assert.Equal(t, year, expecYear)
+}
+
+func (getLastDateWithMonthlyInfo) testWhenRepositoryReturnError(t *testing.T) {
+	mockCrl := gomock.NewController(t)
+	dbMock := database.NewMockInterface(mockCrl)
+	fsMock := file_storage.NewMockInterface(mockCrl)
+
+	repoErr := errors.New("error getting last date")
+	dbMock.EXPECT().GetLastDateWithMonthlyInfo().Return(0, 0, repoErr)
+	dbMock.EXPECT().Connect().Return(nil)
+
+	client, err := storage.NewClient(dbMock, fsMock)
+	month, year, err := client.GetLastDateWithMonthlyInfo()
+	expectedErr := errors.New(fmt.Sprintf("GetLastDateWithMonthlyInfo() error: \"%s\"", repoErr.Error()))
+
+	assert.Equal(t, expectedErr, err)
+	assert.Equal(t, 0, month)
+	assert.Equal(t, 0, year)
 }
 
 func (getFirstDateWithMonthlyInfo) testWhenRepositoryReturnError(t *testing.T) {
