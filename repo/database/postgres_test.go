@@ -25,6 +25,7 @@ func TestMain(m *testing.M) {
 	if err := getDbTestConnection(); err != nil {
 		panic(err)
 	}
+	truncateTables()
 	exitValue := m.Run()
 	truncateTables()
 	postgresDb.Disconnect()
@@ -327,6 +328,57 @@ func (g getAgency) testWhenAgencyIsInIrregularCase(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies[0], *returnedAgency)
+}
+
+func TestGetAllAgencies(t *testing.T) {
+	tests := getAllAgencies{}
+	t.Run("Test GetAllAgencies when agencies exists", tests.testWhenAgenciesExists)
+	t.Run("Test GetAllAgencies when agencies not exists", tests.testWhenAgenciesNotExists)
+}
+
+type getAllAgencies struct{}
+
+func (g getAllAgencies) testWhenAgenciesExists(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID:     "tjsp",
+			Name:   "Tribunal de Justiça do Estado de São Paulo",
+			Type:   "Estadual",
+			Entity: "Tribunal",
+			UF:     "SP",
+		},
+		{
+			ID:     "tjal",
+			Name:   "Tribunal de Justiça do Estado de Alagoas",
+			Type:   "Estadual",
+			Entity: "Tribunal",
+			UF:     "AL",
+		},
+		{
+			ID:     "tjba",
+			Name:   "Tribunal de Justiça do Estado da Bahia",
+			Type:   "Estadual",
+			Entity: "Tribunal",
+			UF:     "BA",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	returnedAgencies, err := postgresDb.GetAllAgencies()
+
+	assert.Nil(t, err)
+	assert.Equal(t, agencies, returnedAgencies)
+}
+
+func (g getAllAgencies) testWhenAgenciesNotExists(t *testing.T) {
+	truncateTables()
+
+	returnedAgencies, err := postgresDb.GetAllAgencies()
+
+	assert.Nil(t, err)
+	assert.Empty(t, returnedAgencies)
 }
 
 func TestStore(t *testing.T) {
