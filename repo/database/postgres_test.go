@@ -163,6 +163,7 @@ func (g getOPJ) testWhenGroupIsInIrregularCase(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
+	truncateTables()
 }
 
 func TestGetAgenciesCount(t *testing.T) {
@@ -193,6 +194,7 @@ func (g getAgenciesCount) testWhenAgenciesExists(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, len(agencies), count)
+	truncateTables()
 }
 
 func (g getAgenciesCount) testWhenAgenciesNotExists(t *testing.T) {
@@ -252,6 +254,7 @@ func (g getNumberOfMonthsCollected) testWhenMonthlyInfosExists(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, len(monthlyInfos), count)
+	truncateTables()
 }
 
 func (g getNumberOfMonthsCollected) testWhenMonthlyInfosNotExists(t *testing.T) {
@@ -289,6 +292,7 @@ func (g getAgency) testWhenAgencyExists(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies[0], *returnedAgency)
+	truncateTables()
 }
 
 func (g getAgency) testWhenAgencyNotExists(t *testing.T) {
@@ -318,6 +322,7 @@ func (g getAgency) testWhenAgencyIsInIrregularCase(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies[0], *returnedAgency)
+	truncateTables()
 }
 
 func TestGetAllAgencies(t *testing.T) {
@@ -373,6 +378,109 @@ func (g getAllAgencies) testWhenAgenciesNotExists(t *testing.T) {
 	assert.Empty(t, returnedAgencies)
 }
 
+func TestGetFirstDateWithMonthlyInfo(t *testing.T) {
+	tests := getFirstDateWithMonthlyInfo{}
+	t.Run("Test GetFirstDateWithMonthlyInfo when monthly infos exists", tests.testWhenMonthlyInfosExists)
+	t.Run("Test GetFirstDateWithMonthlyInfo when monthly infos is empty", tests.testWhenMonthlyInfosIsEmpty)
+	t.Run("Test GetFirstDateWithMonthlyInfo when monthly infos is equal", tests.testWhenMonthlyInfosIsEqual)
+}
+
+type getFirstDateWithMonthlyInfo struct{}
+
+func (g getFirstDateWithMonthlyInfo) testWhenMonthlyInfosExists(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID: "tjsp",
+		},
+		{
+			ID: "tjal",
+		},
+		{
+			ID: "tjba",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+	agmis := []models.AgencyMonthlyInfo{
+		{
+			AgencyID:          "tjal",
+			Year:              2020,
+			Month:             3,
+			CrawlingTimestamp: timestamppb.Now(),
+		},
+		{
+			AgencyID:          "tjsp",
+			Year:              2020,
+			Month:             4,
+			CrawlingTimestamp: timestamppb.Now(),
+		},
+		{
+			AgencyID:          "tjba",
+			Year:              2022,
+			Month:             3,
+			CrawlingTimestamp: timestamppb.Now(),
+		},
+	}
+	if err := insertMonthlyInfos(agmis); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	month, year, err := postgresDb.GetFirstDateWithMonthlyInfo()
+
+	assert.Nil(t, err)
+	assert.Equal(t, agmis[0].Month, month)
+	assert.Equal(t, agmis[0].Year, year)
+	truncateTables()
+}
+
+func (g getFirstDateWithMonthlyInfo) testWhenMonthlyInfosIsEmpty(t *testing.T) {
+	truncateTables()
+
+	month, year, err := postgresDb.GetFirstDateWithMonthlyInfo()
+
+	assert.NotEmpty(t, err)
+	assert.Equal(t, 0, month)
+	assert.Equal(t, 0, year)
+}
+
+func (g getFirstDateWithMonthlyInfo) testWhenMonthlyInfosIsEqual(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID: "tjsp",
+		},
+		{
+			ID: "tjal",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+	agmis := []models.AgencyMonthlyInfo{
+		{
+			AgencyID:          "tjal",
+			Year:              2020,
+			Month:             3,
+			CrawlingTimestamp: timestamppb.Now(),
+		},
+		{
+			AgencyID:          "tjsp",
+			Year:              2020,
+			Month:             3,
+			CrawlingTimestamp: timestamppb.Now(),
+		},
+	}
+	if err := insertMonthlyInfos(agmis); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	month, year, err := postgresDb.GetFirstDateWithMonthlyInfo()
+
+	assert.Nil(t, err)
+	assert.Equal(t, agmis[0].Month, month)
+	assert.Equal(t, agmis[0].Year, year)
+	truncateTables()
+}
 func TestGetAgenciesByUF(t *testing.T) {
 	tests := getAgenciesByUF{}
 	t.Run("Test GetAgenciesByUF when agencies exists", tests.testWhenAgenciesExists)

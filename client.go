@@ -32,7 +32,7 @@ func (c *Client) Close() error {
 func (c *Client) GetStateAgencies(uf string) ([]models.Agency, error) {
 	ags, err := c.Db.GetStateAgencies(uf)
 	if err != nil {
-		return nil, fmt.Errorf("GetOPE() error: %q", err)
+		return nil, fmt.Errorf("GetStateAgencies() error: %q", err)
 	}
 	return ags, err
 }
