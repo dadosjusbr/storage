@@ -751,7 +751,8 @@ func (g getAgenciesByUF) testWhenUFIsInIrregularCase(t *testing.T) {
 func TestGetMonthlyInfo(t *testing.T) {
 	tests := getMonthlyInfo{}
 	t.Run("Test GetMonthlyInfo when monthly info exists", tests.testWhenMonthlyInfoExists)
-	t.Run("Test GetMonthlyInfo when agency not exists", tests.testWhenParamsNotMatch)
+	t.Run("Test GetMonthlyInfo when agency not exists", tests.testWhenAgencyNotExists)
+	t.Run("Test GetMonthlyInfo when year not exists", tests.testWhenYearNotExists)
 	t.Run("Test GetMonthlyInfo when procinfo is not null", tests.testWhenProcInfoIsNotNull)
 }
 
@@ -803,7 +804,35 @@ func (g getMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 	truncateTables()
 }
 
-func (g getMonthlyInfo) testWhenParamsNotMatch(t *testing.T) {
+func (g getMonthlyInfo) testWhenAgencyNotExists(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID: "tjal",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+	agmis := []models.AgencyMonthlyInfo{
+		{
+			AgencyID:          "tjal",
+			Year:              2020,
+			Month:             1,
+			CrawlingTimestamp: timestamppb.Now(),
+		},
+	}
+	if err := insertMonthlyInfos(agmis); err != nil {
+		t.Fatalf("error inserting agency monthly info: %q", err)
+	}
+
+	returnedAgmis, err := postgresDb.GetMonthlyInfo([]models.Agency{{ID: "tjsp"}}, 2020)
+
+	assert.Nil(t, err)
+	assert.Empty(t, returnedAgmis)
+	truncateTables()
+}
+
+func (g getMonthlyInfo) testWhenYearNotExists(t *testing.T) {
 	agencies := []models.Agency{
 		{
 			ID: "tjsp",
