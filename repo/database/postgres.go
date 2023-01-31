@@ -284,7 +284,7 @@ func (p *PostgresDB) GetMonthlyInfoSummary(agencies []models.Agency, year int) (
 
 func (p *PostgresDB) GetOMA(month int, year int, agency string) (*models.AgencyMonthlyInfo, *models.Agency, error) {
 	var dtoAgmi dto.AgencyMonthlyInfoDTO
-	id := fmt.Sprintf("%s/%s/%d", agency, dto.AddZeroes(month), year)
+	id := fmt.Sprintf("%s/%s/%d", strings.ToLower(agency), dto.AddZeroes(month), year)
 	m := p.db.Model(dto.AgencyMonthlyInfoDTO{}).Where("id = ? AND atual = true", id).First(&dtoAgmi)
 	if err := m.Error; err != nil {
 		return nil, nil, fmt.Errorf("error getting 'coletas' with id (%s): %q", id, err)
