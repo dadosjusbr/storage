@@ -330,6 +330,57 @@ func (g getAgency) testWhenAgencyIsInIrregularCase(t *testing.T) {
 	assert.Equal(t, agencies[0], *returnedAgency)
 }
 
+func TestGetAllAgencies(t *testing.T) {
+	tests := getAllAgencies{}
+	t.Run("Test GetAllAgencies when agencies exists", tests.testWhenAgenciesExists)
+	t.Run("Test GetAllAgencies when agencies not exists", tests.testWhenAgenciesNotExists)
+}
+
+type getAllAgencies struct{}
+
+func (g getAllAgencies) testWhenAgenciesExists(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID:     "tjsp",
+			Name:   "Tribunal de Justiça do Estado de São Paulo",
+			Type:   "Estadual",
+			Entity: "Tribunal",
+			UF:     "SP",
+		},
+		{
+			ID:     "tjal",
+			Name:   "Tribunal de Justiça do Estado de Alagoas",
+			Type:   "Estadual",
+			Entity: "Tribunal",
+			UF:     "AL",
+		},
+		{
+			ID:     "tjba",
+			Name:   "Tribunal de Justiça do Estado da Bahia",
+			Type:   "Estadual",
+			Entity: "Tribunal",
+			UF:     "BA",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	returnedAgencies, err := postgresDb.GetAllAgencies()
+
+	assert.Nil(t, err)
+	assert.Equal(t, agencies, returnedAgencies)
+}
+
+func (g getAllAgencies) testWhenAgenciesNotExists(t *testing.T) {
+	truncateTables()
+
+	returnedAgencies, err := postgresDb.GetAllAgencies()
+
+	assert.Nil(t, err)
+	assert.Empty(t, returnedAgencies)
+}
+
 func TestStore(t *testing.T) {
 	if err := insertAgencies([]models.Agency{{ID: "tjba"}}); err != nil {
 		t.Fatalf("error inserting agencies: %q", err)
@@ -450,75 +501,6 @@ func insertMonthlyInfos(monthlyInfos []models.AgencyMonthlyInfo) error {
 		}
 	}
 	return nil
-}
-
-func TestGetAllAgencies(t *testing.T) {
-	tests := getAllAgencies{}
-	t.Run("Test GetAllAgencies when agencies exists", tests.testWhenAgenciesExists)
-	t.Run("Test GetAllAgencies when agencies not exists", tests.testWhenAgenciesNotExists)
-}
-
-type getAllAgencies struct{}
-
-func (g getAllAgencies) testWhenAgenciesExists(t *testing.T) {
-	agencies, err := g.insertAgencies()
-	if err != nil {
-		t.Fatalf("error inserting agencies: %q", err)
-	}
-
-	returnedAgencies, err := postgresDb.GetAllAgencies()
-
-	assert.Nil(t, err)
-	assert.Equal(t, agencies, returnedAgencies)
-}
-
-func (g getAllAgencies) testWhenAgenciesNotExists(t *testing.T) {
-	truncateTables()
-
-	returnedAgencies, err := postgresDb.GetAllAgencies()
-
-	assert.Nil(t, err)
-	assert.Empty(t, returnedAgencies)
-}
-
-func (getAllAgencies) insertAgencies() ([]models.Agency, error) {
-	agencies := []models.Agency{
-		{
-			ID:     "tjsp",
-			Name:   "Tribunal de Justiça do Estado de São Paulo",
-			Type:   "Estadual",
-			Entity: "Tribunal",
-			UF:     "SP",
-		},
-		{
-			ID:     "tjal",
-			Name:   "Tribunal de Justiça do Estado de Alagoas",
-			Type:   "Estadual",
-			Entity: "Tribunal",
-			UF:     "AL",
-		},
-		{
-			ID:     "tjba",
-			Name:   "Tribunal de Justiça do Estado da Bahia",
-			Type:   "Estadual",
-			Entity: "Tribunal",
-			UF:     "BA",
-		},
-	}
-	for _, agency := range agencies {
-		agencyDto, err := dto.NewAgencyDTO(agency)
-		if err != nil {
-			return nil, fmt.Errorf("error creating agency dto %s: %q", agency.ID, err)
-		}
-		tx := postgresDb.db.Model(dto.AgencyDTO{}).Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "id"}},
-			DoNothing: true,
-		}).Create(agencyDto)
-		if tx.Error != nil {
-			return nil, fmt.Errorf("error inserting agency %s: %q", agency.ID, tx.Error)
-		}
-	}
-	return agencies, nil
 }
 
 func truncateTables() error {
