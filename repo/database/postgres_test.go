@@ -896,6 +896,84 @@ func (g getMonthlyInfo) testWhenProcInfoIsNotNull(t *testing.T) {
 	truncateTables()
 }
 
+func TestGetOMA(t *testing.T) {
+	tests := getOMA{}
+
+	t.Run("Test GetOMA when data exists", tests.testWhenDataExists)
+	t.Run("Test GetOMA when data not exists", tests.testWhenDataNotExists)
+	t.Run("Test GetOMA when agency is in irregular case", tests.testWhenAgencyIsInIrregularCase)
+}
+
+type getOMA struct{}
+
+func (g getOMA) testWhenDataExists(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID: "tjsp",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+	agmi := models.AgencyMonthlyInfo{
+		AgencyID:          "tjsp",
+		Month:             12,
+		Year:              2022,
+		CrawlingTimestamp: timestamppb.Now(),
+	}
+	if err := insertMonthlyInfos([]models.AgencyMonthlyInfo{agmi}); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	returnedAgmi, agency, err := postgresDb.GetOMA(12, 2022, "tjsp")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agmi.AgencyID, returnedAgmi.AgencyID)
+	assert.Equal(t, agmi.Month, returnedAgmi.Month)
+	assert.Equal(t, agmi.Year, returnedAgmi.Year)
+	assert.Equal(t, agencies[0], *agency)
+	truncateTables()
+}
+
+func (g getOMA) testWhenDataNotExists(t *testing.T) {
+	truncateTables()
+	expecErr := fmt.Errorf("there is no data with this parameters")
+	returnedAgmi, agency, err := postgresDb.GetOMA(12, 2022, "tjba")
+
+	assert.Equal(t, err, expecErr)
+	assert.Nil(t, returnedAgmi)
+	assert.Nil(t, agency)
+}
+
+func (g getOMA) testWhenAgencyIsInIrregularCase(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID: "tjsp",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+	agmi := models.AgencyMonthlyInfo{
+		AgencyID:          "tjsp",
+		Month:             12,
+		Year:              2022,
+		CrawlingTimestamp: timestamppb.Now(),
+	}
+	if err := insertMonthlyInfos([]models.AgencyMonthlyInfo{agmi}); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	returnedAgmi, agency, err := postgresDb.GetOMA(12, 2022, "tJsp")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agmi.AgencyID, returnedAgmi.AgencyID)
+	assert.Equal(t, agmi.Month, returnedAgmi.Month)
+	assert.Equal(t, agmi.Year, returnedAgmi.Year)
+	assert.Equal(t, agencies[0], *agency)
+	truncateTables()
+}
+
 func TestStore(t *testing.T) {
 	if err := insertAgencies([]models.Agency{{ID: "tjba"}}); err != nil {
 		t.Fatalf("error inserting agencies: %q", err)

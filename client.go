@@ -49,14 +49,10 @@ func (c *Client) GetOPJ(group string) ([]models.Agency, error) {
 // GetOMA Connect to db to collect data for a month including all employees
 func (c *Client) GetOMA(month int, year int, agency string) (*models.AgencyMonthlyInfo, *models.Agency, error) {
 	agsMR, agencyObj, err := c.Db.GetOMA(month, year, agency)
-	if err == nil {
-		return agsMR, agencyObj, err
+	if err != nil {
+		return nil, nil, fmt.Errorf("GetOMA() error: %q", err)
 	}
-	// It is important to let API users know when there no record/doc has been found.
-	if err == ErrNothingFound {
-		return nil, nil, err
-	}
-	return nil, nil, fmt.Errorf("error in GetOMA: %q", err)
+	return agsMR, agencyObj, nil
 }
 
 // Store stores the Agency Monthly Info stats.

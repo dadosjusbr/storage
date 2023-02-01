@@ -11,6 +11,7 @@ import (
 	"github.com/dadosjusbr/storage/repo/file_storage"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestGetStateAgencies(t *testing.T) {
@@ -333,4 +334,56 @@ func (getAgenciesCount) testWhenRepositoryReturnError(t *testing.T) {
 
 	assert.Equal(t, expectedErr, err)
 	assert.Equal(t, 0, returnedAgenciesCount)
+}
+
+func TestGetOMA(t *testing.T) {
+	tests := getOMA{}
+	t.Run("Test GetOMA when repository return OMA", tests.testWhenRepositoryReturnOMA)
+	t.Run("Test GetOMA when database connection fails", tests.testWhenRepositoryReturnError)
+}
+
+type getOMA struct{}
+
+func (getOMA) testWhenRepositoryReturnOMA(t *testing.T) {
+	mockCrl := gomock.NewController(t)
+	dbMock := database.NewMockInterface(mockCrl)
+	fsMock := file_storage.NewMockInterface(mockCrl)
+
+	agency := &models.Agency{
+		ID: "tjsp",
+	}
+	agmi := &models.AgencyMonthlyInfo{
+		AgencyID:          agency.ID,
+		Month:             1,
+		Year:              2020,
+		CrawlingTimestamp: timestamppb.Now(),
+	}
+	dbMock.EXPECT().GetOMA(agmi.Month, agmi.Year, agmi.AgencyID).Return(agmi, agency, nil)
+	dbMock.EXPECT().Connect().Return(nil)
+
+	client, err := storage.NewClient(dbMock, fsMock)
+
+	returnedAgmi, returnedAgency, err := client.GetOMA(agmi.Month, agmi.Year, agmi.AgencyID)
+
+	assert.Nil(t, err)
+	assert.Equal(t, agmi, returnedAgmi)
+	assert.Equal(t, agency, returnedAgency)
+}
+
+func (getOMA) testWhenRepositoryReturnError(t *testing.T) {
+	mockCrl := gomock.NewController(t)
+	dbMock := database.NewMockInterface(mockCrl)
+	fsMock := file_storage.NewMockInterface(mockCrl)
+
+	repoErr := errors.New("error getting OMA")
+	dbMock.EXPECT().GetOMA(1, 2020, "tjsp").Return(nil, nil, repoErr)
+	dbMock.EXPECT().Connect().Return(nil)
+
+	client, err := storage.NewClient(dbMock, fsMock)
+	returnedOMA, returnedAgency, err := client.GetOMA(1, 2020, "tjsp")
+	expectedErr := errors.New(fmt.Sprintf("GetOMA() error: \"%s\"", repoErr.Error()))
+
+	assert.Equal(t, expectedErr, err)
+	assert.Nil(t, returnedOMA)
+	assert.Nil(t, returnedAgency)
 }
