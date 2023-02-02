@@ -974,6 +974,82 @@ func (g getOMA) testWhenAgencyIsInIrregularCase(t *testing.T) {
 	truncateTables()
 }
 
+func TestStoreRemunerations(t *testing.T) {
+	tests := storeRemunerations{}
+
+	t.Run("Test StoreRemunerations when data is ok", tests.testWhenDataIsOk)
+	t.Run("Test StoreRemunerations when ID already exists", tests.testWhenIDAlreadyExists)
+}
+
+type storeRemunerations struct{}
+
+func (s storeRemunerations) testWhenDataIsOk(t *testing.T) {
+	remunerations := models.Remunerations{
+		AgencyID:     "tjsp",
+		Year:         2020,
+		Month:        1,
+		NumBase:      100,
+		NumDiscounts: 100,
+		NumOther:     100,
+		ZipUrl:       "https://dadosjusbr-public.s3.amazonaws.com/tjsp/remunerations/tjsp-2020-01.zip",
+	}
+	err := postgresDb.StoreRemunerations(remunerations)
+
+	var count int64
+	var remuDTO dto.RemunerationsDTO
+
+	m := postgresDb.db.Model(&dto.RemunerationsDTO{}).Count(&count).Where("id_orgao = ? AND ano = ? AND mes = ?", remunerations.AgencyID, remunerations.Year, remunerations.Month).First(&remuDTO)
+	if m.Error != nil {
+		t.Fatalf("error getting remunerations: %q", m.Error)
+	}
+
+	assert.Nil(t, err)
+	assert.Equal(t, int64(1), count)
+	assert.Equal(t, remunerations.AgencyID, remuDTO.AgencyID)
+	assert.Equal(t, remunerations.Year, remuDTO.Year)
+	assert.Equal(t, remunerations.Month, remuDTO.Month)
+	assert.Equal(t, remunerations.NumBase, remuDTO.NumBase)
+	assert.Equal(t, remunerations.NumDiscounts, remuDTO.NumDiscounts)
+	assert.Equal(t, remunerations.NumOther, remuDTO.NumOther)
+	truncateTables()
+}
+
+func (s storeRemunerations) testWhenIDAlreadyExists(t *testing.T) {
+	remunerations := []models.Remunerations{
+		{
+			AgencyID:     "tjsp",
+			Year:         2020,
+			Month:        1,
+			NumBase:      100,
+			NumDiscounts: 100,
+			NumOther:     100,
+			ZipUrl:       "https://dadosjusbr-public.s3.amazonaws.com/tjsp/remunerations/tjsp-2020-01.zip",
+		},
+	}
+	if err := insertRemunerations(remunerations); err != nil {
+		t.Fatalf("error inserting remunerations: %q", err)
+	}
+	err := postgresDb.StoreRemunerations(remunerations[0])
+
+	var count int64
+	var remuDTO dto.RemunerationsDTO
+
+	m := postgresDb.db.Model(&dto.RemunerationsDTO{}).Count(&count).Where("id_orgao = ? AND ano = ? AND mes = ?", remunerations[0].AgencyID, remunerations[0].Year, remunerations[0].Month).First(&remuDTO)
+	if m.Error != nil {
+		t.Fatalf("error getting remunerations: %q", m.Error)
+	}
+
+	assert.Nil(t, err)
+	assert.Equal(t, int64(1), count)
+	assert.Equal(t, remunerations[0].AgencyID, remuDTO.AgencyID)
+	assert.Equal(t, remunerations[0].Year, remuDTO.Year)
+	assert.Equal(t, remunerations[0].Month, remuDTO.Month)
+	assert.Equal(t, remunerations[0].NumBase, remuDTO.NumBase)
+	assert.Equal(t, remunerations[0].NumDiscounts, remuDTO.NumDiscounts)
+	assert.Equal(t, remunerations[0].NumOther, remuDTO.NumOther)
+	truncateTables()
+}
+
 func TestStore(t *testing.T) {
 	if err := insertAgencies([]models.Agency{{ID: "tjba"}}); err != nil {
 		t.Fatalf("error inserting agencies: %q", err)
@@ -1091,6 +1167,17 @@ func insertMonthlyInfos(monthlyInfos []models.AgencyMonthlyInfo) error {
 		tx := postgresDb.db.Model(dto.AgencyMonthlyInfoDTO{}).Create(monthlyInfoDto)
 		if tx.Error != nil {
 			return fmt.Errorf("error inserting monthly info: %q", tx.Error)
+		}
+	}
+	return nil
+}
+
+func insertRemunerations(remunerations []models.Remunerations) error {
+	for _, remuneration := range remunerations {
+		remunerationDto := dto.NewRemunerationsDTO(remuneration)
+		tx := postgresDb.db.Model(dto.RemunerationsDTO{}).Create(remunerationDto)
+		if tx.Error != nil {
+			return fmt.Errorf("error inserting remuneration: %q", tx.Error)
 		}
 	}
 	return nil
