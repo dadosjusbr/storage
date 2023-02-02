@@ -172,6 +172,41 @@ func TestGetFirstDateWithMonthlyInfo(t *testing.T) {
 
 type getFirstDateWithMonthlyInfo struct{}
 
+func (getFirstDateWithMonthlyInfo) testWhenRepositoryReturnDate(t *testing.T) {
+	mockCrl := gomock.NewController(t)
+	dbMock := database.NewMockInterface(mockCrl)
+	fsMock := file_storage.NewMockInterface(mockCrl)
+
+	expecMonth := 1
+	expecYear := 2018
+	dbMock.EXPECT().GetFirstDateWithMonthlyInfo().Return(expecMonth, expecYear, nil)
+	dbMock.EXPECT().Connect().Return(nil)
+
+	client, err := storage.NewClient(dbMock, fsMock)
+	month, year, err := client.GetFirstDateWithMonthlyInfo()
+
+	assert.Nil(t, err)
+	assert.Equal(t, month, expecMonth)
+	assert.Equal(t, year, expecYear)
+}
+
+func (getFirstDateWithMonthlyInfo) testWhenRepositoryReturnError(t *testing.T) {
+	mockCrl := gomock.NewController(t)
+	dbMock := database.NewMockInterface(mockCrl)
+	fsMock := file_storage.NewMockInterface(mockCrl)
+
+	repoErr := errors.New("error getting first date")
+	dbMock.EXPECT().GetFirstDateWithMonthlyInfo().Return(0, 0, repoErr)
+	dbMock.EXPECT().Connect().Return(nil)
+
+	client, err := storage.NewClient(dbMock, fsMock)
+	month, year, err := client.GetFirstDateWithMonthlyInfo()
+	expectedErr := errors.New(fmt.Sprintf("GetFirstDateWithMonthlyInfo() error: \"%s\"", repoErr.Error()))
+
+	assert.Equal(t, expectedErr, err)
+	assert.Equal(t, 0, month)
+	assert.Equal(t, 0, year)
+}
 func TestGetLastDateWithMonthlyInfo(t *testing.T) {
 	tests := getLastDateWithMonthlyInfo{}
 	t.Run("Test GetLastDateWithMonthlyInfo when repository return date", tests.testWhenRepositoryReturnDate)
@@ -198,24 +233,6 @@ func (getLastDateWithMonthlyInfo) testWhenRepositoryReturnDate(t *testing.T) {
 	assert.Equal(t, year, expecYear)
 }
 
-func (getFirstDateWithMonthlyInfo) testWhenRepositoryReturnDate(t *testing.T) {
-	mockCrl := gomock.NewController(t)
-	dbMock := database.NewMockInterface(mockCrl)
-	fsMock := file_storage.NewMockInterface(mockCrl)
-
-	expecMonth := 1
-	expecYear := 2018
-	dbMock.EXPECT().GetFirstDateWithMonthlyInfo().Return(expecMonth, expecYear, nil)
-	dbMock.EXPECT().Connect().Return(nil)
-
-	client, err := storage.NewClient(dbMock, fsMock)
-	month, year, err := client.GetFirstDateWithMonthlyInfo()
-
-	assert.Nil(t, err)
-	assert.Equal(t, month, expecMonth)
-	assert.Equal(t, year, expecYear)
-}
-
 func (getLastDateWithMonthlyInfo) testWhenRepositoryReturnError(t *testing.T) {
 	mockCrl := gomock.NewController(t)
 	dbMock := database.NewMockInterface(mockCrl)
@@ -234,28 +251,10 @@ func (getLastDateWithMonthlyInfo) testWhenRepositoryReturnError(t *testing.T) {
 	assert.Equal(t, 0, year)
 }
 
-func (getFirstDateWithMonthlyInfo) testWhenRepositoryReturnError(t *testing.T) {
-	mockCrl := gomock.NewController(t)
-	dbMock := database.NewMockInterface(mockCrl)
-	fsMock := file_storage.NewMockInterface(mockCrl)
-
-	repoErr := errors.New("error getting first date")
-	dbMock.EXPECT().GetFirstDateWithMonthlyInfo().Return(0, 0, repoErr)
-	dbMock.EXPECT().Connect().Return(nil)
-
-	client, err := storage.NewClient(dbMock, fsMock)
-	month, year, err := client.GetFirstDateWithMonthlyInfo()
-	expectedErr := errors.New(fmt.Sprintf("GetFirstDateWithMonthlyInfo() error: \"%s\"", repoErr.Error()))
-
-	assert.Equal(t, expectedErr, err)
-	assert.Equal(t, 0, month)
-	assert.Equal(t, 0, year)
-}
-
 func TestGetNumberOfMonthsCollected(t *testing.T) {
 	tests := getNumberOfMonthsCollected{}
 	t.Run("Test GetNumberOfMonthsCollected when repository return number of months", tests.testWhenRepositoryReturnNumberOfMonths)
-	t.Run("Test GetNumberOfMonthsCollected when database connection fails", tests.testWhenRepositoryReturnError)
+	t.Run("Test GetNumberOfMonthsCollected when repository return error fails", tests.testWhenRepositoryReturnError)
 }
 
 type getNumberOfMonthsCollected struct{}
@@ -297,7 +296,7 @@ func (getNumberOfMonthsCollected) testWhenRepositoryReturnError(t *testing.T) {
 func TestGetAgenciesCount(t *testing.T) {
 	tests := getAgenciesCount{}
 	t.Run("Test GetAgenciesCount when repository return agencies count", tests.testWhenRepositoryReturnAgenciesCount)
-	t.Run("Test GetAgenciesCount when database connection fails", tests.testWhenRepositoryReturnError)
+	t.Run("Test GetAgenciesCount when repository return error", tests.testWhenRepositoryReturnError)
 }
 
 type getAgenciesCount struct{}
@@ -339,7 +338,7 @@ func (getAgenciesCount) testWhenRepositoryReturnError(t *testing.T) {
 func TestGetOMA(t *testing.T) {
 	tests := getOMA{}
 	t.Run("Test GetOMA when repository return OMA", tests.testWhenRepositoryReturnOMA)
-	t.Run("Test GetOMA when database connection fails", tests.testWhenRepositoryReturnError)
+	t.Run("Test GetOMA when repository return error", tests.testWhenRepositoryReturnError)
 }
 
 type getOMA struct{}
@@ -386,4 +385,61 @@ func (getOMA) testWhenRepositoryReturnError(t *testing.T) {
 	assert.Equal(t, expectedErr, err)
 	assert.Nil(t, returnedOMA)
 	assert.Nil(t, returnedAgency)
+}
+
+func TestStoreRemunerations(t *testing.T) {
+	tests := storeRemunerations{}
+	t.Run("Test StoreRemunerations when repository store remunerations", tests.testWhenRepositoryStoreRemunerations)
+	t.Run("Test StoreRemunerations when repository return error", tests.testWhenRepositoryReturnError)
+}
+
+type storeRemunerations struct{}
+
+func (storeRemunerations) testWhenRepositoryStoreRemunerations(t *testing.T) {
+	mockCrl := gomock.NewController(t)
+	dbMock := database.NewMockInterface(mockCrl)
+	fsMock := file_storage.NewMockInterface(mockCrl)
+
+	remunerations := models.Remunerations{
+		AgencyID:     "tjsp",
+		Month:        1,
+		Year:         2020,
+		NumBase:      100,
+		NumDiscounts: 10,
+		NumOther:     10,
+		ZipUrl:       "https://dadosjusbr-public.s3.amazonaws.com/tjsp/remunerations/tjsp-2020-01.zip",
+	}
+	dbMock.EXPECT().StoreRemunerations(remunerations).Return(nil)
+	dbMock.EXPECT().Connect().Return(nil)
+
+	client, err := storage.NewClient(dbMock, fsMock)
+
+	err = client.StoreRemunerations(remunerations)
+
+	assert.Nil(t, err)
+}
+
+func (storeRemunerations) testWhenRepositoryReturnError(t *testing.T) {
+	mockCrl := gomock.NewController(t)
+	dbMock := database.NewMockInterface(mockCrl)
+	fsMock := file_storage.NewMockInterface(mockCrl)
+	remunerations := models.Remunerations{
+		AgencyID:     "tjsp",
+		Month:        1,
+		Year:         2020,
+		NumBase:      100,
+		NumDiscounts: 10,
+		NumOther:     10,
+		ZipUrl:       "https://dadosjusbr-public.s3.amazonaws.com/tjsp/remunerations/tjsp-2020-01.zip",
+	}
+
+	repoErr := errors.New("error storing remunerations")
+	dbMock.EXPECT().StoreRemunerations(remunerations).Return(repoErr)
+	dbMock.EXPECT().Connect().Return(nil)
+
+	client, err := storage.NewClient(dbMock, fsMock)
+	err = client.StoreRemunerations(remunerations)
+	expectedErr := errors.New(fmt.Sprintf("StoreRemunerations() error: \"%s\"", repoErr.Error()))
+
+	assert.Equal(t, expectedErr, err)
 }
