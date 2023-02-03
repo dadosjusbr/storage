@@ -1147,6 +1147,15 @@ func (s storeRemunerations) testWhenIDAlreadyExists(t *testing.T) {
 }
 
 func TestStore(t *testing.T) {
+	tests := store{}
+
+	t.Run("Test Store when data is OK", tests.testWhenDataIsOK)
+	t.Run("Test Store when ID already exists", tests.testWhenIDAlreadyExists)
+}
+
+type store struct{}
+
+func (s store) testWhenDataIsOK(t *testing.T) {
 	if err := insertAgencies([]models.Agency{{ID: "tjba"}}); err != nil {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
@@ -1235,6 +1244,47 @@ func TestStore(t *testing.T) {
 	assert.Equal(t, agmi.Meta.Extension, result.Meta.Extension)
 	assert.Equal(t, agmi.Score.Score, result.Score.Score)
 	assert.Equal(t, agmi.Duration, result.Duration)
+	truncateTables()
+}
+
+func (s store) testWhenIDAlreadyExists(t *testing.T) {
+	agency := models.Agency{
+		ID: "tjba",
+	}
+	if err := insertAgencies([]models.Agency{agency}); err != nil {
+		t.Errorf("error inserting agency: %v", err)
+	}
+	agmi := models.AgencyMonthlyInfo{
+		AgencyID:          "tjba",
+		Month:             12,
+		Year:              2022,
+		CrawlingTimestamp: timestamppb.New(time.Now()),
+	}
+	if err := insertMonthlyInfos([]models.AgencyMonthlyInfo{agmi}); err != nil {
+		t.Errorf("error inserting agmi: %v", err)
+	}
+
+	err := postgresDb.Store(agmi)
+
+	var count int64
+	var dtoAgmi dto.AgencyMonthlyInfoDTO
+
+	m := postgresDb.db.Model(dto.AgencyMonthlyInfoDTO{}).Where("id = 'tjba/12/2022' AND atual = true").Count(&count).Find(&dtoAgmi)
+	if m.Error != nil {
+		fmt.Errorf("error finding agmi: %v", err)
+	}
+
+	result, err := dtoAgmi.ConvertToModel()
+	if err != nil {
+		fmt.Errorf("error converting agmi dto to model: %q", err)
+	}
+
+	assert.Nil(t, err)
+	assert.Equal(t, int64(1), count)
+	assert.Equal(t, agmi.AgencyID, result.AgencyID)
+	assert.Equal(t, agmi.Year, result.Year)
+	assert.Equal(t, agmi.Month, result.Month)
+	truncateTables()
 }
 
 func insertAgencies(agencies []models.Agency) error {
