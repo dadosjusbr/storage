@@ -1,5 +1,7 @@
 # Storage
 
+[![Coverage Status](https://coveralls.io/repos/github/dadosjusbr/storage/badge.svg?branch=master)](https://coveralls.io/github/dadosjusbr/storage?branch=master)
+
 APIs de armazenamento do dadosjusbr
 
 # Como contribuir com os testes e executa-los.
