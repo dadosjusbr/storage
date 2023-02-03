@@ -387,3 +387,48 @@ func (getOMA) testWhenRepositoryReturnError(t *testing.T) {
 	assert.Nil(t, returnedOMA)
 	assert.Nil(t, returnedAgency)
 }
+
+func TestStore(t *testing.T) {
+	tests := store{}
+	t.Run("Test Store when repository store data", tests.testWhenRepositoryStoreData)
+	t.Run("Test Store when database connection fails", tests.testWhenRepositoryReturnError)
+}
+
+type store struct{}
+
+func (store) testWhenRepositoryStoreData(t *testing.T) {
+	mockCrl := gomock.NewController(t)
+	dbMock := database.NewMockInterface(mockCrl)
+	fsMock := file_storage.NewMockInterface(mockCrl)
+
+	agmi := models.AgencyMonthlyInfo{
+		AgencyID:          "tjsp",
+		Month:             1,
+		Year:              2020,
+		CrawlingTimestamp: timestamppb.Now(),
+	}
+	dbMock.EXPECT().Store(agmi).Return(nil)
+	dbMock.EXPECT().Connect().Return(nil)
+
+	client, err := storage.NewClient(dbMock, fsMock)
+
+	err = client.Store(agmi)
+
+	assert.Nil(t, err)
+}
+
+func (store) testWhenRepositoryReturnError(t *testing.T) {
+	mockCrl := gomock.NewController(t)
+	dbMock := database.NewMockInterface(mockCrl)
+	fsMock := file_storage.NewMockInterface(mockCrl)
+
+	repoErr := errors.New("error storing data")
+	dbMock.EXPECT().Store(models.AgencyMonthlyInfo{}).Return(repoErr)
+	dbMock.EXPECT().Connect().Return(nil)
+
+	client, err := storage.NewClient(dbMock, fsMock)
+	err = client.Store(models.AgencyMonthlyInfo{})
+
+	expectedErr := errors.New(fmt.Sprintf("Store() error: \"%s\"", repoErr.Error()))
+	assert.Equal(t, expectedErr, err)
+}
