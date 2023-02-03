@@ -974,6 +974,102 @@ func (g getOMA) testWhenAgencyIsInIrregularCase(t *testing.T) {
 	truncateTables()
 }
 
+func TestGetGeneralMonthlyInfosFromYear(t *testing.T) {
+	tests := getGeneralMonthlyInfoFromYear{}
+
+	t.Run("Test GetGeneralMonthlyInfosFromYear when monthly infos exists", tests.testWhenDataExists)
+	t.Run("Test GetGeneralMonthlyInfosFromYear when monthly infos not exists", tests.testWhenDataNotExists)
+}
+
+type getGeneralMonthlyInfoFromYear struct{}
+
+func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID: "tjsp",
+		},
+		{
+			ID: "tjba",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+	agmis := []models.AgencyMonthlyInfo{
+		{
+			AgencyID:          "tjsp",
+			Month:             1,
+			Year:              2022,
+			CrawlingTimestamp: timestamppb.Now(),
+			Summary: &models.Summary{
+				Count: 100,
+				BaseRemuneration: models.DataSummary{
+					Total: 1000,
+				},
+				OtherRemunerations: models.DataSummary{
+					Total: 450,
+				},
+			},
+		},
+		{
+			AgencyID:          "tjba",
+			Month:             1,
+			Year:              2022,
+			CrawlingTimestamp: timestamppb.Now(),
+			Summary: &models.Summary{
+				Count: 300,
+				BaseRemuneration: models.DataSummary{
+					Total: 3000,
+				},
+				OtherRemunerations: models.DataSummary{
+					Total: 1200,
+				},
+			},
+		},
+	}
+	if err := insertMonthlyInfos(agmis); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	var gmis []models.GeneralMonthlyInfo
+	for _, agmi := range agmis {
+		for _, agmi2 := range agmis {
+			exists := false
+			for _, gmi := range gmis {
+				if gmi.Month == agmi.Month {
+					gmi.BaseRemuneration += agmi.Summary.BaseRemuneration.Total
+					gmi.OtherRemunerations += agmi.Summary.OtherRemunerations.Total
+					gmi.Count += agmi.Summary.Count
+					exists = true
+				}
+			}
+			if !exists && agmi.Month == agmi2.Month && agmi.AgencyID != agmi2.AgencyID {
+				if agmi.Month == agmi2.Month && agmi.AgencyID != agmi2.AgencyID {
+					gmis = append(gmis, models.GeneralMonthlyInfo{
+						Month:              agmi.Month,
+						Count:              agmi.Summary.Count + agmi2.Summary.Count,
+						BaseRemuneration:   agmi.Summary.BaseRemuneration.Total + agmi2.Summary.BaseRemuneration.Total,
+						OtherRemunerations: agmi.Summary.OtherRemunerations.Total + agmi2.Summary.OtherRemunerations.Total,
+					})
+				}
+			}
+		}
+	}
+	returnedGmis, err := postgresDb.GetGeneralMonthlyInfosFromYear(2022)
+
+	assert.Nil(t, err)
+	assert.Equal(t, gmis, returnedGmis)
+	truncateTables()
+}
+
+func (g getGeneralMonthlyInfoFromYear) testWhenDataNotExists(t *testing.T) {
+	truncateTables()
+	returnedGmis, err := postgresDb.GetGeneralMonthlyInfosFromYear(2022)
+
+	assert.Nil(t, err)
+	assert.Empty(t, returnedGmis)
+}
+
 func TestStoreRemunerations(t *testing.T) {
 	tests := storeRemunerations{}
 
