@@ -38,7 +38,7 @@ jobs:
         env:
           POSTGRES_CONNECTION_URL: postgres://root:dadosjusbr_test@postgres_test:5432/dadosjusbr_test?sslmode=disable
 
-      - name: Coveralls
-        uses: coverallsapp/github-action@master
+      - name: Send coverage
+        uses: shogo82148/actions-goveralls@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-profile: covprofile
