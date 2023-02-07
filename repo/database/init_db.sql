@@ -8,7 +8,8 @@ create table orgaos
     entidade       varchar(25),
     uf             varchar(25),
     coletando      json,
-    twitter_handle varchar(25)
+    twitter_handle varchar(25),
+    ouvidoria      varchar(100)
 );
 
 create table coletas

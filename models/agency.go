@@ -10,6 +10,7 @@ type Agency struct {
 	URL           string       `json:"url"`    // Link for state url
 	Collecting    []Collecting `json:"collecting"`
 	TwitterHandle string       `json:"twitter_handle"` // Agency's twitter handle
+	Ombudsman     string       `json:"ombudsman"`      //Agencys's ombudsman
 }
 
 // Collecting A Struct containing the day we checked the status of the data and the reasons why we didn't collected it.
