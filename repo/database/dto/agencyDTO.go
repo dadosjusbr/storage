@@ -17,7 +17,7 @@ type AgencyDTO struct {
 	UF            string         `gorm:"column:uf"`
 	Collecting    datatypes.JSON `gorm:"column:coletando"`
 	TwitterHandle string         `gorm:"column:twitter_handle"`
-	Ombudsman     string         `gorm:"column:ouvidoria"`
+	OmbudsmanURL  string         `gorm:"column:ouvidoria"`
 }
 
 func (AgencyDTO) TableName() string {
@@ -42,7 +42,7 @@ func (a AgencyDTO) ConvertToModel() (*models.Agency, error) {
 		UF:            a.UF,
 		Collecting:    collecting,
 		TwitterHandle: a.TwitterHandle,
-		Ombudsman:     a.Ombudsman,
+		OmbudsmanURL:  a.OmbudsmanURL,
 	}, nil
 }
 
@@ -59,6 +59,6 @@ func NewAgencyDTO(agency models.Agency) (*AgencyDTO, error) {
 		UF:            agency.UF,
 		Collecting:    collecting,
 		TwitterHandle: agency.TwitterHandle,
-		Ombudsman:     agency.Ombudsman,
+		OmbudsmanURL:  agency.OmbudsmanURL,
 	}, nil
 }
