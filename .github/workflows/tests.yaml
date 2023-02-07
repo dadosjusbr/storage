@@ -42,3 +42,4 @@ jobs:
         uses: shogo82148/actions-goveralls@v1
         with:
           path-to-profile: covprofile
+          github-token: ${{ secrets.GITHUB_TOKEN }}
