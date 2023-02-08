@@ -139,11 +139,6 @@ func (p *PostgresDB) Store(agmi models.AgencyMonthlyInfo) error {
 	return nil
 }
 
-func (p *PostgresDB) StorePackage(newPackage models.Package) error {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (p *PostgresDB) GetStateAgencies(uf string) ([]models.Agency, error) {
 	uf = strings.ToUpper(uf)
 	var dtoOrgaos []dto.AgencyDTO
@@ -277,9 +272,25 @@ func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[str
 	return results, nil
 }
 
-func (p *PostgresDB) GetMonthlyInfoSummary(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error) {
-	//TODO implement me
-	panic("implement me")
+func (p *PostgresDB) GetAllMonthlyInfo(agency string) (map[string][]models.AgencyMonthlyInfo, error) {
+	var results = make(map[string][]models.AgencyMonthlyInfo)
+	var dtoAgmis []dto.AgencyMonthlyInfoDTO
+	//Pegando as coletas do postgres, filtrando por órgão, ano e a coleta atual.
+	m := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
+	m = m.Where("id_orgao = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency)
+	m = m.Order("ano ASC, mes ASC")
+	if err := m.Find(&dtoAgmis).Error; err != nil {
+		return nil, fmt.Errorf("error getting monthly info: %q", err)
+	}
+	//Convertendo os DTO's para modelos
+	for _, dtoAgmi := range dtoAgmis {
+		agmi, err := dtoAgmi.ConvertToModel()
+		if err != nil {
+			return nil, fmt.Errorf("error converting dto to model: %q", err)
+		}
+		results[agency] = append(results[agency], *agmi)
+	}
+	return results, nil
 }
 
 func (p *PostgresDB) GetOMA(month int, year int, agency string) (*models.AgencyMonthlyInfo, *models.Agency, error) {
@@ -346,16 +357,6 @@ func (p *PostgresDB) GetLastDateWithMonthlyInfo() (int, int, error) {
 		return 0, 0, fmt.Errorf("error getting last date with monthly info: %q", err)
 	}
 	return month, year, nil
-}
-
-func (p *PostgresDB) GetRemunerationSummary() (*models.RemmunerationSummary, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (p *PostgresDB) GetPackage(pkgOpts models.PackageFilterOpts) (*models.Package, error) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (p *PostgresDB) GetGeneralMonthlyInfo() (float64, error) {

@@ -896,6 +896,98 @@ func (g getMonthlyInfo) testWhenProcInfoIsNotNull(t *testing.T) {
 	truncateTables()
 }
 
+func TestGetAllMonthlyInfo(t *testing.T) {
+	tests := getAllMonthlyInfo{}
+
+	t.Run("Test GetAllMonthlyInfo when monthly info exists", tests.testWhenMonthlyInfoExists)
+	t.Run("Test GetAllMonthlyInfo when agency not exists", tests.testWhenAgencyNotExists)
+}
+
+type getAllMonthlyInfo struct{}
+
+func (g getAllMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID: "tjal",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+	agmis := []models.AgencyMonthlyInfo{
+		{
+			AgencyID:          "tjal",
+			Year:              2020,
+			Month:             1,
+			CrawlingTimestamp: timestamppb.Now(),
+		},
+		{
+			AgencyID:          "tjal",
+			Year:              2020,
+			Month:             2,
+			CrawlingTimestamp: timestamppb.Now(),
+		},
+		{
+			AgencyID:          "tjal",
+			Year:              2021,
+			Month:             1,
+			CrawlingTimestamp: timestamppb.Now(),
+		},
+		{
+			AgencyID:          "tjal",
+			Year:              2021,
+			Month:             2,
+			CrawlingTimestamp: timestamppb.Now(),
+		},
+	}
+	if err := insertMonthlyInfos(agmis); err != nil {
+		t.Fatalf("error inserting agency monthly info: %q", err)
+	}
+	var agmiMap = make(map[string][]models.AgencyMonthlyInfo)
+	for _, agmi := range agmis {
+		agmiMap[agmi.AgencyID] = append(agmiMap[agmi.AgencyID], agmi)
+	}
+
+	returnedAgmis, err := postgresDb.GetAllMonthlyInfo("tjal")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agmiMap["tjal"][0].AgencyID, returnedAgmis["tjal"][0].AgencyID)
+	assert.Equal(t, agmiMap["tjal"][0].Year, returnedAgmis["tjal"][0].Year)
+	assert.Equal(t, agmiMap["tjal"][0].Month, returnedAgmis["tjal"][0].Month)
+	assert.Equal(t, agmiMap["tjal"][1].AgencyID, returnedAgmis["tjal"][1].AgencyID)
+	assert.Equal(t, agmiMap["tjal"][1].Year, returnedAgmis["tjal"][1].Year)
+	assert.Equal(t, agmiMap["tjal"][1].Month, returnedAgmis["tjal"][1].Month)
+	truncateTables()
+}
+
+func (g getAllMonthlyInfo) testWhenAgencyNotExists(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID: "tjal",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+	agmis := []models.AgencyMonthlyInfo{
+		{
+			AgencyID:          "tjal",
+			Year:              2020,
+			Month:             1,
+			CrawlingTimestamp: timestamppb.Now(),
+		},
+	}
+	if err := insertMonthlyInfos(agmis); err != nil {
+		t.Fatalf("error inserting agency monthly info: %q", err)
+	}
+
+	returnedAgmis, err := postgresDb.GetAllMonthlyInfo("tjsp")
+
+	assert.Nil(t, err)
+	assert.Empty(t, returnedAgmis)
+	truncateTables()
+}
+
 func TestGetOMA(t *testing.T) {
 	tests := getOMA{}
 
