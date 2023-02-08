@@ -41,6 +41,47 @@ func TestGetStateAgencies(t *testing.T) {
 
 type getStateAgencies struct{}
 
+func TestWhenOmbudsmanURLExists(t *testing.T) {
+	agency := []models.Agency{
+		{
+			ID:           "mpmg",
+			Name:         "Estadual",
+			UF:           "MG",
+			OmbudsmanURL: "https://aplicacao.mpmg.mp.br/ouvidoria/",
+		},
+	}
+
+	if err := insertAgencies(agency); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	returnedAgency, err := postgresDb.GetAgency("mpmg")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agency[0].OmbudsmanURL, returnedAgency.OmbudsmanURL)
+}
+
+func TestWhenOmbudsmanURLNotExists(t *testing.T) {
+	truncateTables()
+
+	agency := []models.Agency{
+		{
+			ID:   "mpmg",
+			Name: "Estadual",
+			UF:   "MG",
+		},
+	}
+
+	if err := insertAgencies(agency); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	returnedAgency, err := postgresDb.GetAgency("mpmg")
+
+	assert.Nil(t, err)
+	assert.Equal(t, agency[0].OmbudsmanURL, returnedAgency.OmbudsmanURL)
+}
+
 func (g getStateAgencies) testWhenAgenciesExists(t *testing.T) {
 	agencies := []models.Agency{
 		{
