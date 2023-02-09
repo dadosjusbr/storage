@@ -4,15 +4,15 @@ import (
 	"github.com/dadosjusbr/storage/models"
 )
 
-type AnnualMonthlyInfoDTO struct {
+type AnnualSummaryDTO struct {
 	Year               int     `gorm:"column:ano"`
 	Count              int     `gorm:"column:num_membros"`
 	BaseRemuneration   float64 `gorm:"column:remuneracao_base"`
 	OtherRemunerations float64 `gorm:"column:outras_remuneracoes"`
 }
 
-func NewAnnualMonthlyInfoDTO(ami models.AnnualMonthlyInfo) *AnnualMonthlyInfoDTO {
-	return &AnnualMonthlyInfoDTO{
+func NewAnnualSummaryDTO(ami models.AnnualSummary) *AnnualSummaryDTO {
+	return &AnnualSummaryDTO{
 		Year:               ami.Year,
 		Count:              ami.Count,
 		BaseRemuneration:   ami.BaseRemuneration,
@@ -20,8 +20,8 @@ func NewAnnualMonthlyInfoDTO(ami models.AnnualMonthlyInfo) *AnnualMonthlyInfoDTO
 	}
 }
 
-func (ami *AnnualMonthlyInfoDTO) ConvertToModel() *models.AnnualMonthlyInfo {
-	return &models.AnnualMonthlyInfo{
+func (ami *AnnualSummaryDTO) ConvertToModel() *models.AnnualSummary {
+	return &models.AnnualSummary{
 		Year:               ami.Year,
 		Count:              ami.Count,
 		BaseRemuneration:   ami.BaseRemuneration,

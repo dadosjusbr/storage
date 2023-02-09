@@ -18,7 +18,7 @@ type Interface interface {
 	GetAgency(aid string) (*models.Agency, error)
 	GetAllAgencies() ([]models.Agency, error)
 	GetMonthlyInfo(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error)
-	GetAnnualMonthlyInfo(agency string) ([]models.AnnualMonthlyInfo, error)
+	GetAnnualSummary(agency string) ([]models.AnnualSummary, error)
 	// OMA: Órgão Mês Ano
 	GetOMA(month int, year int, agency string) (*models.AgencyMonthlyInfo, *models.Agency, error)
 	GetGeneralMonthlyInfosFromYear(year int) ([]models.GeneralMonthlyInfo, error)

@@ -75,7 +75,7 @@ type GeneralMonthlyInfo struct {
 	OtherRemunerations float64 `json:"other_remunerations"` //  Statistics (Max, Min, Median, Total)
 }
 
-type AnnualMonthlyInfo struct {
+type AnnualSummary struct {
 	Year               int     `json:"year,omitempty"`      // Year of the data
 	Count              int     `json:"count"`               // Number of employees
 	BaseRemuneration   float64 `json:"base_remuneration"`   //  Statistics (Max, Min, Median, Total)

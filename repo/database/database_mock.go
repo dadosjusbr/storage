@@ -122,19 +122,19 @@ func (mr *MockInterfaceMockRecorder) GetAllAgencies() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllAgencies", reflect.TypeOf((*MockInterface)(nil).GetAllAgencies))
 }
 
-// GetAnnualMonthlyInfo mocks base method.
-func (m *MockInterface) GetAnnualMonthlyInfo(agency string) ([]models.AnnualMonthlyInfo, error) {
+// GetAnnualSummary mocks base method.
+func (m *MockInterface) GetAnnualSummary(agency string) ([]models.AnnualSummary, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAnnualMonthlyInfo", agency)
-	ret0, _ := ret[0].([]models.AnnualMonthlyInfo)
+	ret := m.ctrl.Call(m, "GetAnnualSummary", agency)
+	ret0, _ := ret[0].([]models.AnnualSummary)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAnnualMonthlyInfo indicates an expected call of GetAnnualMonthlyInfo.
-func (mr *MockInterfaceMockRecorder) GetAnnualMonthlyInfo(agency interface{}) *gomock.Call {
+// GetAnnualSummary indicates an expected call of GetAnnualSummary.
+func (mr *MockInterfaceMockRecorder) GetAnnualSummary(agency interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAnnualMonthlyInfo", reflect.TypeOf((*MockInterface)(nil).GetAnnualMonthlyInfo), agency)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAnnualSummary", reflect.TypeOf((*MockInterface)(nil).GetAnnualSummary), agency)
 }
 
 // GetFirstDateWithMonthlyInfo mocks base method.

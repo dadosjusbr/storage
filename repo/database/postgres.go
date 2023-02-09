@@ -272,9 +272,9 @@ func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[str
 	return results, nil
 }
 
-func (p *PostgresDB) GetAnnualMonthlyInfo(agency string) ([]models.AnnualMonthlyInfo, error) {
+func (p *PostgresDB) GetAnnualSummary(agency string) ([]models.AnnualSummary, error) {
 	var dtoAgmi dto.AgencyMonthlyInfoDTO
-	var dtoAmis []dto.AnnualMonthlyInfoDTO
+	var dtoAmis []dto.AnnualSummaryDTO
 	agency = strings.ToLower(agency)
 	query := `
 		ano,
@@ -288,7 +288,7 @@ func (p *PostgresDB) GetAnnualMonthlyInfo(agency string) ([]models.AnnualMonthly
 	if err := m.Scan(&dtoAmis).Error; err != nil {
 		return nil, fmt.Errorf("error getting annual monthly info: %q", err)
 	}
-	var amis []models.AnnualMonthlyInfo
+	var amis []models.AnnualSummary
 	for _, dtoAmi := range dtoAmis {
 		amis = append(amis, *dtoAmi.ConvertToModel())
 	}

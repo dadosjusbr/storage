@@ -896,16 +896,16 @@ func (g getMonthlyInfo) testWhenProcInfoIsNotNull(t *testing.T) {
 	truncateTables()
 }
 
-func TestGetAnnualMonthlyInfo(t *testing.T) {
-	tests := getAnnualMonthlyInfo{}
+func TestGetAnnualSummary(t *testing.T) {
+	tests := getAnnualSummary{}
 
-	t.Run("Test GetAnnualMonthlyInfo when monthly info exists", tests.testWhenMonthlyInfoExists)
-	t.Run("Test GetAnnualMonthlyInfo when agency not exists", tests.testWhenAgencyNotExists)
+	t.Run("Test GetAnnualSummary when monthly info exists", tests.testWhenMonthlyInfoExists)
+	t.Run("Test GetAnnualSummary when agency not exists", tests.testWhenAgencyNotExists)
 }
 
-type getAnnualMonthlyInfo struct{}
+type getAnnualSummary struct{}
 
-func (g getAnnualMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
+func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 	agencies := []models.Agency{
 		{
 			ID: "tjal",
@@ -980,7 +980,7 @@ func (g getAnnualMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 		t.Fatalf("error inserting agency monthly info: %q", err)
 	}
 
-	var amis []models.AnnualMonthlyInfo
+	var amis []models.AnnualSummary
 	//Realizando a soma das remunerações por ano
 	for _, agmi := range agmis {
 		for _, agmi2 := range agmis {
@@ -992,7 +992,7 @@ func (g getAnnualMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 			}
 			if !exists && agmi.Year == agmi2.Year && agmi.Month != agmi2.Month {
 				if agmi.Year == agmi2.Year && agmi.Month != agmi2.Month {
-					amis = append(amis, models.AnnualMonthlyInfo{
+					amis = append(amis, models.AnnualSummary{
 						Year:               agmi.Year,
 						Count:              (agmi.Summary.Count + agmi2.Summary.Count) / 2,
 						BaseRemuneration:   agmi.Summary.BaseRemuneration.Total + agmi2.Summary.BaseRemuneration.Total,
@@ -1003,7 +1003,7 @@ func (g getAnnualMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 		}
 	}
 
-	returnedAmis, err := postgresDb.GetAnnualMonthlyInfo("tjal")
+	returnedAmis, err := postgresDb.GetAnnualSummary("tjal")
 
 	assert.Nil(t, err)
 	assert.Equal(t, amis[0].Year, returnedAmis[0].Year)
@@ -1014,9 +1014,9 @@ func (g getAnnualMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 	truncateTables()
 }
 
-func (g getAnnualMonthlyInfo) testWhenAgencyNotExists(t *testing.T) {
+func (g getAnnualSummary) testWhenAgencyNotExists(t *testing.T) {
 	truncateTables()
-	returnedAmis, err := postgresDb.GetAnnualMonthlyInfo("tjsp")
+	returnedAmis, err := postgresDb.GetAnnualSummary("tjsp")
 
 	assert.Nil(t, err)
 	assert.Empty(t, returnedAmis)
