@@ -674,9 +674,10 @@ type getAgenciesByUF struct{}
 func (g getAgenciesByUF) testWhenAgenciesExists(t *testing.T) {
 	agencies := []models.Agency{
 		{
-			ID:   "mpsp",
-			Type: "Ministério",
-			UF:   "SP",
+			ID:           "mpsp",
+			Type:         "Ministério",
+			UF:           "SP",
+			OmbudsmanURL: "https://sis.mpsp.mp.br/atendimentocidadao/Ouvidoria/Manifestacao/EscolherTipoDeIdentificacao",
 		},
 		{
 			ID:   "tjsp",
@@ -717,9 +718,10 @@ func (g getAgenciesByUF) testWhenUFNotExists(t *testing.T) {
 func (g getAgenciesByUF) testWhenUFIsInIrregularCase(t *testing.T) {
 	agencies := []models.Agency{
 		{
-			ID:   "mpsp",
-			Type: "Ministério",
-			UF:   "SP",
+			ID:           "mpsp",
+			Type:         "Ministério",
+			UF:           "SP",
+			OmbudsmanURL: "https://sis.mpsp.mp.br/atendimentocidadao/Ouvidoria/Manifestacao/EscolherTipoDeIdentificacao",
 		},
 		{
 			ID:   "tjsp",
