@@ -2,12 +2,14 @@
 
 create table orgaos
 (
-    id         varchar(10) primary key,
-    nome       varchar(100),
-    jurisdicao varchar(25),
-    entidade   varchar(25),
-    uf         varchar(25),
-    coletando  json
+    id             varchar(10) primary key,
+    nome           varchar(100),
+    jurisdicao     varchar(25),
+    entidade       varchar(25),
+    uf             varchar(25),
+    coletando      json,
+    twitter_handle varchar(25),
+    ouvidoria      varchar(100)
 );
 
 create table coletas
