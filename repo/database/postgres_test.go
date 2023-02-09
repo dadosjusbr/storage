@@ -41,47 +41,6 @@ func TestGetStateAgencies(t *testing.T) {
 
 type getStateAgencies struct{}
 
-func TestWhenOmbudsmanURLExists(t *testing.T) {
-	agency := []models.Agency{
-		{
-			ID:           "mpmg",
-			Name:         "Estadual",
-			UF:           "MG",
-			OmbudsmanURL: "https://aplicacao.mpmg.mp.br/ouvidoria/",
-		},
-	}
-
-	if err := insertAgencies(agency); err != nil {
-		t.Fatalf("error inserting agencies: %q", err)
-	}
-
-	returnedAgency, err := postgresDb.GetAgency("mpmg")
-
-	assert.Nil(t, err)
-	assert.Equal(t, agency[0].OmbudsmanURL, returnedAgency.OmbudsmanURL)
-}
-
-func TestWhenOmbudsmanURLNotExists(t *testing.T) {
-	truncateTables()
-
-	agency := []models.Agency{
-		{
-			ID:   "mpmg",
-			Name: "Estadual",
-			UF:   "MG",
-		},
-	}
-
-	if err := insertAgencies(agency); err != nil {
-		t.Fatalf("error inserting agencies: %q", err)
-	}
-
-	returnedAgency, err := postgresDb.GetAgency("mpmg")
-
-	assert.Nil(t, err)
-	assert.Equal(t, agency[0].OmbudsmanURL, returnedAgency.OmbudsmanURL)
-}
-
 func (g getStateAgencies) testWhenAgenciesExists(t *testing.T) {
 	agencies := []models.Agency{
 		{
@@ -715,9 +674,10 @@ type getAgenciesByUF struct{}
 func (g getAgenciesByUF) testWhenAgenciesExists(t *testing.T) {
 	agencies := []models.Agency{
 		{
-			ID:   "mpsp",
-			Type: "Ministério",
-			UF:   "SP",
+			ID:           "mpsp",
+			Type:         "Ministério",
+			UF:           "SP",
+			OmbudsmanURL: "https://sis.mpsp.mp.br/atendimentocidadao/Ouvidoria/Manifestacao/EscolherTipoDeIdentificacao",
 		},
 		{
 			ID:   "tjsp",
@@ -758,9 +718,10 @@ func (g getAgenciesByUF) testWhenUFNotExists(t *testing.T) {
 func (g getAgenciesByUF) testWhenUFIsInIrregularCase(t *testing.T) {
 	agencies := []models.Agency{
 		{
-			ID:   "mpsp",
-			Type: "Ministério",
-			UF:   "SP",
+			ID:           "mpsp",
+			Type:         "Ministério",
+			UF:           "SP",
+			OmbudsmanURL: "https://sis.mpsp.mp.br/atendimentocidadao/Ouvidoria/Manifestacao/EscolherTipoDeIdentificacao",
 		},
 		{
 			ID:   "tjsp",
