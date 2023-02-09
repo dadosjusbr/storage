@@ -896,16 +896,16 @@ func (g getMonthlyInfo) testWhenProcInfoIsNotNull(t *testing.T) {
 	truncateTables()
 }
 
-func TestGetAllMonthlyInfo(t *testing.T) {
-	tests := getAllMonthlyInfo{}
+func TestGetAnnualMonthlyInfo(t *testing.T) {
+	tests := getAnnualMonthlyInfo{}
 
-	t.Run("Test GetAllMonthlyInfo when monthly info exists", tests.testWhenMonthlyInfoExists)
-	t.Run("Test GetAllMonthlyInfo when agency not exists", tests.testWhenAgencyNotExists)
+	t.Run("Test GetAnnualMonthlyInfo when monthly info exists", tests.testWhenMonthlyInfoExists)
+	t.Run("Test GetAnnualMonthlyInfo when agency not exists", tests.testWhenAgencyNotExists)
 }
 
-type getAllMonthlyInfo struct{}
+type getAnnualMonthlyInfo struct{}
 
-func (g getAllMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
+func (g getAnnualMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 	agencies := []models.Agency{
 		{
 			ID: "tjal",
@@ -920,72 +920,106 @@ func (g getAllMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 			Year:              2020,
 			Month:             1,
 			CrawlingTimestamp: timestamppb.Now(),
+			Summary: &models.Summary{
+				Count: 100,
+				BaseRemuneration: models.DataSummary{
+					Total: 1000,
+				},
+				OtherRemunerations: models.DataSummary{
+					Total: 500,
+				},
+			},
 		},
 		{
 			AgencyID:          "tjal",
 			Year:              2020,
 			Month:             2,
 			CrawlingTimestamp: timestamppb.Now(),
+			Summary: &models.Summary{
+				Count: 150,
+				BaseRemuneration: models.DataSummary{
+					Total: 1200,
+				},
+				OtherRemunerations: models.DataSummary{
+					Total: 500,
+				},
+			},
 		},
 		{
 			AgencyID:          "tjal",
 			Year:              2021,
 			Month:             1,
 			CrawlingTimestamp: timestamppb.Now(),
+			Summary: &models.Summary{
+				Count: 200,
+				BaseRemuneration: models.DataSummary{
+					Total: 1500,
+				},
+				OtherRemunerations: models.DataSummary{
+					Total: 500,
+				},
+			},
 		},
 		{
 			AgencyID:          "tjal",
 			Year:              2021,
 			Month:             2,
 			CrawlingTimestamp: timestamppb.Now(),
+			Summary: &models.Summary{
+				Count: 300,
+				BaseRemuneration: models.DataSummary{
+					Total: 1000,
+				},
+				OtherRemunerations: models.DataSummary{
+					Total: 500,
+				},
+			},
 		},
 	}
 	if err := insertMonthlyInfos(agmis); err != nil {
 		t.Fatalf("error inserting agency monthly info: %q", err)
 	}
-	var agmiMap = make(map[string][]models.AgencyMonthlyInfo)
+
+	var amis []models.AnnualMonthlyInfo
+	//Realizando a soma das remunerações por ano
 	for _, agmi := range agmis {
-		agmiMap[agmi.AgencyID] = append(agmiMap[agmi.AgencyID], agmi)
+		for _, agmi2 := range agmis {
+			exists := false
+			for _, gmi := range amis {
+				if gmi.Year == agmi.Year && agmi.Month != agmi2.Month {
+					exists = true
+				}
+			}
+			if !exists && agmi.Year == agmi2.Year && agmi.Month != agmi2.Month {
+				if agmi.Year == agmi2.Year && agmi.Month != agmi2.Month {
+					amis = append(amis, models.AnnualMonthlyInfo{
+						Year:               agmi.Year,
+						Count:              (agmi.Summary.Count + agmi2.Summary.Count) / 2,
+						BaseRemuneration:   agmi.Summary.BaseRemuneration.Total + agmi2.Summary.BaseRemuneration.Total,
+						OtherRemunerations: agmi.Summary.OtherRemunerations.Total + agmi2.Summary.OtherRemunerations.Total,
+					})
+				}
+			}
+		}
 	}
 
-	returnedAgmis, err := postgresDb.GetAllMonthlyInfo("tjal")
+	returnedAmis, err := postgresDb.GetAnnualMonthlyInfo("tjal")
 
 	assert.Nil(t, err)
-	assert.Equal(t, agmiMap["tjal"][0].AgencyID, returnedAgmis["tjal"][0].AgencyID)
-	assert.Equal(t, agmiMap["tjal"][0].Year, returnedAgmis["tjal"][0].Year)
-	assert.Equal(t, agmiMap["tjal"][0].Month, returnedAgmis["tjal"][0].Month)
-	assert.Equal(t, agmiMap["tjal"][1].AgencyID, returnedAgmis["tjal"][1].AgencyID)
-	assert.Equal(t, agmiMap["tjal"][1].Year, returnedAgmis["tjal"][1].Year)
-	assert.Equal(t, agmiMap["tjal"][1].Month, returnedAgmis["tjal"][1].Month)
+	assert.Equal(t, amis[0].Year, returnedAmis[0].Year)
+	assert.Equal(t, amis[0].BaseRemuneration, returnedAmis[0].BaseRemuneration)
+	assert.Equal(t, amis[0].OtherRemunerations, returnedAmis[0].OtherRemunerations)
+	assert.Equal(t, amis[0].Count, returnedAmis[0].Count)
+	assert.Equal(t, amis[1].Count, returnedAmis[1].Count)
 	truncateTables()
 }
 
-func (g getAllMonthlyInfo) testWhenAgencyNotExists(t *testing.T) {
-	agencies := []models.Agency{
-		{
-			ID: "tjal",
-		},
-	}
-	if err := insertAgencies(agencies); err != nil {
-		t.Fatalf("error inserting agencies: %q", err)
-	}
-	agmis := []models.AgencyMonthlyInfo{
-		{
-			AgencyID:          "tjal",
-			Year:              2020,
-			Month:             1,
-			CrawlingTimestamp: timestamppb.Now(),
-		},
-	}
-	if err := insertMonthlyInfos(agmis); err != nil {
-		t.Fatalf("error inserting agency monthly info: %q", err)
-	}
-
-	returnedAgmis, err := postgresDb.GetAllMonthlyInfo("tjsp")
+func (g getAnnualMonthlyInfo) testWhenAgencyNotExists(t *testing.T) {
+	truncateTables()
+	returnedAmis, err := postgresDb.GetAnnualMonthlyInfo("tjsp")
 
 	assert.Nil(t, err)
-	assert.Empty(t, returnedAgmis)
-	truncateTables()
+	assert.Empty(t, returnedAmis)
 }
 
 func TestGetOMA(t *testing.T) {

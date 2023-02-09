@@ -272,25 +272,27 @@ func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[str
 	return results, nil
 }
 
-func (p *PostgresDB) GetAllMonthlyInfo(agency string) (map[string][]models.AgencyMonthlyInfo, error) {
-	var results = make(map[string][]models.AgencyMonthlyInfo)
-	var dtoAgmis []dto.AgencyMonthlyInfoDTO
-	//Pegando as coletas do postgres, filtrando por órgão, ano e a coleta atual.
-	m := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
+func (p *PostgresDB) GetAnnualMonthlyInfo(agency string) ([]models.AnnualMonthlyInfo, error) {
+	var dtoAgmi dto.AgencyMonthlyInfoDTO
+	var dtoAmis []dto.AnnualMonthlyInfoDTO
+	agency = strings.ToLower(agency)
+	query := `
+		ano,
+		id_orgao,
+		TRUNC(AVG((sumario -> 'membros')::text::int)) AS num_membros,
+		SUM(CAST(sumario -> 'remuneracao_base' ->> 'total' AS DECIMAL)) AS remuneracao_base,
+		SUM(CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)) AS outras_remuneracoes`
+	m := p.db.Model(&dtoAgmi).Select(query)
 	m = m.Where("id_orgao = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency)
-	m = m.Order("ano ASC, mes ASC")
-	if err := m.Find(&dtoAgmis).Error; err != nil {
-		return nil, fmt.Errorf("error getting monthly info: %q", err)
+	m = m.Group("ano, id_orgao").Order("ano ASC")
+	if err := m.Scan(&dtoAmis).Error; err != nil {
+		return nil, fmt.Errorf("error getting annual monthly info: %q", err)
 	}
-	//Convertendo os DTO's para modelos
-	for _, dtoAgmi := range dtoAgmis {
-		agmi, err := dtoAgmi.ConvertToModel()
-		if err != nil {
-			return nil, fmt.Errorf("error converting dto to model: %q", err)
-		}
-		results[agency] = append(results[agency], *agmi)
+	var amis []models.AnnualMonthlyInfo
+	for _, dtoAmi := range dtoAmis {
+		amis = append(amis, *dtoAmi.ConvertToModel())
 	}
-	return results, nil
+	return amis, nil
 }
 
 func (p *PostgresDB) GetOMA(month int, year int, agency string) (*models.AgencyMonthlyInfo, *models.Agency, error) {
