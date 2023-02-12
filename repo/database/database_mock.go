@@ -122,6 +122,21 @@ func (mr *MockInterfaceMockRecorder) GetAllAgencies() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllAgencies", reflect.TypeOf((*MockInterface)(nil).GetAllAgencies))
 }
 
+// GetAnnualSummary mocks base method.
+func (m *MockInterface) GetAnnualSummary(agency string) ([]models.AnnualSummary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAnnualSummary", agency)
+	ret0, _ := ret[0].([]models.AnnualSummary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAnnualSummary indicates an expected call of GetAnnualSummary.
+func (mr *MockInterfaceMockRecorder) GetAnnualSummary(agency interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAnnualSummary", reflect.TypeOf((*MockInterface)(nil).GetAnnualSummary), agency)
+}
+
 // GetFirstDateWithMonthlyInfo mocks base method.
 func (m *MockInterface) GetFirstDateWithMonthlyInfo() (int, int, error) {
 	m.ctrl.T.Helper()
@@ -199,21 +214,6 @@ func (mr *MockInterfaceMockRecorder) GetMonthlyInfo(agencies, year interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMonthlyInfo", reflect.TypeOf((*MockInterface)(nil).GetMonthlyInfo), agencies, year)
 }
 
-// GetMonthlyInfoSummary mocks base method.
-func (m *MockInterface) GetMonthlyInfoSummary(agencies []models.Agency, year int) (map[string][]models.AgencyMonthlyInfo, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMonthlyInfoSummary", agencies, year)
-	ret0, _ := ret[0].(map[string][]models.AgencyMonthlyInfo)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetMonthlyInfoSummary indicates an expected call of GetMonthlyInfoSummary.
-func (mr *MockInterfaceMockRecorder) GetMonthlyInfoSummary(agencies, year interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMonthlyInfoSummary", reflect.TypeOf((*MockInterface)(nil).GetMonthlyInfoSummary), agencies, year)
-}
-
 // GetNumberOfMonthsCollected mocks base method.
 func (m *MockInterface) GetNumberOfMonthsCollected() (int, error) {
 	m.ctrl.T.Helper()
@@ -260,36 +260,6 @@ func (mr *MockInterfaceMockRecorder) GetOPJ(group interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOPJ", reflect.TypeOf((*MockInterface)(nil).GetOPJ), group)
 }
 
-// GetPackage mocks base method.
-func (m *MockInterface) GetPackage(pkgOpts models.PackageFilterOpts) (*models.Package, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPackage", pkgOpts)
-	ret0, _ := ret[0].(*models.Package)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPackage indicates an expected call of GetPackage.
-func (mr *MockInterfaceMockRecorder) GetPackage(pkgOpts interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPackage", reflect.TypeOf((*MockInterface)(nil).GetPackage), pkgOpts)
-}
-
-// GetRemunerationSummary mocks base method.
-func (m *MockInterface) GetRemunerationSummary() (*models.RemmunerationSummary, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRemunerationSummary")
-	ret0, _ := ret[0].(*models.RemmunerationSummary)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetRemunerationSummary indicates an expected call of GetRemunerationSummary.
-func (mr *MockInterfaceMockRecorder) GetRemunerationSummary() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRemunerationSummary", reflect.TypeOf((*MockInterface)(nil).GetRemunerationSummary))
-}
-
 // GetStateAgencies mocks base method.
 func (m *MockInterface) GetStateAgencies(uf string) ([]models.Agency, error) {
 	m.ctrl.T.Helper()
@@ -317,20 +287,6 @@ func (m *MockInterface) Store(agmi models.AgencyMonthlyInfo) error {
 func (mr *MockInterfaceMockRecorder) Store(agmi interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockInterface)(nil).Store), agmi)
-}
-
-// StorePackage mocks base method.
-func (m *MockInterface) StorePackage(newPackage models.Package) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StorePackage", newPackage)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// StorePackage indicates an expected call of StorePackage.
-func (mr *MockInterfaceMockRecorder) StorePackage(newPackage interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorePackage", reflect.TypeOf((*MockInterface)(nil).StorePackage), newPackage)
 }
 
 // StoreRemunerations mocks base method.

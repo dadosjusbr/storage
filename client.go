@@ -63,14 +63,6 @@ func (c *Client) Store(agmi models.AgencyMonthlyInfo) error {
 	return nil
 }
 
-// StorePackage update an package in the database.
-func (c *Client) StorePackage(newPackage models.Package) error {
-	if err := c.Db.StorePackage(newPackage); err != nil {
-		return fmt.Errorf("StorePackage() error %q", err)
-	}
-	return nil
-}
-
 func (c *Client) StoreRemunerations(remu models.Remunerations) error {
 	if err := c.Db.StoreRemunerations(remu); err != nil {
 		return fmt.Errorf("StoreRemunerations() error: %q", err)
