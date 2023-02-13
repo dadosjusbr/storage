@@ -70,16 +70,16 @@ type MonthlyInfoVersion struct {
 // the GeneralMonthlyInfo is used to struct the agregation used to get the remuneration info from all angencies in a given month
 type GeneralMonthlyInfo struct {
 	Month              int     `json:"_id,omitempty"`
-	Count              int     `json:"count"`               // Number of employees
-	BaseRemuneration   float64 `json:"base_remuneration"`   //  Statistics (Max, Min, Median, Total)
-	OtherRemunerations float64 `json:"other_remunerations"` //  Statistics (Max, Min, Median, Total)
+	Count              int     `json:"count,omitempty"`               // Number of employees
+	BaseRemuneration   float64 `json:"base_remuneration,omitempty"`   //  Statistics (Max, Min, Median, Total)
+	OtherRemunerations float64 `json:"other_remunerations,omitempty"` //  Statistics (Max, Min, Median, Total)
 }
 
 type AnnualSummary struct {
-	Year               int     `json:"year,omitempty"`      // Year of the data
-	Count              int     `json:"count"`               // Number of employees
-	BaseRemuneration   float64 `json:"base_remuneration"`   //  Statistics (Max, Min, Median, Total)
-	OtherRemunerations float64 `json:"other_remunerations"` //  Statistics (Max, Min, Median, Total)
+	Year               int     `json:"year,omitempty"`                // Year of the data
+	Count              int     `json:"count,omitempty"`               // Number of employees
+	BaseRemuneration   float64 `json:"base_remuneration,omitempty"`   //  Statistics (Max, Min, Median, Total)
+	OtherRemunerations float64 `json:"other_remunerations,omitempty"` //  Statistics (Max, Min, Median, Total)
 }
 
 type RemmunerationSummary struct {
