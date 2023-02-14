@@ -80,6 +80,7 @@ type AnnualSummary struct {
 	Count              int     `json:"count,omitempty"`               // Number of employees
 	BaseRemuneration   float64 `json:"base_remuneration,omitempty"`   //  Statistics (Max, Min, Median, Total)
 	OtherRemunerations float64 `json:"other_remunerations,omitempty"` //  Statistics (Max, Min, Median, Total)
+	Package            *Backup `json:"package,omitempty"`
 }
 
 type RemmunerationSummary struct {

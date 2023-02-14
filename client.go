@@ -105,3 +105,19 @@ func (c *Client) GetFirstDateWithMonthlyInfo() (int, int, error) {
 	}
 	return month, year, nil
 }
+
+func (c *Client) GetAnnualSummary(agency string) ([]models.AnnualSummary, error) {
+	summary, err := c.Db.GetAnnualSummary(agency)
+	if err != nil {
+		return nil, fmt.Errorf("Error getting annual data from database: %q", err)
+	}
+	for i := range summary {
+		dstKey := fmt.Sprintf("%s/datapackage/%s-%d.zip", agency, agency, summary[i].Year)
+		pkg, err := c.Cloud.GetFile(dstKey)
+		if err != nil {
+			return nil, fmt.Errorf("Error getting annual data from file storage: %q", err)
+		}
+		summary[i].Package = pkg
+	}
+	return summary, nil
+}
