@@ -17,7 +17,7 @@ type PackageFilterOpts struct {
 
 // Backup contains the URL to download a file and a hash to track if in the future will be changes in the file.
 type Backup struct {
-	URL  string `json:"url"`
-	Hash string `json:"hash"`
-	Size int64  `json:"size"`
+	URL  string `json:"url,omitempty"`
+	Hash string `json:"hash,omitempty"`
+	Size int64  `json:"size,omitempty"`
 }
