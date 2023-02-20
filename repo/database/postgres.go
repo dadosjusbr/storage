@@ -281,7 +281,8 @@ func (p *PostgresDB) GetAnnualSummary(agency string) ([]models.AnnualSummary, er
 		id_orgao,
 		TRUNC(AVG((sumario -> 'membros')::text::int)) AS num_membros,
 		SUM(CAST(sumario -> 'remuneracao_base' ->> 'total' AS DECIMAL)) AS remuneracao_base,
-		SUM(CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)) AS outras_remuneracoes`
+		SUM(CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)) AS outras_remuneracoes,
+		12 - COUNT(*) AS sem_dados`
 	m := p.db.Model(&dtoAgmi).Select(query)
 	m = m.Where("id_orgao = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency)
 	m = m.Group("ano, id_orgao").Order("ano ASC")
