@@ -1013,7 +1013,7 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 	assert.Equal(t, amis[0].OtherRemunerations, returnedAmis[0].OtherRemunerations)
 	assert.Equal(t, amis[0].Count, returnedAmis[0].Count)
 	assert.Equal(t, amis[1].Count, returnedAmis[1].Count)
-	assert.Equal(t, 10, returnedAmis[0].DataUnavailable)
+	assert.Equal(t, 2, returnedAmis[0].NumMonthsWithData)
 	truncateTables()
 }
 
