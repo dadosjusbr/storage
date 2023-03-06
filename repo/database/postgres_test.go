@@ -343,6 +343,10 @@ func (g getAllAgencies) testWhenAgenciesExists(t *testing.T) {
 			Type:   "Estadual",
 			Entity: "Tribunal",
 			UF:     "SP",
+			Collecting: []models.Collecting{{
+				Collecting: true,
+			},
+			},
 		},
 		{
 			ID:     "tjal",
@@ -367,6 +371,8 @@ func (g getAllAgencies) testWhenAgenciesExists(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, agencies, returnedAgencies)
+	assert.NotNil(t, returnedAgencies[0].Collecting)
+	assert.True(t, returnedAgencies[0].Collecting[0].Collecting)
 }
 
 func (g getAllAgencies) testWhenAgenciesNotExists(t *testing.T) {
