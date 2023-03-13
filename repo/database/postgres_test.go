@@ -335,6 +335,7 @@ func TestGetAllAgencies(t *testing.T) {
 type getAllAgencies struct{}
 
 func (g getAllAgencies) testWhenAgenciesExists(t *testing.T) {
+	timestamp := int64(1643724131)
 	agencies := []models.Agency{
 		{
 			ID:   "tjsp",
@@ -344,7 +345,9 @@ func (g getAllAgencies) testWhenAgenciesExists(t *testing.T) {
 			Entity: "Tribunal",
 			UF:     "SP",
 			Collecting: []models.Collecting{{
-				Collecting: true,
+				Timestamp:   &timestamp,
+				Description: []string{"Não há dados abertos disponíveis"},
+				Collecting:  true,
 			},
 			},
 		},
