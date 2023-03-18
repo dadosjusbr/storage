@@ -380,3 +380,37 @@ func (p *PostgresDB) GetGeneralMonthlyInfo() (float64, error) {
 	}
 	return value, nil
 }
+
+func (p *PostgresDB) GetAllIndices(groupName string) (map[string][]models.Detail, error) {
+	// Consultando e mapeando os índices e entidades por jurisdição (groupName)
+	var dtoAgencies []dto.AgencyDTO
+	a := p.db.Model(&dtoAgencies).Where("jurisdicao = ?", groupName)
+	if err := a.Scan(&dtoAgencies).Error; err != nil {
+		return nil, fmt.Errorf("error getting agencies id: %w", err)
+	}
+
+	agencies := make(map[string]string)
+	for _, id := range dtoAgencies {
+		agencies[id.ID] = id.Entity
+	}
+	// Consultando índices e metadados
+	var dtoDetail []dto.Detail
+	d := p.db.Model(&dtoDetail).Where("atual = true")
+	if err := d.Scan(&dtoDetail).Error; err != nil {
+		return nil, fmt.Errorf("error getting all indices: %w", err)
+	}
+	// Agrupando os índices por órgão
+	detail := make(map[string][]models.Detail)
+	for _, d := range dtoDetail {
+		// Verificamos se o órgão pertence a jurisdição e se pertence ao painel do CNJ
+		// O índice de facilidade para os órgãos do CNJ é padronizado, mesmo quando não há dados para o mês.
+		// obs.: o "STF" é o único tribunal que monitoramos e que não pertence ao CNJ
+		if entity, ok := agencies[d.ID]; ok {
+			if entity == "Tribunal" && d.ID != "stf" {
+				d.Score.EasinessScore = 0.5
+			}
+			detail[d.ID] = append(detail[d.ID], *d.ConvertToModel())
+		}
+	}
+	return detail, nil
+}

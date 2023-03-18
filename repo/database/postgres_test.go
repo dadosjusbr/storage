@@ -1425,6 +1425,100 @@ func (s store) testWhenIDAlreadyExists(t *testing.T) {
 	truncateTables()
 }
 
+func TestGetAllIndices(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID:     "tjsp",
+			Entity: "Tribunal",
+			Type:   "Estadual",
+		},
+		{
+			ID:     "tjba",
+			Entity: "Tribunal",
+			Type:   "Estadual",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	agmis := []models.AgencyMonthlyInfo{
+		{
+			AgencyID: "tjsp",
+			Month:    1,
+			Year:     2022,
+			Meta: &models.Meta{
+				OpenFormat:       false,
+				Access:           "NECESSITA_SIMULACAO_USUARIO",
+				Extension:        "XLS",
+				StrictlyTabular:  true,
+				ConsistentFormat: true,
+				HaveEnrollment:   false,
+				ThereIsACapacity: false,
+				HasPosition:      false,
+				BaseRevenue:      "DETALHADO",
+				OtherRecipes:     "DETALHADO",
+				Expenditure:      "DETALHADO",
+			},
+			Score: &models.Score{
+				Score:             0.5,
+				CompletenessScore: 0.5,
+				EasinessScore:     0.5,
+			},
+		},
+		{
+			AgencyID: "tjsp",
+			Month:    2,
+			Year:     2022,
+			Score: &models.Score{
+				Score:             0,
+				CompletenessScore: 0,
+				EasinessScore:     0,
+			},
+		},
+		{
+			AgencyID: "tjba",
+			Month:    1,
+			Year:     2022,
+			Meta: &models.Meta{
+				OpenFormat:       false,
+				Access:           "NECESSITA_SIMULACAO_USUARIO",
+				Extension:        "XLS",
+				StrictlyTabular:  true,
+				ConsistentFormat: true,
+				HaveEnrollment:   false,
+				ThereIsACapacity: false,
+				HasPosition:      false,
+				BaseRevenue:      "DETALHADO",
+				OtherRecipes:     "DETALHADO",
+				Expenditure:      "DETALHADO",
+			},
+			Score: &models.Score{
+				Score:             0.5,
+				CompletenessScore: 0.5,
+				EasinessScore:     0.5,
+			},
+		},
+	}
+	if err := insertMonthlyInfos(agmis); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	agg, err := postgresDb.GetAllIndices("Estadual")
+	if err != nil {
+		t.Fatalf("error GetAllIndices(): %q", err)
+	}
+
+	assert.Equal(t, len(agg), 2)
+	assert.Equal(t, len(agg["tjsp"]), 2)
+	assert.Equal(t, len(agg["tjba"]), 1)
+	assert.Equal(t, agg["tjsp"][0].Score, agmis[0].Score)
+	assert.Equal(t, agg["tjsp"][1].Score.EasinessScore, 0.5)
+	assert.Equal(t, agg["tjsp"][1].Score.CompletenessScore, 0.0)
+	assert.Equal(t, agg["tjba"][0].Score, agmis[2].Score)
+	truncateTables()
+}
+
 func insertAgencies(agencies []models.Agency) error {
 	for _, agency := range agencies {
 		agencyDto, err := dto.NewAgencyDTO(agency)

@@ -121,3 +121,11 @@ func (c *Client) GetAnnualSummary(agency string) ([]models.AnnualSummary, error)
 	}
 	return summary, nil
 }
+
+func (c *Client) GetAllIndices(groupName string) (map[string][]models.Detail, error) {
+	agg, err := c.Db.GetAllIndices(groupName)
+	if err != nil {
+		return nil, fmt.Errorf("GetAllIndices() error: %w", err)
+	}
+	return agg, nil
+}
