@@ -406,7 +406,7 @@ func (p *PostgresDB) GetAllIndices(groupName string) (map[string][]models.Detail
 		// O índice de facilidade para os órgãos do CNJ é padronizado, mesmo quando não há dados para o mês.
 		// obs.: o "STF" é o único tribunal que monitoramos e que não pertence ao CNJ
 		if entity, ok := agencies[d.ID]; ok {
-			if entity == "Tribunal" && d.ID != "stf" {
+			if entity == "Conselho" || entity == "Tribunal" && d.ID != "stf" {
 				d.Score.EasinessScore = 0.5
 			}
 			detail[d.ID] = append(detail[d.ID], *d.ConvertToModel())
