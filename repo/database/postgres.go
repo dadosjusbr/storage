@@ -381,36 +381,53 @@ func (p *PostgresDB) GetGeneralMonthlyInfo() (float64, error) {
 	return value, nil
 }
 
-func (p *PostgresDB) GetAllIndices(groupName string) (map[string][]models.Detail, error) {
-	// Consultando e mapeando os índices e entidades por jurisdição (groupName)
-	var dtoAgencies []dto.AgencyDTO
-	a := p.db.Model(&dtoAgencies).Where("jurisdicao = ?", groupName)
-	if err := a.Scan(&dtoAgencies).Error; err != nil {
-		return nil, fmt.Errorf("error getting agencies id: %w", err)
-	}
+func (p *PostgresDB) GetIndexInformation(name string) (map[string][]models.IndexInformation, error) {
+	var dtoIndex []dto.IndexInformation
+	groupMap := map[string]struct{}{"Eleitoral": {}, "Ministério": {}, "Estadual": {}, "Trabalho": {}, "Federal": {}, "Militar": {}, "Superior": {}, "Conselho": {}}
 
-	agencies := make(map[string]string)
-	for _, id := range dtoAgencies {
-		agencies[id.ID] = id.Entity
-	}
-	// Consultando índices e metadados
-	var dtoDetail []dto.Detail
-	d := p.db.Model(&dtoDetail).Where("atual = true")
-	if err := d.Scan(&dtoDetail).Error; err != nil {
-		return nil, fmt.Errorf("error getting all indices: %w", err)
-	}
-	// Agrupando os índices por órgão
-	detail := make(map[string][]models.Detail)
-	for _, d := range dtoDetail {
-		// Verificamos se o órgão pertence a jurisdição e se pertence ao painel do CNJ
-		// O índice de facilidade para os órgãos do CNJ é padronizado, mesmo quando não há dados para o mês.
-		// obs.: o "STF" é o único tribunal que monitoramos e que não pertence ao CNJ
-		if entity, ok := agencies[d.ID]; ok {
-			if entity == "Conselho" || entity == "Tribunal" && d.ID != "stf" {
-				d.Score.EasinessScore = 0.5
-			}
-			detail[d.ID] = append(detail[d.ID], *d.ConvertToModel())
+	if _, ok := groupMap[name]; ok {
+		// Consultando e mapeando os índices e metadados por jurisdição
+		d := p.db.Model(&dtoIndex).Joins("INNER JOIN orgaos ON coletas.id_orgao = orgaos.id AND coletas.atual = true AND orgaos.jurisdicao = ?", name)
+		if err := d.Scan(&dtoIndex).Error; err != nil {
+			return nil, fmt.Errorf("error getting all indexes: %w", err)
+		}
+	} else {
+		// Consultando e mapeando os índices e metadados por id do órgão
+		d := p.db.Model(&dtoIndex).Where("atual = true AND id_orgao = ?", strings.ToLower(name))
+		if err := d.Scan(&dtoIndex).Error; err != nil {
+			return nil, fmt.Errorf("error getting all indexes: %w", err)
 		}
 	}
-	return detail, nil
+	// Agrupando os índices por órgão
+	indexes := make(map[string][]models.IndexInformation)
+	for _, d := range dtoIndex {
+		// Verificamos se o órgão pertence ao painel do CNJ (ou se é um ministério público)
+		// O índice de facilidade para os órgãos do CNJ é padronizado, mesmo quando não há dados para o mês.
+		// obs.: o "STF" é o único tribunal que monitoramos e que não pertence ao CNJ
+		if !strings.Contains(strings.ToLower(d.ID), "mp") && d.ID != "stf" {
+			d.Score.EasinessScore = 0.5
+		}
+		indexes[d.ID] = append(indexes[d.ID], *d.ConvertToModel())
+	}
+	return indexes, nil
+}
+
+func (p *PostgresDB) GetAllIndexInformation() (map[string][]models.IndexInformation, error) {
+	// Consultando e mapeando os índices e metadados de todos os órgãos
+	var dtoIndex []dto.IndexInformation
+	d := p.db.Model(&dtoIndex).Where("atual = true")
+	if err := d.Scan(&dtoIndex).Error; err != nil {
+		return nil, fmt.Errorf("error getting all indexes: %w", err)
+	}
+	indexes := make(map[string][]models.IndexInformation)
+	for _, d := range dtoIndex {
+		// Verificamos se o órgão pertence ao painel do CNJ (ou se é um ministério público)
+		// O índice de facilidade para os órgãos do CNJ é padronizado, mesmo quando não há dados para o mês.
+		// obs.: o "STF" é o único tribunal que monitoramos e que não pertence ao CNJ
+		if !strings.Contains(strings.ToLower(d.ID), "mp") && d.ID != "stf" {
+			d.Score.EasinessScore = 0.5
+		}
+		indexes[d.ID] = append(indexes[d.ID], *d.ConvertToModel())
+	}
+	return indexes, nil
 }

@@ -2,8 +2,8 @@ package dto
 
 import "github.com/dadosjusbr/storage/models"
 
-// Detail A struct contains a summary of the agency's indices and their metadata
-type Detail struct {
+// IndexInformation A struct contains a summary of the agency's indexes and their metadata
+type IndexInformation struct {
 	ID    string `gorm:"column:id_orgao"`
 	Month int    `gorm:"column:mes"`
 	Year  int    `gorm:"column:ano"`
@@ -11,12 +11,12 @@ type Detail struct {
 	Meta
 }
 
-func (Detail) TableName() string {
+func (IndexInformation) TableName() string {
 	return "coletas"
 }
 
-func (d *Detail) ConvertToModel() *models.Detail {
-	return &models.Detail{
+func (d *IndexInformation) ConvertToModel() *models.IndexInformation {
+	return &models.IndexInformation{
 		Month: d.Month,
 		Year:  d.Year,
 		Score: &models.Score{
