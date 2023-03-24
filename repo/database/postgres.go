@@ -382,10 +382,11 @@ func (p *PostgresDB) GetGeneralMonthlyInfo() (float64, error) {
 }
 
 func (p *PostgresDB) GetIndexInformation(name string) (map[string][]models.IndexInformation, error) {
+	// name: ID do órgão (e.g. "trt12") ou jurisdição.
 	var dtoIndex []dto.IndexInformation
-	groupMap := map[string]struct{}{"Eleitoral": {}, "Ministério": {}, "Estadual": {}, "Trabalho": {}, "Federal": {}, "Militar": {}, "Superior": {}, "Conselho": {}}
+	groupMap := map[string]struct{}{"eleitoral": {}, "ministério": {}, "estadual": {}, "trabalho": {}, "federal": {}, "militar": {}, "superior": {}, "conselho": {}}
 
-	if _, ok := groupMap[name]; ok {
+	if _, ok := groupMap[strings.ToLower(name)]; ok {
 		// Consultando e mapeando os índices e metadados por jurisdição
 		d := p.db.Model(&dtoIndex).Joins("INNER JOIN orgaos ON coletas.id_orgao = orgaos.id AND coletas.atual = true AND orgaos.jurisdicao = ?", name)
 		if err := d.Scan(&dtoIndex).Error; err != nil {

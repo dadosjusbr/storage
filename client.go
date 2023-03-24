@@ -122,6 +122,7 @@ func (c *Client) GetAnnualSummary(agency string) ([]models.AnnualSummary, error)
 	return summary, nil
 }
 
+// Get index information by agency's ID or group (name)
 func (c *Client) GetIndexInformation(name string) (map[string][]models.IndexInformation, error) {
 	agg, err := c.Db.GetIndexInformation(name)
 	if err != nil {
