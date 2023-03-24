@@ -380,3 +380,55 @@ func (p *PostgresDB) GetGeneralMonthlyInfo() (float64, error) {
 	}
 	return value, nil
 }
+
+func (p *PostgresDB) GetIndexInformation(name string) (map[string][]models.IndexInformation, error) {
+	// name: ID do órgão (e.g. "trt12") ou jurisdição.
+	var dtoIndex []dto.IndexInformation
+	groupMap := map[string]struct{}{"eleitoral": {}, "ministério": {}, "estadual": {}, "trabalho": {}, "federal": {}, "militar": {}, "superior": {}, "conselho": {}}
+
+	if _, ok := groupMap[strings.ToLower(name)]; ok {
+		// Consultando e mapeando os índices e metadados por jurisdição
+		d := p.db.Model(&dtoIndex).Joins("INNER JOIN orgaos ON coletas.id_orgao = orgaos.id AND coletas.atual = true AND orgaos.jurisdicao = ?", name)
+		if err := d.Scan(&dtoIndex).Error; err != nil {
+			return nil, fmt.Errorf("error getting all indexes: %w", err)
+		}
+	} else {
+		// Consultando e mapeando os índices e metadados por id do órgão
+		d := p.db.Model(&dtoIndex).Where("atual = true AND id_orgao = ?", strings.ToLower(name))
+		if err := d.Scan(&dtoIndex).Error; err != nil {
+			return nil, fmt.Errorf("error getting all indexes: %w", err)
+		}
+	}
+	// Agrupando os índices por órgão
+	indexes := make(map[string][]models.IndexInformation)
+	for _, d := range dtoIndex {
+		// Verificamos se o órgão pertence ao painel do CNJ (ou se é um ministério público)
+		// O índice de facilidade para os órgãos do CNJ é padronizado, mesmo quando não há dados para o mês.
+		// obs.: o "STF" é o único tribunal que monitoramos e que não pertence ao CNJ
+		if !strings.Contains(strings.ToLower(d.ID), "mp") && d.ID != "stf" {
+			d.Score.EasinessScore = 0.5
+		}
+		indexes[d.ID] = append(indexes[d.ID], *d.ConvertToModel())
+	}
+	return indexes, nil
+}
+
+func (p *PostgresDB) GetAllIndexInformation() (map[string][]models.IndexInformation, error) {
+	// Consultando e mapeando os índices e metadados de todos os órgãos
+	var dtoIndex []dto.IndexInformation
+	d := p.db.Model(&dtoIndex).Where("atual = true")
+	if err := d.Scan(&dtoIndex).Error; err != nil {
+		return nil, fmt.Errorf("error getting all indexes: %w", err)
+	}
+	indexes := make(map[string][]models.IndexInformation)
+	for _, d := range dtoIndex {
+		// Verificamos se o órgão pertence ao painel do CNJ (ou se é um ministério público)
+		// O índice de facilidade para os órgãos do CNJ é padronizado, mesmo quando não há dados para o mês.
+		// obs.: o "STF" é o único tribunal que monitoramos e que não pertence ao CNJ
+		if !strings.Contains(strings.ToLower(d.ID), "mp") && d.ID != "stf" {
+			d.Score.EasinessScore = 0.5
+		}
+		indexes[d.ID] = append(indexes[d.ID], *d.ConvertToModel())
+	}
+	return indexes, nil
+}
