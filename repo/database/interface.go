@@ -26,5 +26,9 @@ type Interface interface {
 	GetLastDateWithMonthlyInfo() (int, int, error)
 	GetGeneralMonthlyInfo() (float64, error)
 	GetIndexInformation(name string) (map[string][]models.IndexInformation, error)
+	GetIndexInformationByYear(name string, year int) (map[string][]models.IndexInformation, error)
+	GetIndexInformationByMonthAndYear(name string, month, year int) (map[string][]models.IndexInformation, error)
 	GetAllIndexInformation() (map[string][]models.IndexInformation, error)
+	GetAllIndexInformationByYear(year int) (map[string][]models.IndexInformation, error)
+	GetAllIndexInformationByMonthAndYear(month, year int) (map[string][]models.IndexInformation, error)
 }
