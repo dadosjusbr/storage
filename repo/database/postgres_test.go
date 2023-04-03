@@ -1512,9 +1512,9 @@ func TestGetIndexInformation(t *testing.T) {
 	assert.Equal(t, len(agg), 2)
 	assert.Equal(t, len(agg["tjsp"]), 2)
 	assert.Equal(t, len(agg["tjba"]), 1)
-	assert.Equal(t, agg["tjsp"][1].Score, agmis[0].Score)
+	assert.Equal(t, agg["tjsp"][0].Score, agmis[0].Score)
 	assert.Equal(t, agg["tjsp"][1].Score.EasinessScore, 0.5)
-	assert.Equal(t, agg["tjsp"][0].Score.CompletenessScore, 0.0)
+	assert.Equal(t, agg["tjsp"][1].Score.CompletenessScore, 0.0)
 	assert.Equal(t, agg["tjba"][0].Score, agmis[2].Score)
 	truncateTables()
 }
