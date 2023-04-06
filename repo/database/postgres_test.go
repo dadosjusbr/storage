@@ -1426,6 +1426,16 @@ func (s store) testWhenIDAlreadyExists(t *testing.T) {
 }
 
 func TestGetIndexInformation(t *testing.T) {
+	tests := indexInformation{}
+
+	t.Run("Test GetIndexInformation()", tests.testGetIndexInformation)
+	t.Run("Test GetIndexInformation() by year", tests.testGetIndexInformationByYear)
+	t.Run("Test GetIndexInformation() by month and year", tests.testGetIndexInformationByMonthAndYear)
+}
+
+type indexInformation struct{}
+
+func (indexInformation) testGetIndexInformation(t *testing.T) {
 	agencies := []models.Agency{
 		{
 			ID:     "tjsp",
@@ -1504,7 +1514,7 @@ func TestGetIndexInformation(t *testing.T) {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
 
-	agg, err := postgresDb.GetIndexInformation("Estadual")
+	agg, err := postgresDb.GetIndexInformation("Estadual", 0, 0)
 	if err != nil {
 		t.Fatalf("error GetIndexInformation(): %q", err)
 	}
@@ -1519,7 +1529,7 @@ func TestGetIndexInformation(t *testing.T) {
 	truncateTables()
 }
 
-func TestGetIndexInformationByYear(t *testing.T) {
+func (indexInformation) testGetIndexInformationByYear(t *testing.T) {
 	agencies := []models.Agency{
 		{
 			ID:     "tjsp",
@@ -1582,9 +1592,9 @@ func TestGetIndexInformationByYear(t *testing.T) {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
 
-	agg, err := postgresDb.GetIndexInformationByYear("Estadual", 2022)
+	agg, err := postgresDb.GetIndexInformation("Estadual", 0, 2022)
 	if err != nil {
-		t.Fatalf("error GetIndexInformationByYear(): %q", err)
+		t.Fatalf("error GetIndexInformation(): %q", err)
 	}
 
 	assert.Equal(t, len(agg), 2)
@@ -1596,7 +1606,7 @@ func TestGetIndexInformationByYear(t *testing.T) {
 	truncateTables()
 }
 
-func TestGetIndexInformationByMonthAndYear(t *testing.T) {
+func (indexInformation) testGetIndexInformationByMonthAndYear(t *testing.T) {
 	agencies := []models.Agency{
 		{
 			ID:     "tjsp",
@@ -1659,9 +1669,9 @@ func TestGetIndexInformationByMonthAndYear(t *testing.T) {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
 
-	agg, err := postgresDb.GetIndexInformationByMonthAndYear("Estadual", 1, 2022)
+	agg, err := postgresDb.GetIndexInformation("Estadual", 1, 2022)
 	if err != nil {
-		t.Fatalf("error GetIndexInformationByMonthAndYear(): %q", err)
+		t.Fatalf("error GetIndexInformation(): %q", err)
 	}
 
 	assert.Equal(t, len(agg), 2)
@@ -1675,6 +1685,16 @@ func TestGetIndexInformationByMonthAndYear(t *testing.T) {
 }
 
 func TestGetAllIndexInformation(t *testing.T) {
+	tests := allIndexInformation{}
+
+	t.Run("Test GetAllIndexInformation() without parameters", tests.testGetAllIndexInformation)
+	t.Run("Test GetAllIndexInformation() by year", tests.testGetAllIndexInformationByYear)
+	t.Run("Test GetAllIndexInformation() by month and year", tests.testGetAllIndexInformationByMonthAndYear)
+}
+
+type allIndexInformation struct{}
+
+func (allIndexInformation) testGetAllIndexInformation(t *testing.T) {
 	agencies := []models.Agency{
 		{
 			ID:     "tjsp",
@@ -1753,7 +1773,7 @@ func TestGetAllIndexInformation(t *testing.T) {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
 
-	agg, err := postgresDb.GetAllIndexInformation()
+	agg, err := postgresDb.GetAllIndexInformation(0, 0)
 	if err != nil {
 		t.Fatalf("error GetAllIndexInformation(): %q", err)
 	}
@@ -1764,7 +1784,7 @@ func TestGetAllIndexInformation(t *testing.T) {
 	truncateTables()
 }
 
-func TestGetAllIndexInformationByYear(t *testing.T) {
+func (allIndexInformation) testGetAllIndexInformationByYear(t *testing.T) {
 	agencies := []models.Agency{
 		{
 			ID:     "tjsp",
@@ -1817,9 +1837,9 @@ func TestGetAllIndexInformationByYear(t *testing.T) {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
 
-	agg, err := postgresDb.GetAllIndexInformationByYear(2022)
+	agg, err := postgresDb.GetAllIndexInformation(0, 2022)
 	if err != nil {
-		t.Fatalf("error GetAllIndexInformationByYear(): %q", err)
+		t.Fatalf("error GetAllIndexInformation(): %q", err)
 	}
 
 	assert.Equal(t, len(agg), 2)
@@ -1830,7 +1850,7 @@ func TestGetAllIndexInformationByYear(t *testing.T) {
 	truncateTables()
 }
 
-func TestGetAllIndexInformationByMonthAndYear(t *testing.T) {
+func (allIndexInformation) testGetAllIndexInformationByMonthAndYear(t *testing.T) {
 	agencies := []models.Agency{
 		{
 			ID:     "tjsp",
@@ -1883,9 +1903,9 @@ func TestGetAllIndexInformationByMonthAndYear(t *testing.T) {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
 
-	agg, err := postgresDb.GetAllIndexInformationByMonthAndYear(1, 2021)
+	agg, err := postgresDb.GetAllIndexInformation(1, 2021)
 	if err != nil {
-		t.Fatalf("error GetAllIndexInformationByMonthAndYear(): %q", err)
+		t.Fatalf("error GetAllIndexInformation(): %q", err)
 	}
 
 	assert.Equal(t, len(agg), 2)

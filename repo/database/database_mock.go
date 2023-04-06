@@ -123,48 +123,18 @@ func (mr *MockInterfaceMockRecorder) GetAllAgencies() *gomock.Call {
 }
 
 // GetAllIndexInformation mocks base method.
-func (m *MockInterface) GetAllIndexInformation() (map[string][]models.IndexInformation, error) {
+func (m *MockInterface) GetAllIndexInformation(month, year int) (map[string][]models.IndexInformation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllIndexInformation")
+	ret := m.ctrl.Call(m, "GetAllIndexInformation", month, year)
 	ret0, _ := ret[0].(map[string][]models.IndexInformation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAllIndexInformation indicates an expected call of GetAllIndexInformation.
-func (mr *MockInterfaceMockRecorder) GetAllIndexInformation() *gomock.Call {
+func (mr *MockInterfaceMockRecorder) GetAllIndexInformation(month, year interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllIndexInformation", reflect.TypeOf((*MockInterface)(nil).GetAllIndexInformation))
-}
-
-// GetAllIndexInformationByMonthAndYear mocks base method.
-func (m *MockInterface) GetAllIndexInformationByMonthAndYear(month, year int) (map[string][]models.IndexInformation, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllIndexInformationByMonthAndYear", month, year)
-	ret0, _ := ret[0].(map[string][]models.IndexInformation)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAllIndexInformationByMonthAndYear indicates an expected call of GetAllIndexInformationByMonthAndYear.
-func (mr *MockInterfaceMockRecorder) GetAllIndexInformationByMonthAndYear(month, year interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllIndexInformationByMonthAndYear", reflect.TypeOf((*MockInterface)(nil).GetAllIndexInformationByMonthAndYear), month, year)
-}
-
-// GetAllIndexInformationByYear mocks base method.
-func (m *MockInterface) GetAllIndexInformationByYear(year int) (map[string][]models.IndexInformation, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllIndexInformationByYear", year)
-	ret0, _ := ret[0].(map[string][]models.IndexInformation)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAllIndexInformationByYear indicates an expected call of GetAllIndexInformationByYear.
-func (mr *MockInterfaceMockRecorder) GetAllIndexInformationByYear(year interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllIndexInformationByYear", reflect.TypeOf((*MockInterface)(nil).GetAllIndexInformationByYear), year)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllIndexInformation", reflect.TypeOf((*MockInterface)(nil).GetAllIndexInformation), month, year)
 }
 
 // GetAnnualSummary mocks base method.
@@ -229,48 +199,18 @@ func (mr *MockInterfaceMockRecorder) GetGeneralMonthlyInfosFromYear(year interfa
 }
 
 // GetIndexInformation mocks base method.
-func (m *MockInterface) GetIndexInformation(name string) (map[string][]models.IndexInformation, error) {
+func (m *MockInterface) GetIndexInformation(name string, month, year int) (map[string][]models.IndexInformation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetIndexInformation", name)
+	ret := m.ctrl.Call(m, "GetIndexInformation", name, month, year)
 	ret0, _ := ret[0].(map[string][]models.IndexInformation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetIndexInformation indicates an expected call of GetIndexInformation.
-func (mr *MockInterfaceMockRecorder) GetIndexInformation(name interface{}) *gomock.Call {
+func (mr *MockInterfaceMockRecorder) GetIndexInformation(name, month, year interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIndexInformation", reflect.TypeOf((*MockInterface)(nil).GetIndexInformation), name)
-}
-
-// GetIndexInformationByMonthAndYear mocks base method.
-func (m *MockInterface) GetIndexInformationByMonthAndYear(name string, month, year int) (map[string][]models.IndexInformation, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetIndexInformationByMonthAndYear", name, month, year)
-	ret0, _ := ret[0].(map[string][]models.IndexInformation)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetIndexInformationByMonthAndYear indicates an expected call of GetIndexInformationByMonthAndYear.
-func (mr *MockInterfaceMockRecorder) GetIndexInformationByMonthAndYear(name, month, year interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIndexInformationByMonthAndYear", reflect.TypeOf((*MockInterface)(nil).GetIndexInformationByMonthAndYear), name, month, year)
-}
-
-// GetIndexInformationByYear mocks base method.
-func (m *MockInterface) GetIndexInformationByYear(name string, year int) (map[string][]models.IndexInformation, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetIndexInformationByYear", name, year)
-	ret0, _ := ret[0].(map[string][]models.IndexInformation)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetIndexInformationByYear indicates an expected call of GetIndexInformationByYear.
-func (mr *MockInterfaceMockRecorder) GetIndexInformationByYear(name, year interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIndexInformationByYear", reflect.TypeOf((*MockInterface)(nil).GetIndexInformationByYear), name, year)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIndexInformation", reflect.TypeOf((*MockInterface)(nil).GetIndexInformation), name, month, year)
 }
 
 // GetLastDateWithMonthlyInfo mocks base method.
