@@ -122,21 +122,6 @@ func (mr *MockInterfaceMockRecorder) GetAllAgencies() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllAgencies", reflect.TypeOf((*MockInterface)(nil).GetAllAgencies))
 }
 
-// GetAllIndexInformation mocks base method.
-func (m *MockInterface) GetAllIndexInformation(month, year int) (map[string][]models.IndexInformation, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllIndexInformation", month, year)
-	ret0, _ := ret[0].(map[string][]models.IndexInformation)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAllIndexInformation indicates an expected call of GetAllIndexInformation.
-func (mr *MockInterfaceMockRecorder) GetAllIndexInformation(month, year interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllIndexInformation", reflect.TypeOf((*MockInterface)(nil).GetAllIndexInformation), month, year)
-}
-
 // GetAnnualSummary mocks base method.
 func (m *MockInterface) GetAnnualSummary(agency string) ([]models.AnnualSummary, error) {
 	m.ctrl.T.Helper()

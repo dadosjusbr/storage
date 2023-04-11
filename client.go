@@ -130,11 +130,3 @@ func (c *Client) GetIndexInformation(name string, month, year int) (map[string][
 	}
 	return agg, nil
 }
-
-func (c *Client) GetAllIndexInformation(month, year int) (map[string][]models.IndexInformation, error) {
-	agg, err := c.Db.GetAllIndexInformation(month, year)
-	if err != nil {
-		return nil, fmt.Errorf("GetIndexInformation() error: %w", err)
-	}
-	return agg, nil
-}

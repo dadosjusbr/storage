@@ -387,69 +387,56 @@ func (p *PostgresDB) GetIndexInformation(name string, month, year int) (map[stri
 	var d *gorm.DB
 	groupMap := map[string]struct{}{"eleitoral": {}, "ministério": {}, "estadual": {}, "trabalho": {}, "federal": {}, "militar": {}, "superior": {}, "conselho": {}}
 
-	// Consultando e mapeando os índices e metadados por jurisdição
-	if _, ok := groupMap[strings.ToLower(name)]; ok {
-		if month != 0 && year != 0 {
-			// Por mês e ano
-			d = p.db.Model(&dtoIndex).Joins("INNER JOIN orgaos ON coletas.id_orgao = orgaos.id AND coletas.atual = true AND orgaos.jurisdicao = ? AND coletas.mes = ? AND coletas.ano = ?", name, month, year)
-		} else if year != 0 {
-			// Por ano
-			d = p.db.Model(&dtoIndex).Joins("INNER JOIN orgaos ON coletas.id_orgao = orgaos.id AND coletas.atual = true AND orgaos.jurisdicao = ? AND coletas.ano = ?", name, year)
+	if name != "" {
+		if _, ok := groupMap[strings.ToLower(name)]; ok {
+			// Consultando e mapeando os índices e metadados por jurisdição
+			if month != 0 && year != 0 {
+				// Por mês e ano
+				d = p.db.Model(&dtoIndex).Joins("INNER JOIN orgaos ON coletas.id_orgao = orgaos.id AND coletas.atual = true AND orgaos.jurisdicao = ? AND coletas.mes = ? AND coletas.ano = ?", name, month, year)
+			} else if year != 0 {
+				// Por ano
+				d = p.db.Model(&dtoIndex).Joins("INNER JOIN orgaos ON coletas.id_orgao = orgaos.id AND coletas.atual = true AND orgaos.jurisdicao = ? AND coletas.ano = ?", name, year)
+			} else {
+				// Sem intervalo definido
+				d = p.db.Model(&dtoIndex).Joins("INNER JOIN orgaos ON coletas.id_orgao = orgaos.id AND coletas.atual = true AND orgaos.jurisdicao = ?", name)
+			}
+			if err := d.Scan(&dtoIndex).Error; err != nil {
+				return nil, fmt.Errorf("error getting all indexes: %w", err)
+			}
 		} else {
-			// Sem intervalo definido
-			d = p.db.Model(&dtoIndex).Joins("INNER JOIN orgaos ON coletas.id_orgao = orgaos.id AND coletas.atual = true AND orgaos.jurisdicao = ?", name)
-		}
-		if err := d.Scan(&dtoIndex).Error; err != nil {
-			return nil, fmt.Errorf("error getting all indexes: %w", err)
+			// Consultando e mapeando os índices e metadados por id do órgão
+			if month != 0 && year != 0 {
+				// Por mês e ano
+				id := fmt.Sprintf("%s/%s/%d", strings.ToLower(name), dto.AddZeroes(month), year)
+				d = p.db.Model(&dtoIndex).Where("atual = true AND id = ?", id)
+			} else if year != 0 {
+				// Por ano
+				d = p.db.Model(&dtoIndex).Where("atual = true AND id_orgao = ? AND ano = ?", strings.ToLower(name), year)
+			} else {
+				// Sem intervalo definido
+				d = p.db.Model(&dtoIndex).Where("atual = true AND id_orgao = ?", strings.ToLower(name))
+			}
+			if err := d.Scan(&dtoIndex).Error; err != nil {
+				return nil, fmt.Errorf("error getting all indexes: %w", err)
+			}
 		}
 	} else {
-		// Consultando e mapeando os índices e metadados por id do órgão
+		// Todos os órgãos
 		if month != 0 && year != 0 {
 			// Por mês e ano
-			id := fmt.Sprintf("%s/%s/%d", strings.ToLower(name), dto.AddZeroes(month), year)
-			d = p.db.Model(&dtoIndex).Where("atual = true AND id = ?", id)
+			d = p.db.Model(&dtoIndex).Where("atual = true AND mes = ? AND ano = ?", month, year)
 		} else if year != 0 {
 			// Por ano
-			d = p.db.Model(&dtoIndex).Where("atual = true AND id_orgao = ? AND ano = ?", strings.ToLower(name), year)
+			d = p.db.Model(&dtoIndex).Where("atual = true AND ano = ?", year)
 		} else {
 			// Sem intervalo definido
-			d = p.db.Model(&dtoIndex).Where("atual = true AND id_orgao = ?", strings.ToLower(name))
+			d = p.db.Model(&dtoIndex).Where("atual = true")
 		}
 		if err := d.Scan(&dtoIndex).Error; err != nil {
 			return nil, fmt.Errorf("error getting all indexes: %w", err)
 		}
 	}
 	// Agrupando os índices por órgão
-	indexes := make(map[string][]models.IndexInformation)
-	for _, d := range dtoIndex {
-		// Verificamos se o órgão pertence ao painel do CNJ (ou se é um ministério público)
-		// O índice de facilidade para os órgãos do CNJ é padronizado, mesmo quando não há dados para o mês.
-		// obs.: o "STF" é o único tribunal que monitoramos e que não pertence ao CNJ
-		if !strings.Contains(strings.ToLower(d.ID), "mp") && d.ID != "stf" {
-			d.Score.EasinessScore = 0.5
-		}
-		indexes[d.ID] = append(indexes[d.ID], *d.ConvertToModel())
-	}
-	return indexes, nil
-}
-
-func (p *PostgresDB) GetAllIndexInformation(month, year int) (map[string][]models.IndexInformation, error) {
-	// Consultando e mapeando os índices e metadados de todos os órgãos
-	var dtoIndex []dto.IndexInformation
-	var d *gorm.DB
-	if month != 0 && year != 0 {
-		// Por mês e ano
-		d = p.db.Model(&dtoIndex).Where("atual = true AND mes = ? AND ano = ?", month, year)
-	} else if year != 0 {
-		// Por ano
-		d = p.db.Model(&dtoIndex).Where("atual = true AND ano = ?", year)
-	} else {
-		// Sem intervalo definido
-		d = p.db.Model(&dtoIndex).Where("atual = true")
-	}
-	if err := d.Scan(&dtoIndex).Error; err != nil {
-		return nil, fmt.Errorf("error getting all indexes: %w", err)
-	}
 	indexes := make(map[string][]models.IndexInformation)
 	for _, d := range dtoIndex {
 		// Verificamos se o órgão pertence ao painel do CNJ (ou se é um ministério público)
