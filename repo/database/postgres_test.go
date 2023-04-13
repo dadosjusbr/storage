@@ -1426,6 +1426,19 @@ func (s store) testWhenIDAlreadyExists(t *testing.T) {
 }
 
 func TestGetIndexInformation(t *testing.T) {
+	tests := indexInformation{}
+
+	t.Run("Test GetIndexInformation() by group", tests.testGetIndexInformationByGroup)
+	t.Run("Test GetIndexInformation() by group and year", tests.testGetIndexInformationByYear)
+	t.Run("Test GetIndexInformation() by group, month and year", tests.testGetIndexInformationByMonthAndYear)
+	t.Run("Test GetIndexInformation() without parameters (all agencies)", tests.testGetAllIndexInformation)
+	t.Run("Test GetAllIndexInformation() by year (all agencies)", tests.testGetAllIndexInformationByYear)
+	t.Run("Test GetAllIndexInformation() by month and year (all agencies)", tests.testGetAllIndexInformationByMonthAndYear)
+}
+
+type indexInformation struct{}
+
+func (indexInformation) testGetIndexInformationByGroup(t *testing.T) {
 	agencies := []models.Agency{
 		{
 			ID:     "tjsp",
@@ -1504,7 +1517,7 @@ func TestGetIndexInformation(t *testing.T) {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
 
-	agg, err := postgresDb.GetIndexInformation("Estadual")
+	agg, err := postgresDb.GetIndexInformation("Estadual", 0, 0)
 	if err != nil {
 		t.Fatalf("error GetIndexInformation(): %q", err)
 	}
@@ -1519,7 +1532,162 @@ func TestGetIndexInformation(t *testing.T) {
 	truncateTables()
 }
 
-func TestGetAllIndexInformation(t *testing.T) {
+func (indexInformation) testGetIndexInformationByYear(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID:     "tjsp",
+			Entity: "Tribunal",
+			Type:   "Estadual",
+		},
+		{
+			ID:     "tjba",
+			Entity: "Tribunal",
+			Type:   "Estadual",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	agmis := []models.AgencyMonthlyInfo{
+		{
+			AgencyID: "tjsp",
+			Month:    1,
+			Year:     2022,
+			Score: &models.Score{
+				Score:             0.5,
+				CompletenessScore: 0.5,
+				EasinessScore:     0.5,
+			},
+		},
+		{
+			AgencyID: "tjsp",
+			Month:    2,
+			Year:     2022,
+			Score: &models.Score{
+				Score:             0,
+				CompletenessScore: 0,
+				EasinessScore:     0,
+			},
+		},
+		{
+			AgencyID: "tjba",
+			Month:    1,
+			Year:     2022,
+			Score: &models.Score{
+				Score:             0.5,
+				CompletenessScore: 0.5,
+				EasinessScore:     0.5,
+			},
+		},
+		{
+			AgencyID: "tjba",
+			Month:    1,
+			Year:     2020,
+			Score: &models.Score{
+				Score:             0.5,
+				CompletenessScore: 0.5,
+				EasinessScore:     0.5,
+			},
+		},
+	}
+	if err := insertMonthlyInfos(agmis); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	agg, err := postgresDb.GetIndexInformation("Estadual", 0, 2022)
+	if err != nil {
+		t.Fatalf("error GetIndexInformation(): %q", err)
+	}
+
+	assert.Equal(t, len(agg), 2)
+	assert.Equal(t, len(agg["tjsp"]), 2)
+	assert.Equal(t, len(agg["tjba"]), 1)
+	assert.Equal(t, agg["tjsp"][0].Year, 2022)
+	assert.Equal(t, agg["tjsp"][1].Year, 2022)
+	assert.Equal(t, agg["tjba"][0].Year, 2022)
+	truncateTables()
+}
+
+func (indexInformation) testGetIndexInformationByMonthAndYear(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID:     "tjsp",
+			Entity: "Tribunal",
+			Type:   "Estadual",
+		},
+		{
+			ID:     "tjba",
+			Entity: "Tribunal",
+			Type:   "Estadual",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	agmis := []models.AgencyMonthlyInfo{
+		{
+			AgencyID: "tjsp",
+			Month:    1,
+			Year:     2022,
+			Score: &models.Score{
+				Score:             0.5,
+				CompletenessScore: 0.5,
+				EasinessScore:     0.5,
+			},
+		},
+		{
+			AgencyID: "tjsp",
+			Month:    2,
+			Year:     2022,
+			Score: &models.Score{
+				Score:             0,
+				CompletenessScore: 0,
+				EasinessScore:     0,
+			},
+		},
+		{
+			AgencyID: "tjba",
+			Month:    1,
+			Year:     2022,
+			Score: &models.Score{
+				Score:             0.5,
+				CompletenessScore: 0.5,
+				EasinessScore:     0.5,
+			},
+		},
+		{
+			AgencyID: "tjba",
+			Month:    2,
+			Year:     2022,
+			Score: &models.Score{
+				Score:             0.5,
+				CompletenessScore: 0.5,
+				EasinessScore:     0.5,
+			},
+		},
+	}
+	if err := insertMonthlyInfos(agmis); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	agg, err := postgresDb.GetIndexInformation("Estadual", 1, 2022)
+	if err != nil {
+		t.Fatalf("error GetIndexInformation(): %q", err)
+	}
+
+	assert.Equal(t, len(agg), 2)
+	assert.Equal(t, len(agg["tjsp"]), 1)
+	assert.Equal(t, len(agg["tjba"]), 1)
+	assert.Equal(t, agg["tjsp"][0].Year, 2022)
+	assert.Equal(t, agg["tjba"][0].Year, 2022)
+	assert.Equal(t, agg["tjsp"][0].Month, 1)
+	assert.Equal(t, agg["tjba"][0].Month, 1)
+	truncateTables()
+}
+
+func (indexInformation) testGetAllIndexInformation(t *testing.T) {
 	agencies := []models.Agency{
 		{
 			ID:     "tjsp",
@@ -1598,14 +1766,148 @@ func TestGetAllIndexInformation(t *testing.T) {
 		t.Fatalf("error inserting agencies: %q", err)
 	}
 
-	agg, err := postgresDb.GetAllIndexInformation()
+	agg, err := postgresDb.GetIndexInformation("", 0, 0)
 	if err != nil {
-		t.Fatalf("error GetAllIndexInformation(): %q", err)
+		t.Fatalf("error GetIndexInformation(): %q", err)
 	}
 
 	assert.Equal(t, len(agg), 2)
 	assert.Equal(t, len(agg["tjsp"]), 2)
 	assert.Equal(t, len(agg["tjba"]), 1)
+	truncateTables()
+}
+
+func (indexInformation) testGetAllIndexInformationByYear(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID:     "tjsp",
+			Entity: "Tribunal",
+			Type:   "Estadual",
+		},
+		{
+			ID:     "tjba",
+			Entity: "Tribunal",
+			Type:   "Estadual",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	agmis := []models.AgencyMonthlyInfo{
+		{
+			AgencyID: "tjsp",
+			Month:    1,
+			Year:     2022,
+			Score: &models.Score{
+				Score:             0.5,
+				CompletenessScore: 0.5,
+				EasinessScore:     0.5,
+			},
+		},
+		{
+			AgencyID: "tjsp",
+			Month:    2,
+			Year:     2021,
+			Score: &models.Score{
+				Score:             0,
+				CompletenessScore: 0,
+				EasinessScore:     0,
+			},
+		},
+		{
+			AgencyID: "tjba",
+			Month:    1,
+			Year:     2022,
+			Score: &models.Score{
+				Score:             0.5,
+				CompletenessScore: 0.5,
+				EasinessScore:     0.5,
+			},
+		},
+	}
+	if err := insertMonthlyInfos(agmis); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	agg, err := postgresDb.GetIndexInformation("", 0, 2022)
+	if err != nil {
+		t.Fatalf("error GetIndexInformation(): %q", err)
+	}
+
+	assert.Equal(t, len(agg), 2)
+	assert.Equal(t, len(agg["tjsp"]), 1)
+	assert.Equal(t, len(agg["tjba"]), 1)
+	assert.Equal(t, agg["tjsp"][0].Year, 2022)
+	assert.Equal(t, agg["tjba"][0].Year, 2022)
+	truncateTables()
+}
+
+func (indexInformation) testGetAllIndexInformationByMonthAndYear(t *testing.T) {
+	agencies := []models.Agency{
+		{
+			ID:     "tjsp",
+			Entity: "Tribunal",
+			Type:   "Estadual",
+		},
+		{
+			ID:     "tjba",
+			Entity: "Tribunal",
+			Type:   "Estadual",
+		},
+	}
+	if err := insertAgencies(agencies); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	agmis := []models.AgencyMonthlyInfo{
+		{
+			AgencyID: "tjsp",
+			Month:    1,
+			Year:     2021,
+			Score: &models.Score{
+				Score:             0.5,
+				CompletenessScore: 0.5,
+				EasinessScore:     0.5,
+			},
+		},
+		{
+			AgencyID: "tjsp",
+			Month:    1,
+			Year:     2022,
+			Score: &models.Score{
+				Score:             0,
+				CompletenessScore: 0,
+				EasinessScore:     0,
+			},
+		},
+		{
+			AgencyID: "tjba",
+			Month:    1,
+			Year:     2021,
+			Score: &models.Score{
+				Score:             0.5,
+				CompletenessScore: 0.5,
+				EasinessScore:     0.5,
+			},
+		},
+	}
+	if err := insertMonthlyInfos(agmis); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	agg, err := postgresDb.GetIndexInformation("", 1, 2021)
+	if err != nil {
+		t.Fatalf("error GetIndexInformation(): %q", err)
+	}
+
+	assert.Equal(t, len(agg), 2)
+	assert.Equal(t, len(agg["tjsp"]), 1)
+	assert.Equal(t, len(agg["tjba"]), 1)
+	assert.Equal(t, agg["tjsp"][0].Year, 2021)
+	assert.Equal(t, agg["tjba"][0].Year, 2021)
+	assert.Equal(t, agg["tjsp"][0].Month, 1)
+	assert.Equal(t, agg["tjba"][0].Month, 1)
 	truncateTables()
 }
 

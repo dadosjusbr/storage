@@ -123,16 +123,8 @@ func (c *Client) GetAnnualSummary(agency string) ([]models.AnnualSummary, error)
 }
 
 // Get index information by agency's ID or group (name)
-func (c *Client) GetIndexInformation(name string) (map[string][]models.IndexInformation, error) {
-	agg, err := c.Db.GetIndexInformation(name)
-	if err != nil {
-		return nil, fmt.Errorf("GetIndexInformation() error: %w", err)
-	}
-	return agg, nil
-}
-
-func (c *Client) GetAllIndexInformation() (map[string][]models.IndexInformation, error) {
-	agg, err := c.Db.GetAllIndexInformation()
+func (c *Client) GetIndexInformation(name string, month, year int) (map[string][]models.IndexInformation, error) {
+	agg, err := c.Db.GetIndexInformation(name, month, year)
 	if err != nil {
 		return nil, fmt.Errorf("GetIndexInformation() error: %w", err)
 	}
