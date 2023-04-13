@@ -383,58 +383,44 @@ func (p *PostgresDB) GetGeneralMonthlyInfo() (float64, error) {
 
 func (p *PostgresDB) GetIndexInformation(name string, month, year int) (map[string][]models.IndexInformation, error) {
 	// name: ID do órgão (e.g. "trt12") ou jurisdição.
+	groupMap := map[string]struct{}{"eleitoral": {}, "ministério": {}, "estadual": {}, "trabalho": {}, "federal": {}, "militar": {}, "superior": {}, "conselho": {}}
+	params := []interface{}{}
+
+	// somente considerar os dados da coleta mais recente de cada órgão.
+	// lembrar que a gente guarda um histórico de coletas (revisões)
+	query := "coletas.atual = true"
+
+	// verificar se devemos considerar o ano como parâmetro e adicionar a query.
+	if year != 0 {
+		query += " AND coletas.ano = ?"
+		params = append(params, year)
+
+		// verificar se devemos considerar o mês. como parâmetro e adicionar a query.
+		// só verificamos o mês se o ano for passado.
+		if month != 0 {
+			query += " AND coletas.mes = ?"
+			params = append(params, month)
+		}
+	}
 	var dtoIndex []dto.IndexInformation
 	var d *gorm.DB
-	groupMap := map[string]struct{}{"eleitoral": {}, "ministério": {}, "estadual": {}, "trabalho": {}, "federal": {}, "militar": {}, "superior": {}, "conselho": {}}
-
-	if name != "" {
-		if _, ok := groupMap[strings.ToLower(name)]; ok {
-			// Consultando e mapeando os índices e metadados por jurisdição
-			if month != 0 && year != 0 {
-				// Por mês e ano
-				d = p.db.Model(&dtoIndex).Joins("INNER JOIN orgaos ON coletas.id_orgao = orgaos.id AND coletas.atual = true AND orgaos.jurisdicao = ? AND coletas.mes = ? AND coletas.ano = ?", name, month, year)
-			} else if year != 0 {
-				// Por ano
-				d = p.db.Model(&dtoIndex).Joins("INNER JOIN orgaos ON coletas.id_orgao = orgaos.id AND coletas.atual = true AND orgaos.jurisdicao = ? AND coletas.ano = ?", name, year)
-			} else {
-				// Sem intervalo definido
-				d = p.db.Model(&dtoIndex).Joins("INNER JOIN orgaos ON coletas.id_orgao = orgaos.id AND coletas.atual = true AND orgaos.jurisdicao = ?", name)
-			}
-			if err := d.Scan(&dtoIndex).Error; err != nil {
-				return nil, fmt.Errorf("error getting all indexes: %w", err)
-			}
-		} else {
-			// Consultando e mapeando os índices e metadados por id do órgão
-			if month != 0 && year != 0 {
-				// Por mês e ano
-				id := fmt.Sprintf("%s/%s/%d", strings.ToLower(name), dto.AddZeroes(month), year)
-				d = p.db.Model(&dtoIndex).Where("atual = true AND id = ?", id)
-			} else if year != 0 {
-				// Por ano
-				d = p.db.Model(&dtoIndex).Where("atual = true AND id_orgao = ? AND ano = ?", strings.ToLower(name), year)
-			} else {
-				// Sem intervalo definido
-				d = p.db.Model(&dtoIndex).Where("atual = true AND id_orgao = ?", strings.ToLower(name))
-			}
-			if err := d.Scan(&dtoIndex).Error; err != nil {
-				return nil, fmt.Errorf("error getting all indexes: %w", err)
-			}
-		}
+	_, porJurisdicao := groupMap[strings.ToLower(name)]
+	if porJurisdicao {
+		// Consultando e mapeando os índices e metadados por jurisdição.
+		// Para tal, precisamos realizar um join com a tabela de órgãos.
+		query = fmt.Sprintf("INNER JOIN orgaos ON coletas.id_orgao = orgaos.id AND %s AND orgaos.jurisdicao = ?", query)
+		params = append(params, name)
+		d = p.db.Model(&dtoIndex).Joins(query, params...)
 	} else {
-		// Todos os órgãos
-		if month != 0 && year != 0 {
-			// Por mês e ano
-			d = p.db.Model(&dtoIndex).Where("atual = true AND mes = ? AND ano = ?", month, year)
-		} else if year != 0 {
-			// Por ano
-			d = p.db.Model(&dtoIndex).Where("atual = true AND ano = ?", year)
-		} else {
-			// Sem intervalo definido
-			d = p.db.Model(&dtoIndex).Where("atual = true")
+		if name != "" {
+			// Consultando e mapeando os índices e metadados por id do órgão
+			query += " AND coletas.id_orgao = ?"
+			params = append(params, name)
 		}
-		if err := d.Scan(&dtoIndex).Error; err != nil {
-			return nil, fmt.Errorf("error getting all indexes: %w", err)
-		}
+		d = p.db.Model(&dtoIndex).Where(query, params...)
+	}
+	if err := d.Scan(&dtoIndex).Error; err != nil {
+		return nil, fmt.Errorf("error getting all indexes: %w", err)
 	}
 	// Agrupando os índices por órgão
 	indexes := make(map[string][]models.IndexInformation)
