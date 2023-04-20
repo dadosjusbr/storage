@@ -1005,7 +1005,8 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 				if agmi.Year == agmi2.Year && agmi.Month != agmi2.Month {
 					amis = append(amis, models.AnnualSummary{
 						Year:               agmi.Year,
-						Count:              (agmi.Summary.Count + agmi2.Summary.Count) / 2,
+						AverageCount:       (agmi.Summary.Count + agmi2.Summary.Count) / 2,
+						TotalCount:         agmi.Summary.Count + agmi2.Summary.Count,
 						BaseRemuneration:   agmi.Summary.BaseRemuneration.Total + agmi2.Summary.BaseRemuneration.Total,
 						OtherRemunerations: agmi.Summary.OtherRemunerations.Total + agmi2.Summary.OtherRemunerations.Total,
 					})
@@ -1020,8 +1021,10 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 	assert.Equal(t, amis[0].Year, returnedAmis[0].Year)
 	assert.Equal(t, amis[0].BaseRemuneration, returnedAmis[0].BaseRemuneration)
 	assert.Equal(t, amis[0].OtherRemunerations, returnedAmis[0].OtherRemunerations)
-	assert.Equal(t, amis[0].Count, returnedAmis[0].Count)
-	assert.Equal(t, amis[1].Count, returnedAmis[1].Count)
+	assert.Equal(t, amis[0].AverageCount, returnedAmis[0].AverageCount)
+	assert.Equal(t, amis[1].AverageCount, returnedAmis[1].AverageCount)
+	assert.Equal(t, amis[0].TotalCount, returnedAmis[0].TotalCount)
+	assert.Equal(t, amis[1].TotalCount, returnedAmis[1].TotalCount)
 	assert.Equal(t, 2, returnedAmis[0].NumMonthsWithData)
 	truncateTables()
 }

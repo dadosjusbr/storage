@@ -77,7 +77,8 @@ type GeneralMonthlyInfo struct {
 
 type AnnualSummary struct {
 	Year               int     `json:"year,omitempty"`                // Year of the data
-	Count              int     `json:"count,omitempty"`               // Number of employees
+	AverageCount       int     `json:"average_count,omitempty"`       // Average number of employees
+	TotalCount         int     `json:"total_count,omitempty"`         // Total number of employees
 	BaseRemuneration   float64 `json:"base_remuneration,omitempty"`   //  Statistics (Max, Min, Median, Total)
 	OtherRemunerations float64 `json:"other_remunerations,omitempty"` //  Statistics (Max, Min, Median, Total)
 	NumMonthsWithData  int     `json:"months_with_data,omitempty"`

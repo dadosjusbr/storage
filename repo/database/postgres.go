@@ -279,7 +279,8 @@ func (p *PostgresDB) GetAnnualSummary(agency string) ([]models.AnnualSummary, er
 	query := `
 		ano,
 		id_orgao,
-		TRUNC(AVG((sumario -> 'membros')::text::int)) AS num_membros,
+		TRUNC(AVG((sumario -> 'membros')::text::int)) AS media_num_membros,
+		SUM((sumario -> 'membros')::text::int) AS total_num_membros,
 		SUM(CAST(sumario -> 'remuneracao_base' ->> 'total' AS DECIMAL)) AS remuneracao_base,
 		SUM(CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)) AS outras_remuneracoes,
 		COUNT(*) AS meses_com_dados`
