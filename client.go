@@ -130,3 +130,12 @@ func (c *Client) GetIndexInformation(name string, month, year int) (map[string][
 	}
 	return agg, nil
 }
+
+// Get all agency collection
+func (c *Client) GetAllAgencyCollection(agency string) ([]models.AgencyMonthlyInfo, error) {
+	collections, err := c.Db.GetAllAgencyCollection(agency)
+	if err != nil {
+		return nil, fmt.Errorf("GetAllAgencyCollection() error: %w", err)
+	}
+	return collections, nil
+}
