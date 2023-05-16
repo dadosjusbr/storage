@@ -1914,6 +1914,85 @@ func (indexInformation) testGetAllIndexInformationByMonthAndYear(t *testing.T) {
 	truncateTables()
 }
 
+func TestGetAllAgencyCollection(t *testing.T) {
+	agency := []models.Agency{
+		{
+			ID:     "tjsp",
+			Entity: "Tribunal",
+			Type:   "Estadual",
+		},
+	}
+	if err := insertAgencies(agency); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	agmis := []models.AgencyMonthlyInfo{
+		{
+			AgencyID: "tjsp",
+			Month:    1,
+			Year:     2021,
+			Summary: &models.Summary{
+				Count: 3407,
+				BaseRemuneration: models.DataSummary{
+					Max:     47052.46,
+					Min:     11735.02,
+					Average: 33298.721643673955,
+					Total:   113448744.63999715,
+				},
+				OtherRemunerations: models.DataSummary{
+					Max:     82942.56,
+					Total:   58807454.34999981,
+					Average: 17260.773216906313,
+				},
+			},
+			Meta: &models.Meta{
+				OpenFormat:       false,
+				Access:           "NECESSITA_SIMULACAO_USUARIO",
+				Extension:        "XLS",
+				StrictlyTabular:  true,
+				ConsistentFormat: true,
+				HaveEnrollment:   false,
+				ThereIsACapacity: false,
+				HasPosition:      false,
+				BaseRevenue:      "DETALHADO",
+				OtherRecipes:     "DETALHADO",
+				Expenditure:      "DETALHADO",
+			},
+			Score: &models.Score{
+				Score:             0.5,
+				CompletenessScore: 0.5,
+				EasinessScore:     0.5,
+			},
+		},
+		{
+			AgencyID: "tjsp",
+			Month:    2,
+			Year:     2022,
+			Score: &models.Score{
+				Score:             0,
+				CompletenessScore: 0,
+				EasinessScore:     0,
+			},
+		},
+	}
+	if err := insertMonthlyInfos(agmis); err != nil {
+		t.Fatalf("error inserting agencies: %q", err)
+	}
+
+	collections, err := postgresDb.GetAllAgencyCollection("tjsp")
+	if err != nil {
+		t.Fatalf("error GetAllAgencyCollection(): %q", err)
+	}
+
+	assert.Equal(t, len(collections), 2)
+	assert.Equal(t, agmis[0].Summary, collections[0].Summary)
+	assert.Equal(t, agmis[0].Meta, collections[0].Meta)
+	assert.Equal(t, agmis[0].Score, collections[0].Score)
+	assert.Equal(t, collections[1].Score.CompletenessScore, 0.0)
+	assert.Equal(t, collections[1].Score.EasinessScore, 0.5)
+	truncateTables()
+}
+
 func insertAgencies(agencies []models.Agency) error {
 	for _, agency := range agencies {
 		agencyDto, err := dto.NewAgencyDTO(agency)

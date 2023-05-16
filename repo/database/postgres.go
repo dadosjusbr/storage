@@ -426,13 +426,41 @@ func (p *PostgresDB) GetIndexInformation(name string, month, year int) (map[stri
 	// Agrupando os índices por órgão
 	indexes := make(map[string][]models.IndexInformation)
 	for _, d := range dtoIndex {
-		// Verificamos se o órgão pertence ao painel do CNJ (ou se é um ministério público)
-		// O índice de facilidade para os órgãos do CNJ é padronizado, mesmo quando não há dados para o mês.
-		// obs.: o "STF" é o único tribunal que monitoramos e que não pertence ao CNJ
-		if !strings.Contains(strings.ToLower(d.ID), "mp") && d.ID != "stf" {
-			d.Score.EasinessScore = 0.5
-		}
+		d.Score.EasinessScore = calcEasinessScore(d.ID, d.Score.EasinessScore)
 		indexes[d.ID] = append(indexes[d.ID], *d.ConvertToModel())
 	}
 	return indexes, nil
+}
+
+func (p *PostgresDB) GetAllAgencyCollection(agency string) ([]models.AgencyMonthlyInfo, error) {
+	var dtoAgmis []dto.AgencyMonthlyInfoDTO
+	//Pegando todas as coletas atuais de um determinado órgão.
+	m := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
+	m = m.Where("id_orgao = ? AND atual = TRUE", agency)
+	m = m.Order("(ano, mes) ASC")
+	if err := m.Find(&dtoAgmis).Error; err != nil {
+		return nil, fmt.Errorf("error getting all agency collections: %q", err)
+	}
+
+	var collections []models.AgencyMonthlyInfo
+	for _, dtoAgmi := range dtoAgmis {
+		agmi, err := dtoAgmi.ConvertToModel()
+		if err != nil {
+			return nil, fmt.Errorf("error converting dto to model: %q", err)
+		}
+		agmi.Score.EasinessScore = calcEasinessScore(agency, agmi.Score.EasinessScore)
+		collections = append(collections, *agmi)
+	}
+	return collections, nil
+}
+
+// Verificamos se o órgão pertence ao painel do CNJ (ou se é um ministério público)
+// O índice de facilidade para os órgãos do CNJ é padronizado, mesmo quando não há dados para o mês.
+// obs.: o "STF" é o único tribunal que monitoramos e que não pertence ao CNJ
+func calcEasinessScore(agency string, easinessScore float64) float64 {
+	if !strings.Contains(strings.ToLower(agency), "mp") && agency != "stf" {
+		return 0.5
+	} else {
+		return easinessScore
+	}
 }
