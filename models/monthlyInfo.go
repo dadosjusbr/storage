@@ -73,6 +73,7 @@ type GeneralMonthlyInfo struct {
 	Count              int     `json:"count,omitempty"`               // Number of employees
 	BaseRemuneration   float64 `json:"base_remuneration,omitempty"`   //  Statistics (Max, Min, Median, Total)
 	OtherRemunerations float64 `json:"other_remunerations,omitempty"` //  Statistics (Max, Min, Median, Total)
+	Discounts          float64 `json:"discounts,omitempty"`           //  Statistics (Max, Min, Median, Total)
 }
 
 type AnnualSummary struct {
@@ -81,6 +82,7 @@ type AnnualSummary struct {
 	TotalCount         int     `json:"total_count,omitempty"`         // Total number of employees
 	BaseRemuneration   float64 `json:"base_remuneration,omitempty"`   //  Statistics (Max, Min, Median, Total)
 	OtherRemunerations float64 `json:"other_remunerations,omitempty"` //  Statistics (Max, Min, Median, Total)
+	Discounts          float64 `json:"discounts,omitempty"`           //  Statistics (Max, Min, Median, Total)
 	NumMonthsWithData  int     `json:"months_with_data,omitempty"`
 	Package            *Backup `json:"package,omitempty"`
 }
