@@ -222,7 +222,9 @@ func (p *PostgresDB) GetAgenciesByUF(uf string) ([]models.Agency, error) {
 func (p *PostgresDB) GetAgency(aid string) (*models.Agency, error) {
 	var dtoOrgao dto.AgencyDTO
 	aid = strings.ToLower(aid)
-	if err := p.db.Model(&dto.AgencyDTO{}).Where("id = ?", aid).First(&dtoOrgao).Error; err != nil {
+	m := p.db.Model(&dto.AgencyDTO{}).Select("orgaos.*, max(coletas.timestamp) as ultima_coleta")
+	m = m.Joins("INNER JOIN coletas ON atual = true AND coletas.id_orgao = orgaos.id AND orgaos.id = ?", aid)
+	if err := m.Group("orgaos.id").First(&dtoOrgao).Error; err != nil {
 		return nil, fmt.Errorf("error getting agency '%s': %q", aid, err)
 	}
 	orgao, err := dtoOrgao.ConvertToModel()
@@ -284,10 +286,9 @@ func (p *PostgresDB) GetAnnualSummary(agency string) ([]models.AnnualSummary, er
 		SUM(CAST(sumario -> 'remuneracao_base' ->> 'total' AS DECIMAL)) AS remuneracao_base,
 		SUM(CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)) AS outras_remuneracoes,
 		SUM(CAST(sumario -> 'descontos' ->> 'total' AS DECIMAL)) AS descontos,
-		COUNT(*) FILTER (WHERE (procinfo::text = 'null' OR procinfo IS NULL)) AS meses_com_dados,
-		max(timestamp) as timestamp`
+		COUNT(*) AS meses_com_dados`
 	m := p.db.Model(&dtoAgmi).Select(query)
-	m = m.Where("id_orgao = ? AND atual = TRUE ", agency)
+	m = m.Where("id_orgao = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency)
 	m = m.Group("ano, id_orgao").Order("ano ASC")
 	if err := m.Scan(&dtoAmis).Error; err != nil {
 		return nil, fmt.Errorf("error getting annual monthly info: %q", err)
