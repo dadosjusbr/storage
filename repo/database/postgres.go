@@ -284,6 +284,7 @@ func (p *PostgresDB) GetAnnualSummary(agency string) ([]models.AnnualSummary, er
 		SUM(CAST(sumario -> 'remuneracao_base' ->> 'total' AS DECIMAL)) AS remuneracao_base,
 		SUM(CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)) AS outras_remuneracoes,
 		SUM(CAST(sumario -> 'descontos' ->> 'total' AS DECIMAL)) AS descontos,
+		SUM(CAST(sumario -> 'remuneracoes' ->> 'total' AS DECIMAL)) AS remuneracoes,
 		COUNT(*) AS meses_com_dados`
 	m := p.db.Model(&dtoAgmi).Select(query)
 	m = m.Where("id_orgao = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency)
@@ -327,7 +328,8 @@ func (p *PostgresDB) GetGeneralMonthlyInfosFromYear(year int) ([]models.GeneralM
 		SUM((sumario -> 'membros')::text::int) AS num_membros,
 		SUM(CAST(sumario -> 'remuneracao_base' ->> 'total' AS DECIMAL)) AS remuneracao_base,
 		SUM(CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)) AS outras_remuneracoes,
-		SUM(CAST(sumario -> 'descontos' ->> 'total' AS DECIMAL)) AS descontos`
+		SUM(CAST(sumario -> 'descontos' ->> 'total' AS DECIMAL)) AS descontos,
+		SUM(CAST(sumario -> 'remuneracoes' ->> 'total' AS DECIMAL)) AS remuneracoes`
 	m := p.db.Model(&dtoAgmi).Select(query)
 	m = m.Where("ano = ? AND atual=true AND (procinfo IS NULL OR procinfo::text = 'null')", year)
 	m = m.Group("mes").Order("mes ASC")
@@ -371,8 +373,7 @@ func (p *PostgresDB) GetGeneralMonthlyInfo() (float64, error) {
 	query := `
 		COALESCE(
 			SUM(
-				CAST(sumario -> 'remuneracao_base' ->> 'total' AS DECIMAL) + 
-				CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)
+				CAST(sumario -> 'remuneracoes' ->> 'total' AS DECIMAL)
 			), 0
 		)
 		`

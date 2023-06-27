@@ -414,11 +414,8 @@ func (g getGeneralMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 			Month:             3,
 			CrawlingTimestamp: timestamppb.Now(),
 			Summary: &models.Summary{
-				BaseRemuneration: models.DataSummary{
+				Remunerations: models.DataSummary{
 					Total: 1200,
-				},
-				OtherRemunerations: models.DataSummary{
-					Total: 700,
 				},
 			},
 		},
@@ -428,10 +425,7 @@ func (g getGeneralMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 			Month:             3,
 			CrawlingTimestamp: timestamppb.Now(),
 			Summary: &models.Summary{
-				BaseRemuneration: models.DataSummary{
-					Total: 2000,
-				},
-				OtherRemunerations: models.DataSummary{
+				Remunerations: models.DataSummary{
 					Total: 1000,
 				},
 			},
@@ -440,8 +434,7 @@ func (g getGeneralMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 
 	var total float64
 	for _, agmi := range agmis {
-		total += agmi.Summary.BaseRemuneration.Total
-		total += agmi.Summary.OtherRemunerations.Total
+		total += agmi.Summary.Remunerations.Total
 	}
 
 	if err := insertMonthlyInfos(agmis); err != nil {
@@ -942,6 +935,9 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 				Discounts: models.DataSummary{
 					Total: 500,
 				},
+				Remunerations: models.DataSummary{
+					Total: 1000,
+				},
 			},
 		},
 		{
@@ -959,6 +955,9 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 				},
 				Discounts: models.DataSummary{
 					Total: 500,
+				},
+				Remunerations: models.DataSummary{
+					Total: 1200,
 				},
 			},
 		},
@@ -978,6 +977,9 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 				Discounts: models.DataSummary{
 					Total: 500,
 				},
+				Remunerations: models.DataSummary{
+					Total: 1500,
+				},
 			},
 		},
 		{
@@ -995,6 +997,9 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 				},
 				Discounts: models.DataSummary{
 					Total: 500,
+				},
+				Remunerations: models.DataSummary{
+					Total: 1000,
 				},
 			},
 		},
@@ -1022,6 +1027,7 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 						BaseRemuneration:   agmi.Summary.BaseRemuneration.Total + agmi2.Summary.BaseRemuneration.Total,
 						OtherRemunerations: agmi.Summary.OtherRemunerations.Total + agmi2.Summary.OtherRemunerations.Total,
 						Discounts:          agmi.Summary.Discounts.Total + agmi2.Summary.Discounts.Total,
+						Remunerations:      agmi.Summary.Remunerations.Total + agmi2.Summary.Remunerations.Total,
 					})
 				}
 			}
@@ -1035,6 +1041,7 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 	assert.Equal(t, amis[0].BaseRemuneration, returnedAmis[0].BaseRemuneration)
 	assert.Equal(t, amis[0].OtherRemunerations, returnedAmis[0].OtherRemunerations)
 	assert.Equal(t, amis[0].Discounts, returnedAmis[0].Discounts)
+	assert.Equal(t, amis[0].Remunerations, returnedAmis[0].Remunerations)
 	assert.Equal(t, amis[0].AverageCount, returnedAmis[0].AverageCount)
 	assert.Equal(t, amis[1].AverageCount, returnedAmis[1].AverageCount)
 	assert.Equal(t, amis[0].TotalCount, returnedAmis[0].TotalCount)
@@ -1167,6 +1174,9 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 				Discounts: models.DataSummary{
 					Total: 450,
 				},
+				Remunerations: models.DataSummary{
+					Total: 1000,
+				},
 			},
 		},
 		{
@@ -1185,6 +1195,9 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 				Discounts: models.DataSummary{
 					Total: 450,
 				},
+				Remunerations: models.DataSummary{
+					Total: 3750,
+				},
 			},
 		},
 	}
@@ -1201,6 +1214,7 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 					gmi.BaseRemuneration += agmi.Summary.BaseRemuneration.Total
 					gmi.OtherRemunerations += agmi.Summary.OtherRemunerations.Total
 					gmi.Discounts += agmi.Summary.Discounts.Total
+					gmi.Remunerations += agmi.Summary.Remunerations.Total
 					gmi.Count += agmi.Summary.Count
 					exists = true
 				}
@@ -1213,6 +1227,7 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 						BaseRemuneration:   agmi.Summary.BaseRemuneration.Total + agmi2.Summary.BaseRemuneration.Total,
 						OtherRemunerations: agmi.Summary.OtherRemunerations.Total + agmi2.Summary.OtherRemunerations.Total,
 						Discounts:          agmi.Summary.Discounts.Total + agmi2.Summary.Discounts.Total,
+						Remunerations:      agmi.Summary.Remunerations.Total + agmi2.Summary.Remunerations.Total,
 					})
 				}
 			}
@@ -1354,6 +1369,12 @@ func (s store) testWhenDataIsOK(t *testing.T) {
 				Average: 96290.11472809668,
 				Total:   63744055.95,
 			},
+			Remunerations: models.DataSummary{
+				Max:     243308.90999999997,
+				Min:     35974.35,
+				Average: 96290.11472809668,
+				Total:   63744055.95,
+			},
 			IncomeHistogram: map[int]int{-1: 0, 10000: 0, 20000: 0, 30000: 116, 40000: 546, 50000: 0},
 		},
 		CrawlerVersion:    "b9ec52df612cda045544543a3b0387842475764d",
@@ -1411,6 +1432,7 @@ func (s store) testWhenDataIsOK(t *testing.T) {
 	assert.Equal(t, agmi.Package.Hash, result.Package.Hash)
 	assert.Equal(t, agmi.Summary.BaseRemuneration, result.Summary.BaseRemuneration)
 	assert.Equal(t, agmi.Summary.OtherRemunerations, result.Summary.OtherRemunerations)
+	assert.Equal(t, agmi.Summary.Remunerations, result.Summary.Remunerations)
 	assert.Equal(t, agmi.Summary.Discounts, result.Summary.Discounts)
 	assert.Equal(t, agmi.Meta.Extension, result.Meta.Extension)
 	assert.Equal(t, agmi.Score.Score, result.Score.Score)
@@ -1979,6 +2001,12 @@ func TestGetAllAgencyCollection(t *testing.T) {
 					Min:     1756.22,
 					Total:   58807454.34999981,
 					Average: 17260.773216906313,
+				},
+				Remunerations: models.DataSummary{
+					Max:     47052.46,
+					Min:     11735.02,
+					Average: 33298.721643673955,
+					Total:   113448744.63999715,
 				},
 			},
 			Meta: &models.Meta{
