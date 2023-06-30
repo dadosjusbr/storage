@@ -163,7 +163,7 @@ func (p *PostgresDB) StorePaychecks(paychecks []models.Paycheck, remunerations [
 		Columns:   []clause.Column{{Name: "orgao"}, {Name: "mes"}, {Name: "ano"}, {Name: "id"}, {Name: "id_contracheque"}},
 		UpdateAll: true,
 	}).Create(rem).Error; err != nil {
-		return fmt.Errorf("error inserting 'contracheques': %w", err)
+		return fmt.Errorf("error inserting 'remuneracoes': %w", err)
 	}
 	return nil
 }
