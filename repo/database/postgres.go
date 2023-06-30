@@ -139,6 +139,35 @@ func (p *PostgresDB) Store(agmi models.AgencyMonthlyInfo) error {
 	return nil
 }
 
+func (p *PostgresDB) StorePaychecks(paychecks []models.Paycheck, remunerations []models.Remuneration) error {
+	var payc []*dto.PaycheckDTO
+	for _, pc := range paychecks {
+		payc = append(payc, dto.NewPaycheckDTO(pc))
+	}
+
+	// Armazenando contracheques
+	if err := p.db.Model(dto.PaycheckDTO{}).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "orgao"}, {Name: "mes"}, {Name: "ano"}, {Name: "id"}},
+		UpdateAll: true,
+	}).Create(payc).Error; err != nil {
+		return fmt.Errorf("error inserting 'contracheques': %w", err)
+	}
+
+	var rem []*dto.RemunerationDTO
+	for _, r := range remunerations {
+		rem = append(rem, dto.NewRemunerationDTO(r))
+	}
+
+	// Armazenando o detalhamento das remunerações
+	if err := p.db.Model(dto.RemunerationDTO{}).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "orgao"}, {Name: "mes"}, {Name: "ano"}, {Name: "id"}, {Name: "id_contracheque"}},
+		UpdateAll: true,
+	}).Create(rem).Error; err != nil {
+		return fmt.Errorf("error inserting 'contracheques': %w", err)
+	}
+	return nil
+}
+
 func (p *PostgresDB) GetStateAgencies(uf string) ([]models.Agency, error) {
 	uf = strings.ToUpper(uf)
 	var dtoOrgaos []dto.AgencyDTO

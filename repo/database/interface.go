@@ -8,6 +8,7 @@ type Interface interface {
 	Connect() error
 	Disconnect() error
 	Store(agmi models.AgencyMonthlyInfo) error
+	StorePaychecks(p []models.Paycheck, r []models.Remuneration) error
 	StoreRemunerations(remu models.Remunerations) error
 	GetStateAgencies(uf string) ([]models.Agency, error)
 	// OPJ: Órgãos por jurisdição.

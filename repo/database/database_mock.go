@@ -319,6 +319,20 @@ func (mr *MockInterfaceMockRecorder) Store(agmi interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockInterface)(nil).Store), agmi)
 }
 
+// StorePaychecks mocks base method.
+func (m *MockInterface) StorePaychecks(p []models.Paycheck, r []models.Remuneration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorePaychecks", p, r)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StorePaychecks indicates an expected call of StorePaychecks.
+func (mr *MockInterfaceMockRecorder) StorePaychecks(p, r interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorePaychecks", reflect.TypeOf((*MockInterface)(nil).StorePaychecks), p, r)
+}
+
 // StoreRemunerations mocks base method.
 func (m *MockInterface) StoreRemunerations(remu models.Remunerations) error {
 	m.ctrl.T.Helper()
