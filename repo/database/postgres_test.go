@@ -414,8 +414,11 @@ func (g getGeneralMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 			Month:             3,
 			CrawlingTimestamp: timestamppb.Now(),
 			Summary: &models.Summary{
-				Remunerations: models.DataSummary{
+				BaseRemuneration: models.DataSummary{
 					Total: 1200,
+				},
+				OtherRemunerations: models.DataSummary{
+					Total: 1000,
 				},
 			},
 		},
@@ -425,8 +428,11 @@ func (g getGeneralMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 			Month:             3,
 			CrawlingTimestamp: timestamppb.Now(),
 			Summary: &models.Summary{
-				Remunerations: models.DataSummary{
+				BaseRemuneration: models.DataSummary{
 					Total: 1000,
+				},
+				OtherRemunerations: models.DataSummary{
+					Total: 1300,
 				},
 			},
 		},
@@ -434,7 +440,8 @@ func (g getGeneralMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 
 	var total float64
 	for _, agmi := range agmis {
-		total += agmi.Summary.Remunerations.Total
+		total += agmi.Summary.BaseRemuneration.Total
+		total += agmi.Summary.OtherRemunerations.Total
 	}
 
 	if err := insertMonthlyInfos(agmis); err != nil {
