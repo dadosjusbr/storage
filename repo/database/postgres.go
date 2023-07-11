@@ -373,7 +373,8 @@ func (p *PostgresDB) GetGeneralMonthlyInfo() (float64, error) {
 	query := `
 		COALESCE(
 			SUM(
-				CAST(sumario -> 'remuneracoes' ->> 'total' AS DECIMAL)
+				CAST(sumario -> 'remuneracao_base' ->> 'total' AS DECIMAL) +
+				CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)
 			), 0
 		)
 		`
