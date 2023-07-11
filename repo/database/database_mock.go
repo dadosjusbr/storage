@@ -320,7 +320,7 @@ func (mr *MockInterfaceMockRecorder) Store(agmi interface{}) *gomock.Call {
 }
 
 // StorePaychecks mocks base method.
-func (m *MockInterface) StorePaychecks(p []models.Paycheck, r []models.Remuneration) error {
+func (m *MockInterface) StorePaychecks(p []models.Paycheck, r []models.PaycheckItem) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorePaychecks", p, r)
 	ret0, _ := ret[0].(error)

@@ -2,7 +2,7 @@ package dto
 
 import "github.com/dadosjusbr/storage/models"
 
-type RemunerationDTO struct {
+type PaycheckItemDTO struct {
 	ID           int     `gorm:"column:id"`
 	PaycheckID   int     `gorm:"column:id_contracheque"`
 	Agency       string  `gorm:"column:orgao"`
@@ -16,12 +16,12 @@ type RemunerationDTO struct {
 	Inconsistent bool    `gorm:"column:inconsistente"`
 }
 
-func (RemunerationDTO) TableName() string {
+func (PaycheckItemDTO) TableName() string {
 	return "remuneracoes"
 }
 
-func (r RemunerationDTO) ConvertToModel() *models.Remuneration {
-	return &models.Remuneration{
+func (r PaycheckItemDTO) ConvertToModel() *models.PaycheckItem {
+	return &models.PaycheckItem{
 		ID:           r.ID,
 		PaycheckID:   r.PaycheckID,
 		Agency:       r.Agency,
@@ -36,8 +36,8 @@ func (r RemunerationDTO) ConvertToModel() *models.Remuneration {
 	}
 }
 
-func NewRemunerationDTO(r models.Remuneration) *RemunerationDTO {
-	return &RemunerationDTO{
+func NewPaycheckItemDTO(r models.PaycheckItem) *PaycheckItemDTO {
+	return &PaycheckItemDTO{
 		ID:           r.ID,
 		PaycheckID:   r.PaycheckID,
 		Agency:       r.Agency,

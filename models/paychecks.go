@@ -7,8 +7,8 @@ type Paycheck struct {
 	Year         int     `json:"ano,omitempty"`
 	CollectKey   string  `json:"chave_coleta,omitempty"`
 	Name         string  `json:"nome,omitempty"`
-	Registration string  `json:"matricula,omitempty"`
-	JobFunction  string  `json:"funcao,omitempty"`
+	RegisterID   string  `json:"matricula,omitempty"`
+	Role         string  `json:"funcao,omitempty"`
 	Workplace    string  `json:"local_trabalho,omitempty"`
 	Salary       float64 `json:"salario,omitempty"`
 	Benefits     float64 `json:"beneficios,omitempty"`
@@ -16,7 +16,7 @@ type Paycheck struct {
 	Remuneration float64 `json:"remuneracao,omitempty"`
 }
 
-type Remuneration struct {
+type PaycheckItem struct {
 	ID           int     `json:"id,omitempty"`
 	PaycheckID   int     `json:"id_contracheque,omitempty"`
 	Agency       string  `json:"orgao,omitempty"`

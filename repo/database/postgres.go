@@ -139,7 +139,7 @@ func (p *PostgresDB) Store(agmi models.AgencyMonthlyInfo) error {
 	return nil
 }
 
-func (p *PostgresDB) StorePaychecks(paychecks []models.Paycheck, remunerations []models.Remuneration) error {
+func (p *PostgresDB) StorePaychecks(paychecks []models.Paycheck, remunerations []models.PaycheckItem) error {
 	var payc []*dto.PaycheckDTO
 	for _, pc := range paychecks {
 		payc = append(payc, dto.NewPaycheckDTO(pc))
@@ -153,13 +153,13 @@ func (p *PostgresDB) StorePaychecks(paychecks []models.Paycheck, remunerations [
 		return fmt.Errorf("error inserting 'contracheques': %w", err)
 	}
 
-	var rem []*dto.RemunerationDTO
+	var rem []*dto.PaycheckItemDTO
 	for _, r := range remunerations {
-		rem = append(rem, dto.NewRemunerationDTO(r))
+		rem = append(rem, dto.NewPaycheckItemDTO(r))
 	}
 
 	// Armazenando o detalhamento das remunerações
-	if err := p.db.Model(dto.RemunerationDTO{}).Clauses(clause.OnConflict{
+	if err := p.db.Model(dto.PaycheckItemDTO{}).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "orgao"}, {Name: "mes"}, {Name: "ano"}, {Name: "id"}, {Name: "id_contracheque"}},
 		UpdateAll: true,
 	}).Create(rem).Error; err != nil {

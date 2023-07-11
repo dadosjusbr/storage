@@ -9,8 +9,8 @@ type PaycheckDTO struct {
 	Year         int     `gorm:"column:ano"`
 	CollectKey   string  `gorm:"column:chave_coleta"`
 	Name         string  `gorm:"column:nome"`
-	Registration string  `gorm:"column:matricula"`
-	JobFunction  string  `gorm:"column:funcao"`
+	RegisterID   string  `gorm:"column:matricula"`
+	Role         string  `gorm:"column:funcao"`
 	Workplace    string  `gorm:"column:local_trabalho"`
 	Salary       float64 `gorm:"column:salario"`
 	Benefits     float64 `gorm:"column:beneficios"`
@@ -30,8 +30,8 @@ func (p PaycheckDTO) ConvertToModel() *models.Paycheck {
 		Year:         p.Year,
 		CollectKey:   p.CollectKey,
 		Name:         p.Name,
-		Registration: p.Registration,
-		JobFunction:  p.JobFunction,
+		RegisterID:   p.RegisterID,
+		Role:         p.Role,
 		Workplace:    p.Workplace,
 		Salary:       p.Salary,
 		Benefits:     p.Benefits,
@@ -48,8 +48,8 @@ func NewPaycheckDTO(p models.Paycheck) *PaycheckDTO {
 		Year:         p.Year,
 		CollectKey:   p.CollectKey,
 		Name:         p.Name,
-		Registration: p.Registration,
-		JobFunction:  p.JobFunction,
+		RegisterID:   p.RegisterID,
+		Role:         p.Role,
 		Workplace:    p.Workplace,
 		Salary:       p.Salary,
 		Benefits:     p.Benefits,
