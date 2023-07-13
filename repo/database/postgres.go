@@ -140,12 +140,11 @@ func (p *PostgresDB) Store(agmi models.AgencyMonthlyInfo) error {
 }
 
 func (p *PostgresDB) StorePaychecks(paychecks []models.Paycheck, remunerations []models.PaycheckItem) error {
+	// Armazenando contracheques
 	var payc []*dto.PaycheckDTO
 	for _, pc := range paychecks {
 		payc = append(payc, dto.NewPaycheckDTO(pc))
 	}
-
-	// Armazenando contracheques
 	if err := p.db.Model(dto.PaycheckDTO{}).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "orgao"}, {Name: "mes"}, {Name: "ano"}, {Name: "id"}},
 		UpdateAll: true,
@@ -153,18 +152,20 @@ func (p *PostgresDB) StorePaychecks(paychecks []models.Paycheck, remunerations [
 		return fmt.Errorf("error inserting 'contracheques': %w", err)
 	}
 
-	var rem []*dto.PaycheckItemDTO
-	for _, r := range remunerations {
-		rem = append(rem, dto.NewPaycheckItemDTO(r))
+	// Armazenando o detalhamento das remunerações
+	if len(remunerations) != 0 {
+		var rem []*dto.PaycheckItemDTO
+		for _, r := range remunerations {
+			rem = append(rem, dto.NewPaycheckItemDTO(r))
+		}
+		if err := p.db.Model(dto.PaycheckItemDTO{}).Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "orgao"}, {Name: "mes"}, {Name: "ano"}, {Name: "id"}, {Name: "id_contracheque"}},
+			UpdateAll: true,
+		}).Create(rem).Error; err != nil {
+			return fmt.Errorf("error inserting 'remuneracoes': %w", err)
+		}
 	}
 
-	// Armazenando o detalhamento das remunerações
-	if err := p.db.Model(dto.PaycheckItemDTO{}).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "orgao"}, {Name: "mes"}, {Name: "ano"}, {Name: "id"}, {Name: "id_contracheque"}},
-		UpdateAll: true,
-	}).Create(rem).Error; err != nil {
-		return fmt.Errorf("error inserting 'remuneracoes': %w", err)
-	}
 	return nil
 }
 

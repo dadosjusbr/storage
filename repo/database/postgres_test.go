@@ -2064,6 +2064,59 @@ func TestGetAllAgencyCollection(t *testing.T) {
 	truncateTables()
 }
 
+type paycheck struct{}
+
+func TestStorePaychecks(t *testing.T) {
+	tests := paycheck{}
+
+	t.Run("Test StorePaychecks", tests.testStorePaychecks)
+	t.Run("Test StorePaychecks when paycheck already exists", tests.testWhenPaycheckAlreadyExists)
+	t.Run("Test StorePaychecks when paycheck items not exist", tests.testWhenPaycheckItemsNotExist)
+}
+
+func (paycheck) testStorePaychecks(t *testing.T) {
+	truncateTables()
+	p, pi := paychecks()
+
+	err := postgresDb.StorePaychecks(p, pi)
+	var dtoPaychecks []dto.PaycheckDTO
+	var dtoPaycheckItems []dto.PaycheckItemDTO
+
+	m := postgresDb.db.Model(dto.PaycheckDTO{}).Scan(&dtoPaychecks)
+	if m.Error != nil {
+		t.Fatalf("error finding payckecks: %v", err)
+	}
+
+	n := postgresDb.db.Model(dto.PaycheckItemDTO{}).Scan(&dtoPaycheckItems)
+	if n.Error != nil {
+		t.Fatalf("error finding payckeck items: %v", err)
+	}
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(dtoPaychecks), 1)
+	assert.Equal(t, len(dtoPaycheckItems), 3)
+	assert.Equal(t, dtoPaychecks[0].Name, "nome")
+	assert.Equal(t, dtoPaychecks[0].Remuneration, 2000.0)
+	assert.Equal(t, dtoPaycheckItems[0].Type, "R/B")
+	assert.Equal(t, dtoPaycheckItems[1].Inconsistent, true)
+	assert.Equal(t, dtoPaycheckItems[2].Value, 200.0)
+}
+
+func (paycheck) testWhenPaycheckAlreadyExists(t *testing.T) {
+	p, pi := paychecks()
+	err := postgresDb.StorePaychecks(p, pi)
+
+	assert.Nil(t, err)
+}
+
+func (paycheck) testWhenPaycheckItemsNotExist(t *testing.T) {
+	truncateTables()
+	p, _ := paychecks()
+	err := postgresDb.StorePaychecks(p, *new([]models.PaycheckItem))
+
+	assert.Nil(t, err)
+}
+
 func insertAgencies(agencies []models.Agency) error {
 	for _, agency := range agencies {
 		agencyDto, err := dto.NewAgencyDTO(agency)
@@ -2107,7 +2160,7 @@ func insertRemunerations(remunerations []models.Remunerations) error {
 }
 
 func truncateTables() error {
-	tx := postgresDb.db.Exec(`TRUNCATE TABLE coletas, remuneracoes_zips,orgaos CASCADE`)
+	tx := postgresDb.db.Exec(`TRUNCATE TABLE coletas, remuneracoes_zips, orgaos, contracheques, remuneracoes CASCADE`)
 	if tx.Error != nil {
 		return fmt.Errorf("error truncating agencies: %q", tx.Error)
 	}
@@ -2139,4 +2192,64 @@ func getDbTestConnection() error {
 	postgresDb = &PostgresDB{}
 	postgresDb.SetConnection(gormDb)
 	return nil
+}
+
+func paychecks() ([]models.Paycheck, []models.PaycheckItem) {
+	p := []models.Paycheck{
+		{
+			ID:           1,
+			Agency:       "tjal",
+			Month:        5,
+			Year:         2023,
+			CollectKey:   "tjal/05/2023",
+			Name:         "nome",
+			RegisterID:   "123",
+			Role:         "funcao",
+			Workplace:    "local de trabalho",
+			Salary:       1000,
+			Benefits:     1200,
+			Discounts:    200,
+			Remuneration: 2000,
+		},
+	}
+	pi := []models.PaycheckItem{
+		{
+			ID:           1,
+			PaycheckID:   1,
+			Agency:       "tjal",
+			Month:        5,
+			Year:         2023,
+			Type:         "R/B",
+			Category:     "contracheque",
+			Item:         "subsídio",
+			Value:        1000,
+			Inconsistent: false,
+		},
+		{
+			ID:           2,
+			PaycheckID:   1,
+			Agency:       "tjal",
+			Month:        5,
+			Year:         2023,
+			Type:         "R/O",
+			Category:     "indenizações",
+			Item:         "0",
+			Value:        1200,
+			Inconsistent: true,
+		},
+		{
+			ID:           3,
+			PaycheckID:   1,
+			Agency:       "tjal",
+			Month:        5,
+			Year:         2023,
+			Type:         "D",
+			Category:     "contracheque",
+			Item:         "descontos diversos",
+			Value:        200,
+			Inconsistent: false,
+		},
+	}
+
+	return p, pi
 }
