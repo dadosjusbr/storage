@@ -61,4 +61,38 @@ create table remuneracoes_zips
     constraint remuneracoes_pk primary key (id_orgao, mes, ano )
 );
 
+create table contracheques
+(
+    id integer,
+    orgao varchar(10),
+    mes integer,
+    ano integer,
+    chave_coleta varchar(20),
+    nome varchar(100),
+    matricula varchar(20),
+    funcao varchar(100),
+    local_trabalho varchar(100),
+    salario numeric,
+    beneficios numeric,
+    descontos numeric,
+    remuneracao numeric,
 
+    constraint contracheques_pk primary key (id, orgao, mes, ano)
+);
+
+create table remuneracoes
+(
+    id integer,
+    id_contracheque integer,
+    orgao varchar(10),
+    mes integer,
+    ano integer,
+    categoria varchar(100),
+    item varchar(100),
+    valor numeric,
+    inconsistente boolean,
+    tipo varchar(5),
+
+    constraint pk_remuneracoes primary key (id, id_contracheque, orgao, mes, ano),
+    constraint fk_remuneracoes foreign key (id_contracheque, orgao, mes, ano) references contracheques(id, orgao, mes, ano) on delete cascade
+);

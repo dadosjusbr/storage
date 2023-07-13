@@ -8,6 +8,9 @@ type Interface interface {
 	Connect() error
 	Disconnect() error
 	Store(agmi models.AgencyMonthlyInfo) error
+	// StorePaychecks: armazena dados nas tabelas 'contracheques' e 'remuneracoes'
+	StorePaychecks(p []models.Paycheck, r []models.PaycheckItem) error
+	// StoreRemunerations: armazena dados dos zips de remunerações que estão no S3.
 	StoreRemunerations(remu models.Remunerations) error
 	GetStateAgencies(uf string) ([]models.Agency, error)
 	// OPJ: Órgãos por jurisdição.

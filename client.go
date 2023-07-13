@@ -63,6 +63,13 @@ func (c *Client) Store(agmi models.AgencyMonthlyInfo) error {
 	return nil
 }
 
+func (c *Client) StorePaychecks(p []models.Paycheck, r []models.PaycheckItem) error {
+	if err := c.Db.StorePaychecks(p, r); err != nil {
+		return fmt.Errorf("StorePaychecks() error: %q", err)
+	}
+	return nil
+}
+
 func (c *Client) StoreRemunerations(remu models.Remunerations) error {
 	if err := c.Db.StoreRemunerations(remu); err != nil {
 		return fmt.Errorf("StoreRemunerations() error: %q", err)
