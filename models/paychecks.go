@@ -22,8 +22,7 @@ type PaycheckItem struct {
 	Agency       string  `json:"orgao,omitempty"`
 	Month        int     `json:"mes,omitempty"`
 	Year         int     `json:"ano,omitempty"`
-	Nature       string  `json:"natureza,omitempty"`
-	IncomeType   string  `json:"tipo_receita,omitempty"`
+	Type         string  `json:"tipo,omitempty"`
 	Category     string  `json:"categoria,omitempty"`
 	Item         string  `json:"item,omitempty"`
 	Value        float64 `json:"valor,omitempty"`

@@ -8,8 +8,7 @@ type PaycheckItemDTO struct {
 	Agency       string  `gorm:"column:orgao"`
 	Month        int     `gorm:"column:mes"`
 	Year         int     `gorm:"column:ano"`
-	Nature       string  `gorm:"column:natureza"`
-	IncomeType   string  `gorm:"column:tipo_receita"`
+	Type         string  `gorm:"column:tipo"`
 	Category     string  `gorm:"column:categoria"`
 	Item         string  `gorm:"column:item"`
 	Value        float64 `gorm:"column:valor"`
@@ -27,8 +26,7 @@ func (r PaycheckItemDTO) ConvertToModel() *models.PaycheckItem {
 		Agency:       r.Agency,
 		Month:        r.Month,
 		Year:         r.Year,
-		Nature:       r.Nature,
-		IncomeType:   r.IncomeType,
+		Type:         r.Type,
 		Category:     r.Category,
 		Item:         r.Item,
 		Value:        r.Value,
@@ -43,8 +41,7 @@ func NewPaycheckItemDTO(r models.PaycheckItem) *PaycheckItemDTO {
 		Agency:       r.Agency,
 		Month:        r.Month,
 		Year:         r.Year,
-		Nature:       r.Nature,
-		IncomeType:   r.IncomeType,
+		Type:         r.Type,
 		Category:     r.Category,
 		Item:         r.Item,
 		Value:        r.Value,
