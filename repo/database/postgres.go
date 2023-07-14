@@ -161,7 +161,7 @@ func (p *PostgresDB) StorePaychecks(paychecks []models.Paycheck, remunerations [
 		if err := p.db.Model(dto.PaycheckItemDTO{}).Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "orgao"}, {Name: "mes"}, {Name: "ano"}, {Name: "id"}, {Name: "id_contracheque"}},
 			UpdateAll: true,
-		}).Create(rem).Error; err != nil {
+		}).CreateInBatches(rem, 5000).Error; err != nil {
 			return fmt.Errorf("error inserting 'remuneracoes': %w", err)
 		}
 	}
