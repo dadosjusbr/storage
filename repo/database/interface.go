@@ -30,4 +30,6 @@ type Interface interface {
 	GetGeneralMonthlyInfo() (float64, error)
 	GetIndexInformation(name string, month, year int) (map[string][]models.IndexInformation, error)
 	GetAllAgencyCollection(agency string) ([]models.AgencyMonthlyInfo, error)
+	GetPaychecks(agency models.Agency, year int) ([]models.Paycheck, error)
+	GetPaycheckItems(agency models.Agency, year int) ([]models.PaycheckItem, error)
 }

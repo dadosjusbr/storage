@@ -290,6 +290,36 @@ func (mr *MockInterfaceMockRecorder) GetOPJ(group interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOPJ", reflect.TypeOf((*MockInterface)(nil).GetOPJ), group)
 }
 
+// GetPaycheckItems mocks base method.
+func (m *MockInterface) GetPaycheckItems(agency models.Agency, year int) ([]models.PaycheckItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPaycheckItems", agency, year)
+	ret0, _ := ret[0].([]models.PaycheckItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPaycheckItems indicates an expected call of GetPaycheckItems.
+func (mr *MockInterfaceMockRecorder) GetPaycheckItems(agency, year interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaycheckItems", reflect.TypeOf((*MockInterface)(nil).GetPaycheckItems), agency, year)
+}
+
+// GetPaychecks mocks base method.
+func (m *MockInterface) GetPaychecks(agency models.Agency, year int) ([]models.Paycheck, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPaychecks", agency, year)
+	ret0, _ := ret[0].([]models.Paycheck)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPaychecks indicates an expected call of GetPaychecks.
+func (mr *MockInterfaceMockRecorder) GetPaychecks(agency, year interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaychecks", reflect.TypeOf((*MockInterface)(nil).GetPaychecks), agency, year)
+}
+
 // GetStateAgencies mocks base method.
 func (m *MockInterface) GetStateAgencies(uf string) ([]models.Agency, error) {
 	m.ctrl.T.Helper()

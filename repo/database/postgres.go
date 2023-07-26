@@ -498,3 +498,39 @@ func calcEasinessScore(agency string, easinessScore float64) float64 {
 		return easinessScore
 	}
 }
+
+func (p *PostgresDB) GetPaychecks(agency models.Agency, year int) ([]models.Paycheck, error) {
+	var results []models.Paycheck
+	var dtoPaychecks []dto.PaycheckDTO
+	//Pegando os contracheques do postgres, filtrando por órgão e ano
+	m := p.db.Model(&dto.PaycheckDTO{})
+	m = m.Where("orgao = ? AND ano = ? ", agency.ID, year)
+	m = m.Order("mes, id ASC")
+	if err := m.Find(&dtoPaychecks).Error; err != nil {
+		return nil, fmt.Errorf("error getting paychecks: %q", err)
+	}
+	//Convertendo os DTO's para modelos
+	for _, dtoPaycheck := range dtoPaychecks {
+		p := dtoPaycheck.ConvertToModel()
+		results = append(results, *p)
+	}
+	return results, nil
+}
+
+func (p *PostgresDB) GetPaycheckItems(agency models.Agency, year int) ([]models.PaycheckItem, error) {
+	var results []models.PaycheckItem
+	var dtoPaycheckItems []dto.PaycheckItemDTO
+	//Pegando as remuneracoes do postgres, filtrando por órgão e ano
+	m := p.db.Model(&dto.PaycheckItemDTO{})
+	m = m.Where("orgao = ? AND ano = ?", agency.ID, year)
+	m = m.Order("mes, id_contracheque, id ASC")
+	if err := m.Find(&dtoPaycheckItems).Error; err != nil {
+		return nil, fmt.Errorf("error getting paycheck items: %q", err)
+	}
+	//Convertendo os DTO's para modelos
+	for _, dtoPaycheckItem := range dtoPaycheckItems {
+		p := dtoPaycheckItem.ConvertToModel()
+		results = append(results, *p)
+	}
+	return results, nil
+}
