@@ -2066,11 +2066,13 @@ func TestGetAllAgencyCollection(t *testing.T) {
 
 type paycheck struct{}
 
-func TestStorePaychecks(t *testing.T) {
+func TestPaychecks(t *testing.T) {
 	tests := paycheck{}
 
 	t.Run("Test StorePaychecks", tests.testStorePaychecks)
 	t.Run("Test StorePaychecks when paycheck already exists", tests.testWhenPaycheckAlreadyExists)
+	t.Run("Test GetPaycheck()", tests.testGetPaychecks)
+	t.Run("Test GetPaycheckItems()", tests.testGetPaycheckItems)
 	t.Run("Test StorePaychecks when paycheck items not exist", tests.testWhenPaycheckItemsNotExist)
 }
 
@@ -2115,6 +2117,30 @@ func (paycheck) testWhenPaycheckItemsNotExist(t *testing.T) {
 	err := postgresDb.StorePaychecks(p, *new([]models.PaycheckItem))
 
 	assert.Nil(t, err)
+}
+
+func (paycheck) testGetPaychecks(t *testing.T) {
+	p, _ := paychecks()
+	ps, err := postgresDb.GetPaychecks(models.Agency{ID: "tjal"}, 2023)
+	if err != nil {
+		t.Fatalf("error GetPaychecks(): %v", err)
+	}
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(ps))
+	assert.Equal(t, 2023, ps[0].Year)
+	assert.Equal(t, p[0], ps[0])
+}
+
+func (paycheck) testGetPaycheckItems(t *testing.T) {
+	_, pi := paychecks()
+	pis, err := postgresDb.GetPaycheckItems(models.Agency{ID: "tjal"}, 2023)
+	if err != nil {
+		t.Fatalf("error GetPaycheckItems(): %v", err)
+	}
+	assert.Nil(t, err)
+	assert.Equal(t, 3, len(pis))
+	assert.Equal(t, 2023, pis[0].Year)
+	assert.Equal(t, pi[0], pis[0])
 }
 
 func insertAgencies(agencies []models.Agency) error {
