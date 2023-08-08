@@ -2221,6 +2221,7 @@ func getDbTestConnection() error {
 }
 
 func paychecks() ([]models.Paycheck, []models.PaycheckItem) {
+	situation := "A"
 	p := []models.Paycheck{
 		{
 			ID:           1,
@@ -2236,6 +2237,7 @@ func paychecks() ([]models.Paycheck, []models.PaycheckItem) {
 			Benefits:     1200,
 			Discounts:    200,
 			Remuneration: 2000,
+			Situation:    &situation,
 		},
 	}
 	pi := []models.PaycheckItem{

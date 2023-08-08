@@ -76,6 +76,7 @@ create table contracheques
     beneficios numeric,
     descontos numeric,
     remuneracao numeric,
+    situacao varchar(5),
 
     constraint contracheques_pk primary key (id, orgao, mes, ano)
 );
