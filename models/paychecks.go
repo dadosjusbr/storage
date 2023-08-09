@@ -14,6 +14,7 @@ type Paycheck struct {
 	Benefits     float64 `json:"beneficios,omitempty"`
 	Discounts    float64 `json:"descontos,omitempty"`
 	Remuneration float64 `json:"remuneracao,omitempty"`
+	Situation    *string `json:"situacao,omitempty"`
 }
 
 type PaycheckItem struct {

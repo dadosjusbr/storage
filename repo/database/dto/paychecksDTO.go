@@ -16,6 +16,7 @@ type PaycheckDTO struct {
 	Benefits     float64 `gorm:"column:beneficios"`
 	Discounts    float64 `gorm:"column:descontos"`
 	Remuneration float64 `gorm:"column:remuneracao"`
+	Situation    *string `gorm:"column:situacao"`
 }
 
 func (PaycheckDTO) TableName() string {
@@ -37,6 +38,7 @@ func (p PaycheckDTO) ConvertToModel() *models.Paycheck {
 		Benefits:     p.Benefits,
 		Discounts:    p.Discounts,
 		Remuneration: p.Remuneration,
+		Situation:    p.Situation,
 	}
 }
 
@@ -55,5 +57,6 @@ func NewPaycheckDTO(p models.Paycheck) *PaycheckDTO {
 		Benefits:     p.Benefits,
 		Discounts:    p.Discounts,
 		Remuneration: p.Remuneration,
+		Situation:    p.Situation,
 	}
 }
