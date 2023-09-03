@@ -1,0 +1,16 @@
+# Um dump do banco de dados do dadosjusbr será realizado às 0h de todo dia 17.
+name: DUMP
+
+on:
+    schedule:
+        - cron: "0 3 17 * *"
+
+jobs:
+    Dump:
+        runs-on: ubuntu-latest
+        name: Dump do banco de dados
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Realizando dump...
+              run: POSTGRES_USER="${{ secrets.POSTGRES_USER }}" POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" POSTGRES_DB="${{ secrets.POSTGRES_DB }}" POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}" POSTGRES_PORT="${{ secrets.POSTGRES_PORT }}" AWS_REGION="${{ secrets.AWS_REGION }}" S3_BUCKET="${{ secrets.S3_BUCKET }}" go run dump/dump.go

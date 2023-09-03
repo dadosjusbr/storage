@@ -534,3 +534,55 @@ func (p *PostgresDB) GetPaycheckItems(agency models.Agency, year int) ([]models.
 	}
 	return results, nil
 }
+
+func (p *PostgresDB) Dump() (map[string]*sql.Rows, error) {
+	dados := make(map[string]*sql.Rows)
+	var err error
+
+	// Coletas
+	dados["coleta.csv"], err = p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Select(`
+	id as chave_coleta,
+	id_orgao as orgao, mes, ano,
+	timestamp as timestampb_coleta,
+	repositorio_coletor, versao_coletor,
+	repositorio_parser, versao_parser`).Where("procinfo is null or procinfo::text = 'null'").Rows()
+
+	if err != nil {
+		return nil, fmt.Errorf("error 'coleta.csv': %w", err)
+	}
+
+	// Contracheque
+	dados["contracheque.csv"], err = p.db.Model(&dto.PaycheckDTO{}).Select(`
+	id as id_contracheque,
+	orgao, mes, ano,
+	nome, matricula, funcao, local_trabalho,
+	salario, beneficios, descontos, remuneracao`).Rows()
+
+	if err != nil {
+		return nil, fmt.Errorf("error 'contracheque.csv': %w", err)
+	}
+
+	// Metadados
+	dados["metadados.csv"], err = p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Select(`
+	id_orgao as orgao, mes, ano,
+	formato_aberto, acesso, extensao,
+	estritamente_tabular, formato_consistente,
+	tem_matricula, tem_lotacao, tem_cargo,
+	detalhamento_receita_base, detalhamento_outras_receitas, detalhamento_descontos,
+	indice_completude, indice_facilidade, indice_transparencia`).Where("procinfo is null or procinfo::text = 'null'").Rows()
+
+	if err != nil {
+		return nil, fmt.Errorf("error 'metadados.csv': %w", err)
+	}
+
+	// Remuneracao
+	dados["remuneracao.csv"], err = p.db.Model(&dto.PaycheckItemDTO{}).Select(`
+	id_contracheque, orgao, mes, ano,
+	tipo, categoria, item, valor`).Rows()
+
+	if err != nil {
+		return nil, fmt.Errorf("error 'remuneracao.csv': %w", err)
+	}
+
+	return dados, nil
+}
