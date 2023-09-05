@@ -31,24 +31,24 @@ func main() {
 	//Criando o client do Postgres
 	postgresDb, err := database.NewPostgresDB(conf.PostgresUser, conf.PostgresPassword, conf.PostgresDBName, conf.PostgresHost, conf.PostgresPort)
 	if err != nil {
-		log.Fatalf("error creating Postgres client: %w", err.Error())
+		log.Fatalf("error creating Postgres client: %v", err.Error())
 	}
 	// Criando o client do S3
 	s3Client, err := file_storage.NewS3Client(conf.AWSRegion, conf.S3Bucket)
 	if err != nil {
-		log.Fatalf("error creating S3 client: %w", err.Error())
+		log.Fatalf("error creating S3 client: %v", err.Error())
 	}
 	// Criando o client do storage a partir do banco postgres e do client do s3
 	pgS3Client, err := storage.NewClient(postgresDb, s3Client)
 	if err != nil {
-		log.Fatalf("error setting up postgres storage client: %w", err)
+		log.Fatalf("error setting up postgres storage client: %v", err)
 	}
 	defer pgS3Client.Db.Disconnect()
 
 	// Consultando os dados de todas as tabelas
 	dados, err := postgresDb.Dump()
 	if err != nil {
-		log.Fatalf("error Dump(): %w", err)
+		log.Fatalf("error Dump(): %v", err)
 	}
 
 	// Criando os CSVs
@@ -61,19 +61,19 @@ func main() {
 	pkgName := "dump-dadosjusbr.zip"
 	desc, err := datapackage.DescriptorMapV2()
 	if err != nil {
-		log.Fatalf("error DescriptorMapV2(): %w", err)
+		log.Fatalf("error DescriptorMapV2(): %v", err)
 	}
 	pkg, err := dpkg.New(desc, ".")
 	if err != nil {
-		log.Fatalf("error create datapackage: %w", err)
+		log.Fatalf("error create datapackage: %v", err)
 	}
 	if err := pkg.Zip(pkgName); err != nil {
-		log.Fatalf("error zipping datapackage: %w", err)
+		log.Fatalf("error zipping datapackage: %v", err)
 	}
 
 	// Armazenando no S3
 	_, err = pgS3Client.Cloud.UploadFile(pkgName, pkgName)
 	if err != nil {
-		log.Fatalf("error while uploading dump (%s): %w", pkgName, err)
+		log.Fatalf("error while uploading dump (%s): %v", pkgName, err)
 	}
 }
