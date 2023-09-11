@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/dadosjusbr/datapackage"
 	"github.com/dadosjusbr/storage"
@@ -58,7 +60,8 @@ func main() {
 	}
 
 	// Criando o pacote
-	pkgName := "dump-dadosjusbr.zip"
+	year, month, _ := time.Now().Date()
+	pkgName := fmt.Sprintf("dadosjusbr-%d-%d.zip", year, month)
 	desc, err := datapackage.DescriptorMapV2()
 	if err != nil {
 		log.Fatalf("error DescriptorMapV2(): %v", err)
@@ -72,7 +75,7 @@ func main() {
 	}
 
 	// Armazenando no S3
-	_, err = pgS3Client.Cloud.UploadFile(pkgName, pkgName)
+	_, err = pgS3Client.Cloud.UploadFile(pkgName, "dumps/"+pkgName)
 	if err != nil {
 		log.Fatalf("error while uploading dump (%s): %v", pkgName, err)
 	}

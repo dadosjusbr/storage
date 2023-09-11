@@ -545,7 +545,7 @@ func (p *PostgresDB) Dump() (map[string]*sql.Rows, error) {
 	id_orgao as orgao, mes, ano,
 	timestamp as timestampb_coleta,
 	repositorio_coletor, versao_coletor,
-	repositorio_parser, versao_parser`).Where("procinfo is null or procinfo::text = 'null'").Rows()
+	repositorio_parser, versao_parser`).Where("procinfo is null or procinfo::text = 'null' and atual=true").Rows()
 
 	if err != nil {
 		return nil, fmt.Errorf("error 'coleta.csv': %w", err)
@@ -569,7 +569,7 @@ func (p *PostgresDB) Dump() (map[string]*sql.Rows, error) {
 	estritamente_tabular, formato_consistente,
 	tem_matricula, tem_lotacao, tem_cargo,
 	detalhamento_receita_base, detalhamento_outras_receitas, detalhamento_descontos,
-	indice_completude, indice_facilidade, indice_transparencia`).Where("procinfo is null or procinfo::text = 'null'").Rows()
+	indice_completude, indice_facilidade, indice_transparencia`).Where("procinfo is null or procinfo::text = 'null' and atual=true").Rows()
 
 	if err != nil {
 		return nil, fmt.Errorf("error 'metadados.csv': %w", err)
