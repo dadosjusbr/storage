@@ -11,7 +11,7 @@ on:
 
 jobs:
     Dump:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-20.04
         name: Dump do banco de dados
         steps:
             - uses: actions/checkout@v3
