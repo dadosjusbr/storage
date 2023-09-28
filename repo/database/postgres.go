@@ -535,54 +535,49 @@ func (p *PostgresDB) GetPaycheckItems(agency models.Agency, year int) ([]models.
 	return results, nil
 }
 
-func (p *PostgresDB) Dump() (map[string]*sql.Rows, error) {
-	dados := make(map[string]*sql.Rows)
-	var err error
-
+func (p *PostgresDB) Dump() ([]models.AgencyMonthlyInfo, []models.Paycheck, []models.PaycheckItem, error) {
 	// Coletas
-	dados["coleta.csv"], err = p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Select(`
-	id as chave_coleta,
-	id_orgao as orgao, mes, ano,
-	timestamp as timestampb_coleta,
-	repositorio_coletor, versao_coletor,
-	repositorio_parser, versao_parser`).Where("procinfo is null or procinfo::text = 'null' and atual=true").Rows()
-
-	if err != nil {
-		return nil, fmt.Errorf("error 'coleta.csv': %w", err)
+	var dtoColetas []dto.AgencyMonthlyInfoDTO
+	c := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
+	c = c.Where("procinfo is null or procinfo::text = 'null' and atual=true")
+	if err := c.Scan(&dtoColetas).Error; err != nil {
+		return nil, nil, nil, fmt.Errorf("error getting 'coletas': %q", err)
 	}
 
-	// Contracheque
-	dados["contracheque.csv"], err = p.db.Model(&dto.PaycheckDTO{}).Select(`
-	id as id_contracheque,
-	orgao, mes, ano,
-	nome, matricula, funcao, local_trabalho,
-	salario, beneficios, descontos, remuneracao`).Rows()
+	var coletas []models.AgencyMonthlyInfo
+	for _, dtoColeta := range dtoColetas {
+		coleta, _ := dtoColeta.ConvertToModel()
+		coletas = append(coletas, *coleta)
+	}
+	dtoColetas = nil
 
-	if err != nil {
-		return nil, fmt.Errorf("error 'contracheque.csv': %w", err)
+	// Contracheques
+	var dtoContracheques []dto.PaycheckDTO
+	cc := p.db.Model(&dto.PaycheckDTO{})
+	if err := cc.Scan(&dtoContracheques).Error; err != nil {
+		return nil, nil, nil, fmt.Errorf("error getting 'contracheques': %q", err)
 	}
 
-	// Metadados
-	dados["metadados.csv"], err = p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Select(`
-	id_orgao as orgao, mes, ano,
-	formato_aberto, acesso, extensao,
-	estritamente_tabular, formato_consistente,
-	tem_matricula, tem_lotacao, tem_cargo,
-	detalhamento_receita_base, detalhamento_outras_receitas, detalhamento_descontos,
-	indice_completude, indice_facilidade, indice_transparencia`).Where("procinfo is null or procinfo::text = 'null' and atual=true").Rows()
+	var contracheques []models.Paycheck
+	for _, dtoContracheque := range dtoContracheques {
+		contracheque := dtoContracheque.ConvertToModel()
+		contracheques = append(contracheques, *contracheque)
+	}
+	dtoContracheques = nil
 
-	if err != nil {
-		return nil, fmt.Errorf("error 'metadados.csv': %w", err)
+	// Remuneracoes
+	var dtoRemuneracoes []dto.PaycheckItemDTO
+	r := p.db.Model(&dto.PaycheckItemDTO{})
+	if err := r.Scan(&dtoRemuneracoes).Error; err != nil {
+		return nil, nil, nil, fmt.Errorf("error getting 'remuneracoes': %q", err)
 	}
 
-	// Remuneracao
-	dados["remuneracao.csv"], err = p.db.Model(&dto.PaycheckItemDTO{}).Select(`
-	id_contracheque, orgao, mes, ano,
-	tipo, categoria, item, valor`).Rows()
-
-	if err != nil {
-		return nil, fmt.Errorf("error 'remuneracao.csv': %w", err)
+	var remuneracoes []models.PaycheckItem
+	for _, dtoRemuneracao := range dtoRemuneracoes {
+		remuneracao := dtoRemuneracao.ConvertToModel()
+		remuneracoes = append(remuneracoes, *remuneracao)
 	}
+	dtoRemuneracoes = nil
 
-	return dados, nil
+	return coletas, contracheques, remuneracoes, nil
 }
