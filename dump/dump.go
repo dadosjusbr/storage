@@ -134,7 +134,7 @@ func main() {
 	year, month, _ := time.Now().Date()
 	pkgName := fmt.Sprintf("dadosjusbr-%d-%d.zip", year, month)
 	if err := datapackage.ZipV2(pkgName, rc, true); err != nil {
-		log.Fatalf("error ZipV2(): %w", err)
+		log.Fatalf("error ZipV2(): %v", err)
 	}
 
 	// Armazenando no S3
