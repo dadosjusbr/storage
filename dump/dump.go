@@ -10,7 +10,6 @@ import (
 	"github.com/dadosjusbr/storage"
 	"github.com/dadosjusbr/storage/repo/database"
 	"github.com/dadosjusbr/storage/repo/file_storage"
-	dpkg "github.com/frictionlessdata/datapackage-go/datapackage"
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -136,17 +135,6 @@ func main() {
 	pkgName := fmt.Sprintf("dadosjusbr-%d-%d.zip", year, month)
 	if err := datapackage.ZipV2(pkgName, rc, true); err != nil {
 		log.Fatalf("error ZipV2(): %w", err)
-	}
-	desc, err := datapackage.DescriptorMapV2()
-	if err != nil {
-		log.Fatalf("error DescriptorMapV2(): %v", err)
-	}
-	pkg, err := dpkg.New(desc, ".")
-	if err != nil {
-		log.Fatalf("error create datapackage: %v", err)
-	}
-	if err := pkg.Zip(pkgName); err != nil {
-		log.Fatalf("error zipping datapackage: %v", err)
 	}
 
 	// Armazenando no S3
