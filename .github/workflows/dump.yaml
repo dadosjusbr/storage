@@ -22,7 +22,6 @@ jobs:
 
             - name: Conectando ao BD...
               run: |
-               sudo systemctl start postgresql.service
                psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }}
                echo -e "${{ secrets.POSTGRES_PASSWORD }}\n"
             # - name: Realizando dump...
