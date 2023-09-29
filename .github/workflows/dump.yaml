@@ -5,9 +5,6 @@ on:
     workflow_dispatch:
     schedule:
         - cron: "0 3 17 * *"
-    push:
-        branches:
-            - 'dump'
 
 jobs:
     Dump:
