@@ -28,4 +28,7 @@ jobs:
                PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "\copy (SELECT id_contracheque, orgao, mes, ano, tipo, categoria, item, valor FROM remuneracoes) TO 'dump/remuneracao.csv' csv header;"
 
             - name: Realizando dump...
-              run: POSTGRES_USER="${{ secrets.POSTGRES_USER }}" POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" POSTGRES_DB="${{ secrets.POSTGRES_DB }}" POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}" POSTGRES_PORT="${{ secrets.POSTGRES_PORT }}" AWS_REGION="${{ secrets.AWS_REGION }}" S3_BUCKET="${{ secrets.S3_BUCKET }}" go run dump/dump.go
+              run: |
+               pwd
+               ls dump
+               POSTGRES_USER="${{ secrets.POSTGRES_USER }}" POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" POSTGRES_DB="${{ secrets.POSTGRES_DB }}" POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}" POSTGRES_PORT="${{ secrets.POSTGRES_PORT }}" AWS_REGION="${{ secrets.AWS_REGION }}" S3_BUCKET="${{ secrets.S3_BUCKET }}" go run dump/dump.go
