@@ -22,6 +22,18 @@ jobs:
 
             - name: Conectando ao BD...
               run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }}
-            # - name: Realizando dump...
-            #   run: |
-            #     POSTGRES_USER="${{ secrets.POSTGRES_USER }}" POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" POSTGRES_DB="${{ secrets.POSTGRES_DB }}" POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}" POSTGRES_PORT="${{ secrets.POSTGRES_PORT }}" AWS_REGION="${{ secrets.AWS_REGION }}" S3_BUCKET="${{ secrets.S3_BUCKET }}" go run dump/dump.go
+
+            - name: Criando coleta.csv
+              run: \copy (SELECT id as chave_coleta, id_orgao as orgao, mes, ano, timestamp as timestampb_coleta, repositorio_coletor, versao_coletor, repositorio_parser, versao_parser FROM coletas WHERE (procinfo is null or procinfo::text = 'null') and atual=true) TO 'dump/coleta.csv' csv header
+
+            - name: Criando metadados.csv
+              run: \copy (SELECT id_orgao as orgao, mes, ano, formato_aberto, acesso, extensao, estritamente_tabular, formato_consistente, tem_matricula, tem_lotacao, tem_cargo, detalhamento_receita_base, detalhamento_outras_receitas, detalhamento_descontos, indice_completude, indice_facilidade, indice_transparencia FROM coletas WHERE (procinfo is null or procinfo::text = 'null') and atual=true) TO 'dump/metadados.csv' csv header
+
+            - name: Criando contracheque.csv
+              run: \copy (SELECT  id as id_contracheque, orgao, mes, ano, nome, matricula, funcao, local_trabalho, salario, beneficios, descontos, remuneracao FROM contracheques) TO 'dump/contracheque.csv' csv header
+
+            - name: Criando remuneracao.csv
+              run: \copy (SELECT id_contracheque, orgao, mes, ano, tipo, categoria, item, valor FROM remuneracoes) TO 'dump/remuneracao.csv' csv header
+
+            - name: Realizando dump...
+              run: POSTGRES_USER="${{ secrets.POSTGRES_USER }}" POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" POSTGRES_DB="${{ secrets.POSTGRES_DB }}" POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}" POSTGRES_PORT="${{ secrets.POSTGRES_PORT }}" AWS_REGION="${{ secrets.AWS_REGION }}" S3_BUCKET="${{ secrets.S3_BUCKET }}" go run dump/dump.go
