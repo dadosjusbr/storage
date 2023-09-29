@@ -20,6 +20,10 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
-            - name: Realizando dump...
+            - name: Conectando ao BD...
               run: |
-                POSTGRES_USER="${{ secrets.POSTGRES_USER }}" POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" POSTGRES_DB="${{ secrets.POSTGRES_DB }}" POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}" POSTGRES_PORT="${{ secrets.POSTGRES_PORT }}" AWS_REGION="${{ secrets.AWS_REGION }}" S3_BUCKET="${{ secrets.S3_BUCKET }}" go run dump/dump.go
+               sudo systemctl start postgresql.service
+               psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }}
+            # - name: Realizando dump...
+            #   run: |
+            #     POSTGRES_USER="${{ secrets.POSTGRES_USER }}" POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" POSTGRES_DB="${{ secrets.POSTGRES_DB }}" POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}" POSTGRES_PORT="${{ secrets.POSTGRES_PORT }}" AWS_REGION="${{ secrets.AWS_REGION }}" S3_BUCKET="${{ secrets.S3_BUCKET }}" go run dump/dump.go
