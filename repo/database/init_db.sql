@@ -93,6 +93,7 @@ create table remuneracoes
     valor numeric,
     inconsistente boolean,
     tipo varchar(5),
+    item_sanitizado varchar(100),
 
     constraint pk_remuneracoes primary key (id, id_contracheque, orgao, mes, ano),
     constraint fk_remuneracoes foreign key (id_contracheque, orgao, mes, ano) references contracheques(id, orgao, mes, ano) on delete cascade

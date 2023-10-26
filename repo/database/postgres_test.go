@@ -2094,6 +2094,7 @@ func (paycheck) testStorePaychecks(t *testing.T) {
 		t.Fatalf("error finding payckeck items: %v", err)
 	}
 
+	itemSanitizado := "subsidio"
 	assert.Nil(t, err)
 	assert.Equal(t, len(dtoPaychecks), 1)
 	assert.Equal(t, len(dtoPaycheckItems), 3)
@@ -2102,6 +2103,7 @@ func (paycheck) testStorePaychecks(t *testing.T) {
 	assert.Equal(t, dtoPaycheckItems[0].Type, "R/B")
 	assert.Equal(t, dtoPaycheckItems[1].Inconsistent, true)
 	assert.Equal(t, dtoPaycheckItems[2].Value, 200.0)
+	assert.Equal(t, dtoPaycheckItems[0].SanitizedItem, &itemSanitizado)
 }
 
 func (paycheck) testWhenPaycheckAlreadyExists(t *testing.T) {
@@ -2240,18 +2242,20 @@ func paychecks() ([]models.Paycheck, []models.PaycheckItem) {
 			Situation:    &situation,
 		},
 	}
+	itemSanitizado := []string{"subsidio", "descontos diversos"}
 	pi := []models.PaycheckItem{
 		{
-			ID:           1,
-			PaycheckID:   1,
-			Agency:       "tjal",
-			Month:        5,
-			Year:         2023,
-			Type:         "R/B",
-			Category:     "contracheque",
-			Item:         "subsídio",
-			Value:        1000,
-			Inconsistent: false,
+			ID:            1,
+			PaycheckID:    1,
+			Agency:        "tjal",
+			Month:         5,
+			Year:          2023,
+			Type:          "R/B",
+			Category:      "contracheque",
+			Item:          "subsídio",
+			Value:         1000,
+			Inconsistent:  false,
+			SanitizedItem: &itemSanitizado[0],
 		},
 		{
 			ID:           2,
@@ -2266,16 +2270,17 @@ func paychecks() ([]models.Paycheck, []models.PaycheckItem) {
 			Inconsistent: true,
 		},
 		{
-			ID:           3,
-			PaycheckID:   1,
-			Agency:       "tjal",
-			Month:        5,
-			Year:         2023,
-			Type:         "D",
-			Category:     "contracheque",
-			Item:         "descontos diversos",
-			Value:        200,
-			Inconsistent: false,
+			ID:            3,
+			PaycheckID:    1,
+			Agency:        "tjal",
+			Month:         5,
+			Year:          2023,
+			Type:          "D",
+			Category:      "contracheque",
+			Item:          "descontos diversos",
+			Value:         200,
+			Inconsistent:  false,
+			SanitizedItem: &itemSanitizado[1],
 		},
 	}
 
