@@ -18,14 +18,15 @@ type Paycheck struct {
 }
 
 type PaycheckItem struct {
-	ID           int     `json:"id,omitempty"`
-	PaycheckID   int     `json:"id_contracheque,omitempty"`
-	Agency       string  `json:"orgao,omitempty"`
-	Month        int     `json:"mes,omitempty"`
-	Year         int     `json:"ano,omitempty"`
-	Type         string  `json:"tipo,omitempty"`
-	Category     string  `json:"categoria,omitempty"`
-	Item         string  `json:"item,omitempty"`
-	Value        float64 `json:"valor,omitempty"`
-	Inconsistent bool    `json:"inconsistente,omitempty"`
+	ID            int     `json:"id,omitempty"`
+	PaycheckID    int     `json:"id_contracheque,omitempty"`
+	Agency        string  `json:"orgao,omitempty"`
+	Month         int     `json:"mes,omitempty"`
+	Year          int     `json:"ano,omitempty"`
+	Type          string  `json:"tipo,omitempty"`
+	Category      string  `json:"categoria,omitempty"`
+	Item          string  `json:"item,omitempty"`
+	Value         float64 `json:"valor,omitempty"`
+	Inconsistent  bool    `json:"inconsistente,omitempty"`
+	SanitizedItem *string `json:"item_sanitizado,omitempty"`
 }
