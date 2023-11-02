@@ -6,4 +6,5 @@ type IndexInformation struct {
 	Year  int    `json:"ano,omitempty"`
 	Meta  *Meta  `json:"meta,omitempty"`
 	Score *Score `json:"score,omitempty"`
+	Type  string `json:"jurisdicao,omitempty"`
 }

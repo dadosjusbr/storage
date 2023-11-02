@@ -423,7 +423,7 @@ func (p *PostgresDB) GetIndexInformation(name string, month, year int) (map[stri
 
 	// somente considerar os dados da coleta mais recente de cada órgão.
 	// lembrar que a gente guarda um histórico de coletas (revisões)
-	query := "coletas.atual = true"
+	query := "INNER JOIN orgaos ON coletas.id_orgao = orgaos.id AND coletas.atual = true"
 
 	// verificar se devemos considerar o ano como parâmetro e adicionar a query.
 	if year != 0 {
@@ -443,17 +443,16 @@ func (p *PostgresDB) GetIndexInformation(name string, month, year int) (map[stri
 	if porJurisdicao {
 		// Consultando e mapeando os índices e metadados por jurisdição.
 		// Para tal, precisamos realizar um join com a tabela de órgãos.
-		query = fmt.Sprintf("INNER JOIN orgaos ON coletas.id_orgao = orgaos.id AND %s AND orgaos.jurisdicao = ?", query)
+		query += " AND orgaos.jurisdicao = ?"
 		params = append(params, name)
-		d = p.db.Model(&dtoIndex).Joins(query, params...)
 	} else {
 		if name != "" {
 			// Consultando e mapeando os índices e metadados por id do órgão
 			query += " AND coletas.id_orgao = ?"
 			params = append(params, name)
 		}
-		d = p.db.Model(&dtoIndex).Where(query, params...)
 	}
+	d = p.db.Model(&dtoIndex).Select("coletas.*, orgaos.jurisdicao as jurisdicao").Joins(query, params...)
 	if err := d.Scan(&dtoIndex).Error; err != nil {
 		return nil, fmt.Errorf("error getting all indexes: %w", err)
 	}

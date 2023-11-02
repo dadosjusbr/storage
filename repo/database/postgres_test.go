@@ -1836,6 +1836,7 @@ func (indexInformation) testGetAllIndexInformation(t *testing.T) {
 	assert.Equal(t, len(agg), 2)
 	assert.Equal(t, len(agg["tjsp"]), 2)
 	assert.Equal(t, len(agg["tjba"]), 1)
+	assert.Equal(t, agg["tjsp"][0].Type, "Estadual")
 	truncateTables()
 }
 
