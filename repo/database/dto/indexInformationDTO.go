@@ -9,6 +9,7 @@ type IndexInformation struct {
 	Year  int    `gorm:"column:ano"`
 	Score
 	Meta
+	Type string `gorm:"column:jurisdicao"`
 }
 
 func (IndexInformation) TableName() string {
@@ -37,5 +38,6 @@ func (d *IndexInformation) ConvertToModel() *models.IndexInformation {
 			BaseRevenue:      d.Meta.BaseRevenue,
 			OtherRecipes:     d.Meta.OtherRecipes,
 		},
+		Type: d.Type,
 	}
 }
