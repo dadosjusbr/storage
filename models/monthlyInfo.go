@@ -35,7 +35,8 @@ type AgencyMonthlyInfo struct {
 	Package           *Backup                `json:"package,omitempty"`     // Making this a pointer because it should be an optional field due to backwards compatibility.
 	Meta              *Meta                  `json:"meta,omitempty"`
 	Score             *Score                 `json:"score,omitempty"`
-	Duration          float64                `json:"duration,omitempty"` // Crawling duration (seconds)
+	Duration          float64                `json:"duration,omitempty"`     // Crawling duration (seconds)
+	ItemSummary       *ItemSummary           `json:"item_summary,omitempty"` // Summary of aggregated values ​​by item
 }
 
 type Meta struct {
@@ -102,4 +103,9 @@ type Remunerations struct {
 	NumDiscounts int    `json:"num_descontos,omitempty"`
 	NumOther     int    `json:"num_outras,omitempty"`
 	ZipUrl       string `json:"zip_url,omitempty"`
+}
+
+type ItemSummary struct {
+	FoodAllowance float64 `json:"auxilio-alimentacao,omitempty"`
+	Others        float64 `json:"outras,omitempty"` // valor agregado de outras rubricas não identificadas
 }

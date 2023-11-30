@@ -43,6 +43,7 @@ create table coletas
     backups                      json,
     formato_aberto               boolean,
     duracao_segundos             double precision,
+    resumo                       json,
 
     constraint coleta_pk primary key (id,timestamp),
     constraint coleta_orgao_fk foreign key (id_orgao) references orgaos(id) on delete cascade
