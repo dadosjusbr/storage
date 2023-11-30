@@ -16,6 +16,7 @@ type Summary struct {
 	Discounts          DataSummary `json:"descontos,omitempty"`           //  Statistics (Max, Min, Median, Total)
 	Remunerations      DataSummary `json:"remuneracoes,omitempty"`        //  Statistics (Max, Min, Median, Total)
 	IncomeHistogram    map[int]int `json:"histograma_renda,omitempty"`
+	ItemSummary        ItemSummary `json:"resumo_rubricas,omitempty"` // resumo de valores agregadado por rubrica
 }
 
 // DataSummary A Struct containing data summary with statistics.
@@ -24,4 +25,9 @@ type DataSummary struct {
 	Min     float64 `json:"minimo,omitempty"`
 	Average float64 `json:"media,omitempty"`
 	Total   float64 `json:"total,omitempty"`
+}
+
+type ItemSummary struct {
+	FoodAllowance float64 `json:"auxilio_alimentacao,omitempty"`
+	Others        float64 `json:"outras,omitempty"` // valor agregado de outras rubricas não identificadas
 }

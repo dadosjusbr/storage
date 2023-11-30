@@ -31,7 +31,6 @@ type AgencyMonthlyInfoDTO struct {
 	Duration       float64        `gorm:"column:duracao_segundos"` // Tempo de execução da coleta em segundos
 	Meta
 	Score
-	ItemSummary datatypes.JSON `gorm:"column:resumo"` // Resumo de valores agregados por item/rubrica
 }
 
 func (AgencyMonthlyInfoDTO) TableName() string {
@@ -63,7 +62,6 @@ func (a AgencyMonthlyInfoDTO) ConvertToModel() (*models.AgencyMonthlyInfo, error
 	var summary models.Summary
 	var procInfo coleta.ProcInfo
 	var pkg models.Backup
-	var itemSummary models.ItemSummary
 
 	backupBytes, err := a.Backup.MarshalJSON()
 	if err != nil {
@@ -101,15 +99,6 @@ func (a AgencyMonthlyInfoDTO) ConvertToModel() (*models.AgencyMonthlyInfo, error
 		return nil, fmt.Errorf("error while unmarshaling package: %q", err)
 	}
 
-	itemSummaryBytes, err := a.ItemSummary.MarshalJSON()
-	if err != nil {
-		return nil, fmt.Errorf("error while marshaling item summary: %q", err)
-	}
-	err = json.Unmarshal(itemSummaryBytes, &itemSummary)
-	if err != nil {
-		return nil, fmt.Errorf("error while unmarshaling item summary: %q", err)
-	}
-
 	return &models.AgencyMonthlyInfo{
 		AgencyID:          a.AgencyID,
 		Month:             a.Month,
@@ -137,12 +126,11 @@ func (a AgencyMonthlyInfoDTO) ConvertToModel() (*models.AgencyMonthlyInfo, error
 			BaseRevenue:      a.Meta.BaseRevenue,
 			OtherRecipes:     a.Meta.OtherRecipes,
 		},
-		Summary:     &summary,
-		Backups:     []models.Backup{backup},
-		ProcInfo:    &procInfo,
-		Package:     &pkg,
-		Duration:    a.Duration,
-		ItemSummary: &itemSummary,
+		Summary:  &summary,
+		Backups:  []models.Backup{backup},
+		ProcInfo: &procInfo,
+		Package:  &pkg,
+		Duration: a.Duration,
 	}, nil
 }
 
@@ -166,10 +154,6 @@ func NewAgencyMonthlyInfoDTO(agmi models.AgencyMonthlyInfo) (*AgencyMonthlyInfoD
 	pkg, err := json.Marshal(agmi.Package)
 	if err != nil {
 		return nil, fmt.Errorf("error while marshaling package: %q", err)
-	}
-	itemSummary, err := json.Marshal(agmi.ItemSummary)
-	if err != nil {
-		return nil, fmt.Errorf("error while marshaling summary: %q", err)
 	}
 
 	var score Score
@@ -225,7 +209,6 @@ func NewAgencyMonthlyInfoDTO(agmi models.AgencyMonthlyInfo) (*AgencyMonthlyInfoD
 		ProcInfo:       procInfo,
 		Package:        pkg,
 		Duration:       agmi.Duration,
-		ItemSummary:    itemSummary,
 	}, nil
 }
 
