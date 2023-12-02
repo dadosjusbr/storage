@@ -155,6 +155,7 @@ func NewAgencyMonthlyInfoDTO(agmi models.AgencyMonthlyInfo) (*AgencyMonthlyInfoD
 	if err != nil {
 		return nil, fmt.Errorf("error while marshaling package: %q", err)
 	}
+
 	var score Score
 	if agmi.Score != nil {
 		score = Score{
