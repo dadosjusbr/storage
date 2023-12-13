@@ -13,6 +13,7 @@ type AnnualSummaryDTO struct {
 	Discounts          float64 `gorm:"column:descontos"`
 	Remunerations      float64 `gorm:"column:remuneracoes"`
 	NumMonthsWithData  int     `gorm:"column:meses_com_dados"`
+	ItemSummary
 }
 
 func NewAnnualSummaryDTO(ami models.AnnualSummary) *AnnualSummaryDTO {
@@ -25,6 +26,10 @@ func NewAnnualSummaryDTO(ami models.AnnualSummary) *AnnualSummaryDTO {
 		Discounts:          ami.Discounts,
 		Remunerations:      ami.Remunerations,
 		NumMonthsWithData:  ami.NumMonthsWithData,
+		ItemSummary: ItemSummary{
+			FoodAllowance: ami.ItemSummary.FoodAllowance,
+			Others:        ami.ItemSummary.Others,
+		},
 	}
 }
 
@@ -38,5 +43,9 @@ func (ami *AnnualSummaryDTO) ConvertToModel() *models.AnnualSummary {
 		Discounts:          ami.Discounts,
 		Remunerations:      ami.Remunerations,
 		NumMonthsWithData:  ami.NumMonthsWithData,
+		ItemSummary: models.ItemSummary{
+			FoodAllowance: ami.ItemSummary.FoodAllowance,
+			Others:        ami.ItemSummary.Others,
+		},
 	}
 }

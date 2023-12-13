@@ -11,6 +11,12 @@ type GeneralMonthlyInfoDTO struct {
 	OtherRemunerations float64 `gorm:"column:outras_remuneracoes"`
 	Discounts          float64 `gorm:"column:descontos"`
 	Remunerations      float64 `gorm:"column:remuneracoes"`
+	ItemSummary
+}
+
+type ItemSummary struct {
+	FoodAllowance float64 `gorm:"column:auxilio_alimentacao"`
+	Others        float64 `gorm:"column:outras"`
 }
 
 func NewGeneralMonthlyInfoDTO(gmi models.GeneralMonthlyInfo) *GeneralMonthlyInfoDTO {
@@ -21,6 +27,10 @@ func NewGeneralMonthlyInfoDTO(gmi models.GeneralMonthlyInfo) *GeneralMonthlyInfo
 		OtherRemunerations: gmi.OtherRemunerations,
 		Discounts:          gmi.Discounts,
 		Remunerations:      gmi.Remunerations,
+		ItemSummary: ItemSummary{
+			FoodAllowance: gmi.ItemSummary.FoodAllowance,
+			Others:        gmi.ItemSummary.Others,
+		},
 	}
 }
 
@@ -32,5 +42,9 @@ func (gmi *GeneralMonthlyInfoDTO) ConvertToModel() *models.GeneralMonthlyInfo {
 		OtherRemunerations: gmi.OtherRemunerations,
 		Discounts:          gmi.Discounts,
 		Remunerations:      gmi.Remunerations,
+		ItemSummary: models.ItemSummary{
+			FoodAllowance: gmi.ItemSummary.FoodAllowance,
+			Others:        gmi.ItemSummary.Others,
+		},
 	}
 }

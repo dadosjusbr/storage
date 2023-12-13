@@ -945,6 +945,9 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 				Remunerations: models.DataSummary{
 					Total: 1000,
 				},
+				ItemSummary: models.ItemSummary{
+					Others: 100,
+				},
 			},
 		},
 		{
@@ -1035,6 +1038,9 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 						OtherRemunerations: agmi.Summary.OtherRemunerations.Total + agmi2.Summary.OtherRemunerations.Total,
 						Discounts:          agmi.Summary.Discounts.Total + agmi2.Summary.Discounts.Total,
 						Remunerations:      agmi.Summary.Remunerations.Total + agmi2.Summary.Remunerations.Total,
+						ItemSummary: models.ItemSummary{
+							Others: agmi.Summary.ItemSummary.Others + agmi2.Summary.ItemSummary.Others,
+						},
 					})
 				}
 			}
@@ -1054,6 +1060,7 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 	assert.Equal(t, amis[0].TotalCount, returnedAmis[0].TotalCount)
 	assert.Equal(t, amis[1].TotalCount, returnedAmis[1].TotalCount)
 	assert.Equal(t, 2, returnedAmis[0].NumMonthsWithData)
+	assert.Equal(t, amis[0].ItemSummary.Others, returnedAmis[0].ItemSummary.Others)
 	truncateTables()
 }
 
@@ -1184,6 +1191,9 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 				Remunerations: models.DataSummary{
 					Total: 1000,
 				},
+				ItemSummary: models.ItemSummary{
+					FoodAllowance: 200,
+				},
 			},
 		},
 		{
@@ -1235,6 +1245,9 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 						OtherRemunerations: agmi.Summary.OtherRemunerations.Total + agmi2.Summary.OtherRemunerations.Total,
 						Discounts:          agmi.Summary.Discounts.Total + agmi2.Summary.Discounts.Total,
 						Remunerations:      agmi.Summary.Remunerations.Total + agmi2.Summary.Remunerations.Total,
+						ItemSummary: models.ItemSummary{
+							FoodAllowance: agmi.Summary.ItemSummary.FoodAllowance + agmi2.Summary.ItemSummary.FoodAllowance,
+						},
 					})
 				}
 			}
@@ -1383,6 +1396,10 @@ func (s store) testWhenDataIsOK(t *testing.T) {
 				Total:   63744055.95,
 			},
 			IncomeHistogram: map[int]int{-1: 0, 10000: 0, 20000: 0, 30000: 116, 40000: 546, 50000: 0},
+			ItemSummary: models.ItemSummary{
+				FoodAllowance: 100,
+				Others:        200,
+			},
 		},
 		CrawlerVersion:    "b9ec52df612cda045544543a3b0387842475764d",
 		CrawlerRepo:       "https://github.com/dadosjusbr/coletor-cnj",
@@ -1444,6 +1461,7 @@ func (s store) testWhenDataIsOK(t *testing.T) {
 	assert.Equal(t, agmi.Meta.Extension, result.Meta.Extension)
 	assert.Equal(t, agmi.Score.Score, result.Score.Score)
 	assert.Equal(t, agmi.Duration, result.Duration)
+	assert.Equal(t, agmi.Summary.ItemSummary.FoodAllowance, result.Summary.ItemSummary.FoodAllowance)
 	truncateTables()
 }
 
