@@ -5,15 +5,15 @@ import (
 )
 
 type AnnualSummaryDTO struct {
-	Year               int     `gorm:"column:ano"`
-	AverageCount       int     `gorm:"column:media_num_membros"`
-	TotalCount         int     `gorm:"column:total_num_membros"`
-	BaseRemuneration   float64 `gorm:"column:remuneracao_base"`
-	OtherRemunerations float64 `gorm:"column:outras_remuneracoes"`
-	Discounts          float64 `gorm:"column:descontos"`
-	Remunerations      float64 `gorm:"column:remuneracoes"`
-	NumMonthsWithData  int     `gorm:"column:meses_com_dados"`
-	ItemSummary
+	Year               int         `gorm:"column:ano"`
+	AverageCount       int         `gorm:"column:media_num_membros"`
+	TotalCount         int         `gorm:"column:total_num_membros"`
+	BaseRemuneration   float64     `gorm:"column:remuneracao_base"`
+	OtherRemunerations float64     `gorm:"column:outras_remuneracoes"`
+	Discounts          float64     `gorm:"column:descontos"`
+	Remunerations      float64     `gorm:"column:remuneracoes"`
+	NumMonthsWithData  int         `gorm:"column:meses_com_dados"`
+	ItemSummary        ItemSummary `gorm:"embedded"`
 }
 
 func NewAnnualSummaryDTO(ami models.AnnualSummary) *AnnualSummaryDTO {
