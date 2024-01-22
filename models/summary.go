@@ -29,6 +29,6 @@ type DataSummary struct {
 
 type ItemSummary struct {
 	FoodAllowance float64 `json:"auxilio_alimentacao,omitempty"`
-	BonusLicence  float64 `json:"licenca_premio,omitempty"`
+	BonusLicense  float64 `json:"licenca_premio,omitempty"`
 	Others        float64 `json:"outras,omitempty"` // valor agregado de outras rubricas não identificadas
 }

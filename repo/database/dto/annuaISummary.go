@@ -28,7 +28,7 @@ func NewAnnualSummaryDTO(ami models.AnnualSummary) *AnnualSummaryDTO {
 		NumMonthsWithData:  ami.NumMonthsWithData,
 		ItemSummary: ItemSummary{
 			FoodAllowance: ami.ItemSummary.FoodAllowance,
-			BonusLicence:  ami.ItemSummary.BonusLicence,
+			BonusLicense:  ami.ItemSummary.BonusLicense,
 			Others:        ami.ItemSummary.Others,
 		},
 	}
@@ -46,7 +46,7 @@ func (ami *AnnualSummaryDTO) ConvertToModel() *models.AnnualSummary {
 		NumMonthsWithData:  ami.NumMonthsWithData,
 		ItemSummary: models.ItemSummary{
 			FoodAllowance: ami.ItemSummary.FoodAllowance,
-			BonusLicence:  ami.ItemSummary.BonusLicence,
+			BonusLicense:  ami.ItemSummary.BonusLicense,
 			Others:        ami.ItemSummary.Others,
 		},
 	}
