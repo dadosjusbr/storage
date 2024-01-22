@@ -990,6 +990,10 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 				Remunerations: models.DataSummary{
 					Total: 1500,
 				},
+				ItemSummary: models.ItemSummary{
+					Others:       100,
+					BonusLicence: 200,
+				},
 			},
 		},
 		{
@@ -1039,7 +1043,8 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 						Discounts:          agmi.Summary.Discounts.Total + agmi2.Summary.Discounts.Total,
 						Remunerations:      agmi.Summary.Remunerations.Total + agmi2.Summary.Remunerations.Total,
 						ItemSummary: models.ItemSummary{
-							Others: agmi.Summary.ItemSummary.Others + agmi2.Summary.ItemSummary.Others,
+							Others:       agmi.Summary.ItemSummary.Others + agmi2.Summary.ItemSummary.Others,
+							BonusLicence: agmi.Summary.ItemSummary.BonusLicence + agmi2.Summary.ItemSummary.BonusLicence,
 						},
 					})
 				}
@@ -1061,6 +1066,7 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 	assert.Equal(t, amis[1].TotalCount, returnedAmis[1].TotalCount)
 	assert.Equal(t, 2, returnedAmis[0].NumMonthsWithData)
 	assert.Equal(t, amis[0].ItemSummary.Others, returnedAmis[0].ItemSummary.Others)
+	assert.Equal(t, amis[1].ItemSummary.BonusLicence, returnedAmis[1].ItemSummary.BonusLicence)
 	truncateTables()
 }
 
@@ -1215,6 +1221,9 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 				Remunerations: models.DataSummary{
 					Total: 3750,
 				},
+				ItemSummary: models.ItemSummary{
+					BonusLicence: 400,
+				},
 			},
 		},
 	}
@@ -1247,6 +1256,7 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 						Remunerations:      agmi.Summary.Remunerations.Total + agmi2.Summary.Remunerations.Total,
 						ItemSummary: models.ItemSummary{
 							FoodAllowance: agmi.Summary.ItemSummary.FoodAllowance + agmi2.Summary.ItemSummary.FoodAllowance,
+							BonusLicence:  agmi.Summary.ItemSummary.BonusLicence + agmi2.Summary.ItemSummary.BonusLicence,
 						},
 					})
 				}
@@ -1398,6 +1408,7 @@ func (s store) testWhenDataIsOK(t *testing.T) {
 			IncomeHistogram: map[int]int{-1: 0, 10000: 0, 20000: 0, 30000: 116, 40000: 546, 50000: 0},
 			ItemSummary: models.ItemSummary{
 				FoodAllowance: 100,
+				BonusLicence:  150,
 				Others:        200,
 			},
 		},
@@ -1462,6 +1473,7 @@ func (s store) testWhenDataIsOK(t *testing.T) {
 	assert.Equal(t, agmi.Score.Score, result.Score.Score)
 	assert.Equal(t, agmi.Duration, result.Duration)
 	assert.Equal(t, agmi.Summary.ItemSummary.FoodAllowance, result.Summary.ItemSummary.FoodAllowance)
+	assert.Equal(t, agmi.Summary.ItemSummary.BonusLicence, result.Summary.ItemSummary.BonusLicence)
 	truncateTables()
 }
 
