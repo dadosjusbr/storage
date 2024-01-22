@@ -1225,7 +1225,8 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 					Total: 3750,
 				},
 				ItemSummary: models.ItemSummary{
-					BonusLicense: 400,
+					BonusLicense:  400,
+					FoodAllowance: 100,
 				},
 			},
 		},
