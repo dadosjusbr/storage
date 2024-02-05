@@ -991,9 +991,10 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 					Total: 1500,
 				},
 				ItemSummary: models.ItemSummary{
-					Others:        100,
-					FoodAllowance: 150,
-					BonusLicense:  200,
+					Others:               100,
+					FoodAllowance:        150,
+					BonusLicense:         200,
+					VacationCompensation: 50,
 				},
 			},
 		},
@@ -1044,9 +1045,10 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 						Discounts:          agmi.Summary.Discounts.Total + agmi2.Summary.Discounts.Total,
 						Remunerations:      agmi.Summary.Remunerations.Total + agmi2.Summary.Remunerations.Total,
 						ItemSummary: models.ItemSummary{
-							Others:        agmi.Summary.ItemSummary.Others + agmi2.Summary.ItemSummary.Others,
-							BonusLicense:  agmi.Summary.ItemSummary.BonusLicense + agmi2.Summary.ItemSummary.BonusLicense,
-							FoodAllowance: agmi.Summary.ItemSummary.FoodAllowance + agmi2.Summary.ItemSummary.FoodAllowance,
+							Others:               agmi.Summary.ItemSummary.Others + agmi2.Summary.ItemSummary.Others,
+							BonusLicense:         agmi.Summary.ItemSummary.BonusLicense + agmi2.Summary.ItemSummary.BonusLicense,
+							FoodAllowance:        agmi.Summary.ItemSummary.FoodAllowance + agmi2.Summary.ItemSummary.FoodAllowance,
+							VacationCompensation: agmi.Summary.ItemSummary.VacationCompensation + agmi2.Summary.ItemSummary.VacationCompensation,
 						},
 					})
 				}
@@ -1070,6 +1072,7 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 	assert.Equal(t, amis[0].ItemSummary.Others, returnedAmis[0].ItemSummary.Others)
 	assert.Equal(t, amis[1].ItemSummary.BonusLicense, returnedAmis[1].ItemSummary.BonusLicense)
 	assert.Equal(t, amis[1].ItemSummary.FoodAllowance, returnedAmis[1].ItemSummary.FoodAllowance)
+	assert.Equal(t, amis[1].ItemSummary.VacationCompensation, returnedAmis[1].ItemSummary.VacationCompensation)
 	truncateTables()
 }
 
@@ -1225,8 +1228,9 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 					Total: 3750,
 				},
 				ItemSummary: models.ItemSummary{
-					BonusLicense:  400,
-					FoodAllowance: 100,
+					BonusLicense:         400,
+					FoodAllowance:        100,
+					VacationCompensation: 50,
 				},
 			},
 		},
@@ -1259,8 +1263,9 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 						Discounts:          agmi.Summary.Discounts.Total + agmi2.Summary.Discounts.Total,
 						Remunerations:      agmi.Summary.Remunerations.Total + agmi2.Summary.Remunerations.Total,
 						ItemSummary: models.ItemSummary{
-							FoodAllowance: agmi.Summary.ItemSummary.FoodAllowance + agmi2.Summary.ItemSummary.FoodAllowance,
-							BonusLicense:  agmi.Summary.ItemSummary.BonusLicense + agmi2.Summary.ItemSummary.BonusLicense,
+							FoodAllowance:        agmi.Summary.ItemSummary.FoodAllowance + agmi2.Summary.ItemSummary.FoodAllowance,
+							BonusLicense:         agmi.Summary.ItemSummary.BonusLicense + agmi2.Summary.ItemSummary.BonusLicense,
+							VacationCompensation: agmi.Summary.ItemSummary.VacationCompensation + agmi2.Summary.ItemSummary.VacationCompensation,
 						},
 					})
 				}
@@ -1411,9 +1416,10 @@ func (s store) testWhenDataIsOK(t *testing.T) {
 			},
 			IncomeHistogram: map[int]int{-1: 0, 10000: 0, 20000: 0, 30000: 116, 40000: 546, 50000: 0},
 			ItemSummary: models.ItemSummary{
-				FoodAllowance: 100,
-				BonusLicense:  150,
-				Others:        200,
+				FoodAllowance:        100,
+				BonusLicense:         150,
+				VacationCompensation: 125,
+				Others:               200,
 			},
 		},
 		CrawlerVersion:    "b9ec52df612cda045544543a3b0387842475764d",
@@ -1478,6 +1484,7 @@ func (s store) testWhenDataIsOK(t *testing.T) {
 	assert.Equal(t, agmi.Duration, result.Duration)
 	assert.Equal(t, agmi.Summary.ItemSummary.FoodAllowance, result.Summary.ItemSummary.FoodAllowance)
 	assert.Equal(t, agmi.Summary.ItemSummary.BonusLicense, result.Summary.ItemSummary.BonusLicense)
+	assert.Equal(t, agmi.Summary.ItemSummary.VacationCompensation, result.Summary.ItemSummary.VacationCompensation)
 	truncateTables()
 }
 
