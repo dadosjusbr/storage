@@ -994,6 +994,7 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 					Others:               100,
 					FoodAllowance:        150,
 					BonusLicense:         200,
+					ChristmasBonus:       175,
 					VacationCompensation: 50,
 				},
 			},
@@ -1049,6 +1050,7 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 							BonusLicense:         agmi.Summary.ItemSummary.BonusLicense + agmi2.Summary.ItemSummary.BonusLicense,
 							FoodAllowance:        agmi.Summary.ItemSummary.FoodAllowance + agmi2.Summary.ItemSummary.FoodAllowance,
 							VacationCompensation: agmi.Summary.ItemSummary.VacationCompensation + agmi2.Summary.ItemSummary.VacationCompensation,
+							ChristmasBonus:       agmi.Summary.ItemSummary.ChristmasBonus + agmi2.Summary.ItemSummary.ChristmasBonus,
 						},
 					})
 				}
@@ -1073,6 +1075,7 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 	assert.Equal(t, amis[1].ItemSummary.BonusLicense, returnedAmis[1].ItemSummary.BonusLicense)
 	assert.Equal(t, amis[1].ItemSummary.FoodAllowance, returnedAmis[1].ItemSummary.FoodAllowance)
 	assert.Equal(t, amis[1].ItemSummary.VacationCompensation, returnedAmis[1].ItemSummary.VacationCompensation)
+	assert.Equal(t, amis[1].ItemSummary.ChristmasBonus, returnedAmis[1].ItemSummary.ChristmasBonus)
 	truncateTables()
 }
 
@@ -1231,6 +1234,7 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 					BonusLicense:         400,
 					FoodAllowance:        100,
 					VacationCompensation: 50,
+					ChristmasBonus:       75,
 				},
 			},
 		},
@@ -1266,6 +1270,7 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 							FoodAllowance:        agmi.Summary.ItemSummary.FoodAllowance + agmi2.Summary.ItemSummary.FoodAllowance,
 							BonusLicense:         agmi.Summary.ItemSummary.BonusLicense + agmi2.Summary.ItemSummary.BonusLicense,
 							VacationCompensation: agmi.Summary.ItemSummary.VacationCompensation + agmi2.Summary.ItemSummary.VacationCompensation,
+							ChristmasBonus:       agmi.Summary.ItemSummary.ChristmasBonus + agmi2.Summary.ItemSummary.ChristmasBonus,
 						},
 					})
 				}
@@ -1419,6 +1424,7 @@ func (s store) testWhenDataIsOK(t *testing.T) {
 				FoodAllowance:        100,
 				BonusLicense:         150,
 				VacationCompensation: 125,
+				ChristmasBonus:       175,
 				Others:               200,
 			},
 		},
@@ -1485,6 +1491,7 @@ func (s store) testWhenDataIsOK(t *testing.T) {
 	assert.Equal(t, agmi.Summary.ItemSummary.FoodAllowance, result.Summary.ItemSummary.FoodAllowance)
 	assert.Equal(t, agmi.Summary.ItemSummary.BonusLicense, result.Summary.ItemSummary.BonusLicense)
 	assert.Equal(t, agmi.Summary.ItemSummary.VacationCompensation, result.Summary.ItemSummary.VacationCompensation)
+	assert.Equal(t, agmi.Summary.ItemSummary.ChristmasBonus, result.Summary.ItemSummary.ChristmasBonus)
 	truncateTables()
 }
 
