@@ -30,6 +30,7 @@ func NewAnnualSummaryDTO(ami models.AnnualSummary) *AnnualSummaryDTO {
 			FoodAllowance:        ami.ItemSummary.FoodAllowance,
 			BonusLicense:         ami.ItemSummary.BonusLicense,
 			VacationCompensation: ami.ItemSummary.VacationCompensation,
+			ChristmasBonus:       ami.ItemSummary.ChristmasBonus,
 			Others:               ami.ItemSummary.Others,
 		},
 	}
@@ -49,6 +50,7 @@ func (ami *AnnualSummaryDTO) ConvertToModel() *models.AnnualSummary {
 			FoodAllowance:        ami.ItemSummary.FoodAllowance,
 			BonusLicense:         ami.ItemSummary.BonusLicense,
 			VacationCompensation: ami.ItemSummary.VacationCompensation,
+			ChristmasBonus:       ami.ItemSummary.ChristmasBonus,
 			Others:               ami.ItemSummary.Others,
 		},
 	}
