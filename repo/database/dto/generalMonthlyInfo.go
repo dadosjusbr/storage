@@ -19,6 +19,7 @@ type ItemSummary struct {
 	BonusLicense         float64 `gorm:"column:licenca_premio"`
 	VacationCompensation float64 `gorm:"column:indenizacao_de_ferias"`
 	ChristmasBonus       float64 `gorm:"column:gratificacao_natalina"`
+	CompensatoryLicense  float64 `gorm:"column:licenca_compensatoria"`
 	Others               float64 `gorm:"column:outras"`
 }
 
@@ -35,6 +36,7 @@ func NewGeneralMonthlyInfoDTO(gmi models.GeneralMonthlyInfo) *GeneralMonthlyInfo
 			BonusLicense:         gmi.ItemSummary.BonusLicense,
 			VacationCompensation: gmi.ItemSummary.VacationCompensation,
 			ChristmasBonus:       gmi.ItemSummary.ChristmasBonus,
+			CompensatoryLicense:  gmi.ItemSummary.CompensatoryLicense,
 			Others:               gmi.ItemSummary.Others,
 		},
 	}
@@ -53,6 +55,7 @@ func (gmi *GeneralMonthlyInfoDTO) ConvertToModel() *models.GeneralMonthlyInfo {
 			BonusLicense:         gmi.ItemSummary.BonusLicense,
 			VacationCompensation: gmi.ItemSummary.VacationCompensation,
 			ChristmasBonus:       gmi.ItemSummary.ChristmasBonus,
+			CompensatoryLicense:  gmi.ItemSummary.CompensatoryLicense,
 			Others:               gmi.ItemSummary.Others,
 		},
 	}
