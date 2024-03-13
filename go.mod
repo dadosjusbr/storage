@@ -16,7 +16,7 @@ require (
 	github.com/newrelic/go-agent/v3/integrations/nrpq v1.1.1
 	github.com/stretchr/testify v1.8.0
 	golang.org/x/crypto v0.1.0 // indirect
-	google.golang.org/protobuf v1.28.0
+	google.golang.org/protobuf v1.33.0
 	gorm.io/datatypes v1.0.7
 	gorm.io/driver/postgres v1.4.5
 	gorm.io/gorm v1.24.1
