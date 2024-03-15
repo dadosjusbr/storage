@@ -997,6 +997,7 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 					ChristmasBonus:       175,
 					CompensatoryLicense:  75,
 					VacationCompensation: 50,
+					HealthAllowance:      125,
 				},
 			},
 		},
@@ -1053,6 +1054,7 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 							VacationCompensation: agmi.Summary.ItemSummary.VacationCompensation + agmi2.Summary.ItemSummary.VacationCompensation,
 							ChristmasBonus:       agmi.Summary.ItemSummary.ChristmasBonus + agmi2.Summary.ItemSummary.ChristmasBonus,
 							CompensatoryLicense:  agmi.Summary.ItemSummary.CompensatoryLicense + agmi2.Summary.ItemSummary.CompensatoryLicense,
+							HealthAllowance:      agmi.Summary.ItemSummary.HealthAllowance + agmi2.Summary.ItemSummary.HealthAllowance,
 						},
 					})
 				}
@@ -1079,6 +1081,7 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 	assert.Equal(t, amis[1].ItemSummary.VacationCompensation, returnedAmis[1].ItemSummary.VacationCompensation)
 	assert.Equal(t, amis[1].ItemSummary.ChristmasBonus, returnedAmis[1].ItemSummary.ChristmasBonus)
 	assert.Equal(t, amis[1].ItemSummary.CompensatoryLicense, returnedAmis[1].ItemSummary.CompensatoryLicense)
+	assert.Equal(t, amis[1].ItemSummary.HealthAllowance, returnedAmis[1].ItemSummary.HealthAllowance)
 	truncateTables()
 }
 
@@ -1239,6 +1242,7 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 					VacationCompensation: 50,
 					ChristmasBonus:       75,
 					CompensatoryLicense:  175,
+					HealthAllowance:      130,
 				},
 			},
 		},
@@ -1276,6 +1280,7 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 							VacationCompensation: agmi.Summary.ItemSummary.VacationCompensation + agmi2.Summary.ItemSummary.VacationCompensation,
 							ChristmasBonus:       agmi.Summary.ItemSummary.ChristmasBonus + agmi2.Summary.ItemSummary.ChristmasBonus,
 							CompensatoryLicense:  agmi.Summary.ItemSummary.CompensatoryLicense + agmi2.Summary.ItemSummary.CompensatoryLicense,
+							HealthAllowance:      agmi.Summary.ItemSummary.HealthAllowance + agmi2.Summary.ItemSummary.HealthAllowance,
 						},
 					})
 				}
@@ -1431,6 +1436,7 @@ func (s store) testWhenDataIsOK(t *testing.T) {
 				VacationCompensation: 125,
 				ChristmasBonus:       175,
 				CompensatoryLicense:  120,
+				HealthAllowance:      130,
 				Others:               200,
 			},
 		},
@@ -1499,6 +1505,7 @@ func (s store) testWhenDataIsOK(t *testing.T) {
 	assert.Equal(t, agmi.Summary.ItemSummary.VacationCompensation, result.Summary.ItemSummary.VacationCompensation)
 	assert.Equal(t, agmi.Summary.ItemSummary.ChristmasBonus, result.Summary.ItemSummary.ChristmasBonus)
 	assert.Equal(t, agmi.Summary.ItemSummary.CompensatoryLicense, result.Summary.ItemSummary.CompensatoryLicense)
+	assert.Equal(t, agmi.Summary.ItemSummary.HealthAllowance, result.Summary.ItemSummary.HealthAllowance)
 	truncateTables()
 }
 
