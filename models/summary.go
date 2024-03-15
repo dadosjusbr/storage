@@ -33,5 +33,6 @@ type ItemSummary struct {
 	VacationCompensation float64 `json:"indenizacao_de_ferias,omitempty"`
 	ChristmasBonus       float64 `json:"gratificacao_natalina,omitempty"`
 	CompensatoryLicense  float64 `json:"licenca_compensatoria,omitempty"`
+	HealthAllowance      float64 `json:"auxilio_saude,omitempty"`
 	Others               float64 `json:"outras,omitempty"` // valor agregado de outras rubricas não identificadas
 }
