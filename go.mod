@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/aws/aws-sdk-go v1.44.127
-	github.com/dadosjusbr/datapackage v0.0.0-20230904162108-6e2264aafb68
+	github.com/dadosjusbr/datapackage v0.0.0-20240320203926-5f369dadd3a5
 	github.com/dadosjusbr/proto v0.0.0-20221212025627-91c60aa3cd12
 	github.com/frictionlessdata/datapackage-go v1.0.4
 	github.com/golang/mock v1.6.0

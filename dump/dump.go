@@ -50,6 +50,7 @@ func main() {
 	year, month, _ := time.Now().Date()
 	pkgName := fmt.Sprintf("dadosjusbr-%d-%d.zip", year, month)
 	desc, err := datapackage.DescriptorMapV2()
+
 	if err != nil {
 		log.Fatalf("error DescriptorMapV2(): %v", err)
 	}
@@ -57,8 +58,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("error create datapackage: %v", err)
 	}
+
 	if err := pkg.Zip(pkgName); err != nil {
 		log.Fatalf("error zipping datapackage: %v", err)
+	}
+
+	// Testando o pacote
+	if _, err = datapackage.LoadV2(pkgName); err != nil {
+		log.Fatalf("error loading datapackage: %v", err)
 	}
 
 	// Armazenando no S3
