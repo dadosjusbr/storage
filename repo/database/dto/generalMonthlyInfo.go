@@ -18,6 +18,7 @@ type ItemSummary struct {
 	FoodAllowance        float64 `gorm:"column:auxilio_alimentacao"`
 	BonusLicense         float64 `gorm:"column:licenca_premio"`
 	VacationCompensation float64 `gorm:"column:indenizacao_de_ferias"`
+	Vacation             float64 `gorm:"column:ferias"`
 	ChristmasBonus       float64 `gorm:"column:gratificacao_natalina"`
 	CompensatoryLicense  float64 `gorm:"column:licenca_compensatoria"`
 	HealthAllowance      float64 `gorm:"column:auxilio_saude"`
@@ -36,6 +37,7 @@ func NewGeneralMonthlyInfoDTO(gmi models.GeneralMonthlyInfo) *GeneralMonthlyInfo
 			FoodAllowance:        gmi.ItemSummary.FoodAllowance,
 			BonusLicense:         gmi.ItemSummary.BonusLicense,
 			VacationCompensation: gmi.ItemSummary.VacationCompensation,
+			Vacation:             gmi.ItemSummary.Vacation,
 			ChristmasBonus:       gmi.ItemSummary.ChristmasBonus,
 			CompensatoryLicense:  gmi.ItemSummary.CompensatoryLicense,
 			HealthAllowance:      gmi.ItemSummary.HealthAllowance,
@@ -56,6 +58,7 @@ func (gmi *GeneralMonthlyInfoDTO) ConvertToModel() *models.GeneralMonthlyInfo {
 			FoodAllowance:        gmi.ItemSummary.FoodAllowance,
 			BonusLicense:         gmi.ItemSummary.BonusLicense,
 			VacationCompensation: gmi.ItemSummary.VacationCompensation,
+			Vacation:             gmi.ItemSummary.Vacation,
 			ChristmasBonus:       gmi.ItemSummary.ChristmasBonus,
 			CompensatoryLicense:  gmi.ItemSummary.CompensatoryLicense,
 			HealthAllowance:      gmi.ItemSummary.HealthAllowance,
