@@ -30,7 +30,8 @@ type DataSummary struct {
 type ItemSummary struct {
 	FoodAllowance        float64 `json:"auxilio_alimentacao,omitempty"`
 	BonusLicense         float64 `json:"licenca_premio,omitempty"`
-	VacationCompensation float64 `json:"indenizacao_de_ferias,omitempty"`
+	VacationCompensation float64 `json:"indenizacao_de_ferias,omitempty"` // indenização
+	Vacation             float64 `json:"ferias,omitempty"`
 	ChristmasBonus       float64 `json:"gratificacao_natalina,omitempty"`
 	CompensatoryLicense  float64 `json:"licenca_compensatoria,omitempty"`
 	HealthAllowance      float64 `json:"auxilio_saude,omitempty"`
