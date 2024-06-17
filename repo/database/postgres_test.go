@@ -2169,6 +2169,7 @@ func (paycheck) testStorePaychecks(t *testing.T) {
 	assert.Equal(t, len(dtoPaychecks), 1)
 	assert.Equal(t, len(dtoPaycheckItems), 3)
 	assert.Equal(t, dtoPaychecks[0].Name, "nome")
+	assert.Equal(t, dtoPaychecks[0].SanitizedName, "nome")
 	assert.Equal(t, dtoPaychecks[0].Remuneration, 2000.0)
 	assert.Equal(t, dtoPaycheckItems[0].Type, "R/B")
 	assert.Equal(t, dtoPaycheckItems[1].Inconsistent, true)
@@ -2296,20 +2297,21 @@ func paychecks() ([]models.Paycheck, []models.PaycheckItem) {
 	situation := "A"
 	p := []models.Paycheck{
 		{
-			ID:           1,
-			Agency:       "tjal",
-			Month:        5,
-			Year:         2023,
-			CollectKey:   "tjal/05/2023",
-			Name:         "nome",
-			RegisterID:   "123",
-			Role:         "funcao",
-			Workplace:    "local de trabalho",
-			Salary:       1000,
-			Benefits:     1200,
-			Discounts:    200,
-			Remuneration: 2000,
-			Situation:    &situation,
+			ID:            1,
+			Agency:        "tjal",
+			Month:         5,
+			Year:          2023,
+			CollectKey:    "tjal/05/2023",
+			Name:          "nome",
+			RegisterID:    "123",
+			Role:          "funcao",
+			Workplace:     "local de trabalho",
+			Salary:        1000,
+			Benefits:      1200,
+			Discounts:     200,
+			Remuneration:  2000,
+			Situation:     &situation,
+			SanitizedName: "nome",
 		},
 	}
 	itemSanitizado := []string{"subsidio", "descontos diversos"}
