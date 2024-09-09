@@ -99,3 +99,25 @@ create table remuneracoes
     constraint pk_remuneracoes primary key (id, id_contracheque, orgao, mes, ano),
     constraint fk_remuneracoes foreign key (id_contracheque, orgao, mes, ano) references contracheques(id, orgao, mes, ano) on delete cascade
 );
+
+CREATE MATERIALIZED VIEW public.media_por_membro
+TABLESPACE pg_default
+AS SELECT media_por_membro.orgao,
+    media_por_membro.ano,
+    avg(media_por_membro.salario) AS salario,
+    avg(media_por_membro.beneficios) AS beneficios,
+    avg(media_por_membro.descontos) AS descontos,
+    avg(media_por_membro.remuneracao) AS remuneracao
+   FROM ( SELECT c.orgao,
+            c.ano,
+            c.nome_sanitizado,
+            count(*) AS num_meses,
+            avg(c.salario) AS salario,
+            avg(c.beneficios) AS beneficios,
+            avg(c.descontos) AS descontos,
+            avg(c.remuneracao) AS remuneracao
+           FROM contracheques c
+          GROUP BY c.orgao, c.ano, c.nome_sanitizado) media_por_membro
+  WHERE media_por_membro.num_meses > 1
+  GROUP BY media_por_membro.orgao, media_por_membro.ano
+WITH DATA;
