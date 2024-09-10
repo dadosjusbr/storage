@@ -31,6 +31,7 @@ type AgencyMonthlyInfoDTO struct {
 	Duration       float64        `gorm:"column:duracao_segundos"` // Tempo de execução da coleta em segundos
 	Meta
 	Score
+	ManualCollection bool `gorm:"column:manual"` // Tempo de execução da coleta em segundos
 }
 
 func (AgencyMonthlyInfoDTO) TableName() string {
@@ -126,11 +127,12 @@ func (a AgencyMonthlyInfoDTO) ConvertToModel() (*models.AgencyMonthlyInfo, error
 			BaseRevenue:      a.Meta.BaseRevenue,
 			OtherRecipes:     a.Meta.OtherRecipes,
 		},
-		Summary:  &summary,
-		Backups:  []models.Backup{backup},
-		ProcInfo: &procInfo,
-		Package:  &pkg,
-		Duration: a.Duration,
+		Summary:          &summary,
+		Backups:          []models.Backup{backup},
+		ProcInfo:         &procInfo,
+		Package:          &pkg,
+		Duration:         a.Duration,
+		ManualCollection: a.ManualCollection,
 	}, nil
 }
 
@@ -192,23 +194,24 @@ func NewAgencyMonthlyInfoDTO(agmi models.AgencyMonthlyInfo) (*AgencyMonthlyInfoD
 	}
 
 	return &AgencyMonthlyInfoDTO{
-		ID:             fmt.Sprintf("%s/%s/%d", agmi.AgencyID, AddZeroes(agmi.Month), agmi.Year),
-		Actual:         true,
-		AgencyID:       agmi.AgencyID,
-		Month:          agmi.Month,
-		Year:           agmi.Year,
-		CrawlerVersion: agmi.CrawlerVersion,
-		CrawlerRepo:    agmi.CrawlerRepo,
-		ParserRepo:     agmi.ParserRepo,
-		ParserVersion:  agmi.ParserVersion,
-		Timestamp:      timestamp,
-		Score:          score,
-		Meta:           meta,
-		Summary:        summary,
-		Backup:         backup,
-		ProcInfo:       procInfo,
-		Package:        pkg,
-		Duration:       agmi.Duration,
+		ID:               fmt.Sprintf("%s/%s/%d", agmi.AgencyID, AddZeroes(agmi.Month), agmi.Year),
+		Actual:           true,
+		AgencyID:         agmi.AgencyID,
+		Month:            agmi.Month,
+		Year:             agmi.Year,
+		CrawlerVersion:   agmi.CrawlerVersion,
+		CrawlerRepo:      agmi.CrawlerRepo,
+		ParserRepo:       agmi.ParserRepo,
+		ParserVersion:    agmi.ParserVersion,
+		Timestamp:        timestamp,
+		Score:            score,
+		Meta:             meta,
+		Summary:          summary,
+		Backup:           backup,
+		ProcInfo:         procInfo,
+		Package:          pkg,
+		Duration:         agmi.Duration,
+		ManualCollection: agmi.ManualCollection,
 	}, nil
 }
 

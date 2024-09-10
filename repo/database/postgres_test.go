@@ -787,12 +787,14 @@ func (g getMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 			Year:              2020,
 			Month:             1,
 			CrawlingTimestamp: timestamppb.Now(),
+			ManualCollection:  false,
 		},
 		{
 			AgencyID:          "tjsp",
 			Year:              2020,
 			Month:             1,
 			CrawlingTimestamp: timestamppb.Now(),
+			ManualCollection:  true,
 		},
 	}
 	if err := insertMonthlyInfos(agmis); err != nil {
@@ -812,6 +814,9 @@ func (g getMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 	assert.Equal(t, agmiMap["tjsp"][0].AgencyID, returnedAgmis["tjsp"][0].AgencyID)
 	assert.Equal(t, agmiMap["tjsp"][0].Year, returnedAgmis["tjsp"][0].Year)
 	assert.Equal(t, agmiMap["tjsp"][0].Month, returnedAgmis["tjsp"][0].Month)
+	assert.Equal(t, agmiMap["tjal"][0].ManualCollection, returnedAgmis["tjal"][0].ManualCollection)
+	assert.Equal(t, agmiMap["tjsp"][0].ManualCollection, returnedAgmis["tjsp"][0].ManualCollection)
+
 	truncateTables()
 }
 

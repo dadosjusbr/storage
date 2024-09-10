@@ -35,7 +35,8 @@ type AgencyMonthlyInfo struct {
 	Package           *Backup                `json:"package,omitempty"`     // Making this a pointer because it should be an optional field due to backwards compatibility.
 	Meta              *Meta                  `json:"meta,omitempty"`
 	Score             *Score                 `json:"score,omitempty"`
-	Duration          float64                `json:"duration,omitempty"` // Crawling duration (seconds)
+	Duration          float64                `json:"duration,omitempty"`      // Crawling duration (seconds)
+	ManualCollection  bool                   `json:"coleta_manual,omitempty"` // If the data was collected manually
 }
 
 type Meta struct {
