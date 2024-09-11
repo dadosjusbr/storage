@@ -2282,10 +2282,10 @@ func (averagePerCapita) testGetAveragePerCapita(t *testing.T) {
 		t.Fatalf("error GetAveragePerCapita(): %v", err)
 	}
 	assert.Nil(t, err)
-	assert.Equal(t, 1000.0, avg.BaseRemunerationPerCapita)
-	assert.Equal(t, 1200.0, avg.OtherRemunerationsPerCapita)
-	assert.Equal(t, 200.0, avg.DiscountsPerCapita)
-	assert.Equal(t, 2000.0, avg.RemunerationsPerCapita)
+	assert.Equal(t, 1000.0, avg.BaseRemuneration)
+	assert.Equal(t, 1200.0, avg.OtherRemunerations)
+	assert.Equal(t, 200.0, avg.Discounts)
+	assert.Equal(t, 2000.0, avg.Remunerations)
 }
 
 func insertAgencies(agencies []models.Agency) error {

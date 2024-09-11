@@ -147,7 +147,7 @@ func (c *Client) GetAllAgencyCollection(agency string) ([]models.AgencyMonthlyIn
 	return collections, nil
 }
 
-func (c *Client) GetAveragePerCapita(agency string, year int) (*models.AveragePerCapita, error) {
+func (c *Client) GetAveragePerCapita(agency string, year int) (*models.PerCapitaData, error) {
 	avg, err := c.Db.GetAveragePerCapita(agency, year)
 	if err != nil {
 		return nil, fmt.Errorf("GetAveragePerCapita() error: %w", err)

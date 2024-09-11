@@ -153,10 +153,10 @@ func (mr *MockInterfaceMockRecorder) GetAnnualSummary(agency interface{}) *gomoc
 }
 
 // GetAveragePerCapita mocks base method.
-func (m *MockInterface) GetAveragePerCapita(agency string, year int) (*models.AveragePerCapita, error) {
+func (m *MockInterface) GetAveragePerCapita(agency string, year int) (*models.PerCapitaData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAveragePerCapita", agency, year)
-	ret0, _ := ret[0].(*models.AveragePerCapita)
+	ret0, _ := ret[0].(*models.PerCapitaData)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -556,10 +556,10 @@ func (p *PostgresDB) GetPaycheckItems(agency models.Agency, year int) ([]models.
 	return results, nil
 }
 
-func (p *PostgresDB) GetAveragePerCapita(agency string, ano int) (*models.AveragePerCapita, error) {
-	var dtoAvg dto.AveragePerCapita
+func (p *PostgresDB) GetAveragePerCapita(agency string, ano int) (*models.PerCapitaData, error) {
+	var dtoAvg dto.PerCapitaData
 	//Pegando todas as coletas atuais de um determinado órgão.
-	m := p.db.Model(&dto.AveragePerCapita{})
+	m := p.db.Model(&dto.PerCapitaData{})
 	m = m.Where("orgao = ? AND ano = ?", agency, ano)
 	if err := m.Find(&dtoAvg).Error; err != nil {
 		return nil, fmt.Errorf("error getting average per capita: %q", err)
