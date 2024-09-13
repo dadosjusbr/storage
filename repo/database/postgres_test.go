@@ -1023,9 +1023,59 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 				},
 			},
 		},
+		{
+			AgencyID:          "tjal",
+			Year:              2023,
+			Month:             5,
+			CrawlingTimestamp: timestamppb.Now(),
+			Summary: &models.Summary{
+				Count: 300,
+				BaseRemuneration: models.DataSummary{
+					Total: 1000,
+				},
+				OtherRemunerations: models.DataSummary{
+					Total: 1200,
+				},
+				Discounts: models.DataSummary{
+					Total: 200,
+				},
+				Remunerations: models.DataSummary{
+					Total: 2000,
+				},
+			},
+		},
+		{
+			AgencyID:          "tjal",
+			Year:              2023,
+			Month:             4,
+			CrawlingTimestamp: timestamppb.Now(),
+			Summary: &models.Summary{
+				Count: 300,
+				BaseRemuneration: models.DataSummary{
+					Total: 1000,
+				},
+				OtherRemunerations: models.DataSummary{
+					Total: 1200,
+				},
+				Discounts: models.DataSummary{
+					Total: 200,
+				},
+				Remunerations: models.DataSummary{
+					Total: 2000,
+				},
+			},
+		},
 	}
 	if err := insertMonthlyInfos(agmis); err != nil {
 		t.Fatalf("error inserting agency monthly info: %q", err)
+	}
+
+	p, pi := paychecks()
+	_ = postgresDb.StorePaychecks(p, pi)
+
+	result := postgresDb.db.Exec("REFRESH MATERIALIZED VIEW media_por_membro;")
+	if result.Error != nil {
+		t.Fatalf("Erro ao fazer o refresh: %v\n", result.Error)
 	}
 
 	var amis []models.AnnualSummary
@@ -1085,6 +1135,8 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 	assert.Equal(t, amis[1].ItemSummary.CompensatoryLicense, returnedAmis[1].ItemSummary.CompensatoryLicense)
 	assert.Equal(t, amis[1].ItemSummary.HealthAllowance, returnedAmis[1].ItemSummary.HealthAllowance)
 	assert.Equal(t, amis[1].ItemSummary.Vacation, returnedAmis[1].ItemSummary.Vacation)
+	assert.Equal(t, 1000.0, returnedAmis[2].BaseRemunerationPerCapita)
+	assert.Equal(t, 1200.0, returnedAmis[2].OtherRemunerationsPerCapita)
 	truncateTables()
 }
 
@@ -2166,7 +2218,7 @@ func (paycheck) testStorePaychecks(t *testing.T) {
 
 	itemSanitizado := "subsidio"
 	assert.Nil(t, err)
-	assert.Equal(t, len(dtoPaychecks), 1)
+	assert.Equal(t, len(dtoPaychecks), 2)
 	assert.Equal(t, len(dtoPaycheckItems), 3)
 	assert.Equal(t, dtoPaychecks[0].Name, "nome")
 	assert.Equal(t, dtoPaychecks[0].SanitizedName, "nome")
@@ -2199,9 +2251,9 @@ func (paycheck) testGetPaychecks(t *testing.T) {
 		t.Fatalf("error GetPaychecks(): %v", err)
 	}
 	assert.Nil(t, err)
-	assert.Equal(t, 1, len(ps))
+	assert.Equal(t, 2, len(ps))
 	assert.Equal(t, 2023, ps[0].Year)
-	assert.Equal(t, p[0], ps[0])
+	assert.Equal(t, p[0], ps[1])
 }
 
 func (paycheck) testGetPaycheckItems(t *testing.T) {
@@ -2214,6 +2266,26 @@ func (paycheck) testGetPaycheckItems(t *testing.T) {
 	assert.Equal(t, 3, len(pis))
 	assert.Equal(t, 2023, pis[0].Year)
 	assert.Equal(t, pi[0], pis[0])
+}
+
+type averagePerCapita struct{}
+
+func TestAveragePerCapita(t *testing.T) {
+	tests := averagePerCapita{}
+
+	t.Run("Test GetAverage()", tests.testGetAveragePerCapita)
+}
+
+func (averagePerCapita) testGetAveragePerCapita(t *testing.T) {
+	avg, err := postgresDb.GetAveragePerCapita("tjal", 2023)
+	if err != nil {
+		t.Fatalf("error GetAveragePerCapita(): %v", err)
+	}
+	assert.Nil(t, err)
+	assert.Equal(t, 1000.0, avg.BaseRemuneration)
+	assert.Equal(t, 1200.0, avg.OtherRemunerations)
+	assert.Equal(t, 200.0, avg.Discounts)
+	assert.Equal(t, 2000.0, avg.Remunerations)
 }
 
 func insertAgencies(agencies []models.Agency) error {
@@ -2302,6 +2374,23 @@ func paychecks() ([]models.Paycheck, []models.PaycheckItem) {
 			Month:         5,
 			Year:          2023,
 			CollectKey:    "tjal/05/2023",
+			Name:          "nome",
+			RegisterID:    "123",
+			Role:          "funcao",
+			Workplace:     "local de trabalho",
+			Salary:        1000,
+			Benefits:      1200,
+			Discounts:     200,
+			Remuneration:  2000,
+			Situation:     &situation,
+			SanitizedName: "nome",
+		},
+		{
+			ID:            1,
+			Agency:        "tjal",
+			Month:         4,
+			Year:          2023,
+			CollectKey:    "tjal/04/2023",
 			Name:          "nome",
 			RegisterID:    "123",
 			Role:          "funcao",

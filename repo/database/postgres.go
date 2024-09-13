@@ -307,7 +307,7 @@ func (p *PostgresDB) GetAnnualSummary(agency string) ([]models.AnnualSummary, er
 	var dtoAmis []dto.AnnualSummaryDTO
 	agency = strings.ToLower(agency)
 	query := `
-		ano,
+		coletas.ano,
 		id_orgao,
 		TRUNC(AVG((sumario -> 'membros')::text::int)) AS media_num_membros,
 		SUM((sumario -> 'membros')::text::int) AS total_num_membros,
@@ -323,10 +323,16 @@ func (p *PostgresDB) GetAnnualSummary(agency string) ([]models.AnnualSummary, er
 		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'auxilio_saude' AS DECIMAL)) AS auxilio_saude,
 		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'outras' AS DECIMAL)) AS outras,
 		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'ferias' AS DECIMAL)) AS ferias,
-		COUNT(*) AS meses_com_dados`
-	m := p.db.Model(&dtoAgmi).Select(query)
+		COUNT(*) AS meses_com_dados,
+		MAX(media_por_membro.salario) AS remuneracao_base_membro,
+		MAX(media_por_membro.beneficios) AS outras_remuneracoes_membro,
+		MAX(media_por_membro.descontos) AS descontos_membro,
+		MAX(media_por_membro.remuneracao) AS remuneracoes_membro`
+
+	join := `LEFT JOIN media_por_membro on coletas.ano = media_por_membro.ano and coletas.id_orgao = media_por_membro.orgao`
+	m := p.db.Model(&dtoAgmi).Select(query).Joins(join)
 	m = m.Where("id_orgao = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency)
-	m = m.Group("ano, id_orgao").Order("ano ASC")
+	m = m.Group("coletas.ano, id_orgao").Order("coletas.ano ASC")
 	if err := m.Scan(&dtoAmis).Error; err != nil {
 		return nil, fmt.Errorf("error getting annual monthly info: %q", err)
 	}
@@ -548,4 +554,15 @@ func (p *PostgresDB) GetPaycheckItems(agency models.Agency, year int) ([]models.
 		results = append(results, *p)
 	}
 	return results, nil
+}
+
+func (p *PostgresDB) GetAveragePerCapita(agency string, ano int) (*models.PerCapitaData, error) {
+	var dtoAvg dto.PerCapitaData
+	m := p.db.Model(&dto.PerCapitaData{})
+	m = m.Where("orgao = ? AND ano = ?", agency, ano)
+	if err := m.Find(&dtoAvg).Error; err != nil {
+		return nil, fmt.Errorf("error getting average per capita: %q", err)
+	}
+	avg := dtoAvg.ConvertToModel()
+	return avg, nil
 }

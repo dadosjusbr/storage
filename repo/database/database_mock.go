@@ -152,6 +152,21 @@ func (mr *MockInterfaceMockRecorder) GetAnnualSummary(agency interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAnnualSummary", reflect.TypeOf((*MockInterface)(nil).GetAnnualSummary), agency)
 }
 
+// GetAveragePerCapita mocks base method.
+func (m *MockInterface) GetAveragePerCapita(agency string, year int) (*models.PerCapitaData, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAveragePerCapita", agency, year)
+	ret0, _ := ret[0].(*models.PerCapitaData)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAveragePerCapita indicates an expected call of GetAveragePerCapita.
+func (mr *MockInterfaceMockRecorder) GetAveragePerCapita(agency, year interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAveragePerCapita", reflect.TypeOf((*MockInterface)(nil).GetAveragePerCapita), agency, year)
+}
+
 // GetFirstDateWithMonthlyInfo mocks base method.
 func (m *MockInterface) GetFirstDateWithMonthlyInfo() (int, int, error) {
 	m.ctrl.T.Helper()
