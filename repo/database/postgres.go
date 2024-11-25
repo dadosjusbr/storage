@@ -284,7 +284,14 @@ func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[str
 	for _, agency := range agencies {
 		var dtoAgmis []dto.AgencyMonthlyInfoDTO
 		//Pegando as coletas do postgres, filtrando por órgão, ano e a coleta atual.
-		m := p.db.Model(&dto.AgencyMonthlyInfoDTO{})
+		m := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Select(`coletas.*, EXISTS (
+            SELECT 1
+            FROM remuneracoes r
+            WHERE inconsistente = TRUE 
+              AND r.orgao = coletas.id_orgao 
+              AND r.ano = coletas.ano
+              and r.mes = coletas.mes 
+        ) AS inconsistente`)
 		m = m.Where("id_orgao = ? AND ano = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency.ID, year)
 		m = m.Order("mes ASC")
 		if err := m.Find(&dtoAgmis).Error; err != nil {
@@ -327,7 +334,14 @@ func (p *PostgresDB) GetAnnualSummary(agency string) ([]models.AnnualSummary, er
 		MAX(media_por_membro.salario) AS remuneracao_base_membro,
 		MAX(media_por_membro.beneficios) AS outras_remuneracoes_membro,
 		MAX(media_por_membro.descontos) AS descontos_membro,
-		MAX(media_por_membro.remuneracao) AS remuneracoes_membro`
+		MAX(media_por_membro.remuneracao) AS remuneracoes_membro,
+		EXISTS (
+            SELECT 1
+            FROM remuneracoes r
+            WHERE inconsistente = TRUE 
+              AND r.orgao = coletas.id_orgao 
+              AND r.ano = coletas.ano
+        ) AS inconsistente`
 
 	join := `LEFT JOIN media_por_membro on coletas.ano = media_por_membro.ano and coletas.id_orgao = media_por_membro.orgao`
 	m := p.db.Model(&dtoAgmi).Select(query).Joins(join)
@@ -346,7 +360,15 @@ func (p *PostgresDB) GetAnnualSummary(agency string) ([]models.AnnualSummary, er
 func (p *PostgresDB) GetOMA(month int, year int, agency string) (*models.AgencyMonthlyInfo, *models.Agency, error) {
 	var dtoAgmi dto.AgencyMonthlyInfoDTO
 	id := fmt.Sprintf("%s/%s/%d", strings.ToLower(agency), dto.AddZeroes(month), year)
-	m := p.db.Model(dto.AgencyMonthlyInfoDTO{}).Where("id = ? AND atual = true", id).First(&dtoAgmi)
+	m := p.db.Model(dto.AgencyMonthlyInfoDTO{}).Select(`coletas.*, EXISTS (
+		SELECT 1
+		FROM remuneracoes r
+		WHERE inconsistente = TRUE 
+		  AND r.orgao = coletas.id_orgao 
+		  AND r.ano = coletas.ano
+		  and r.mes = coletas.mes 
+	) AS inconsistente`)
+	m = m.Where("id = ? AND atual = true", id).First(&dtoAgmi)
 	if err := m.Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil, fmt.Errorf("there is no data with this parameters")
