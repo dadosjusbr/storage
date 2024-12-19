@@ -326,7 +326,6 @@ func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[str
 }
 
 func (p *PostgresDB) GetAnnualSummary(agency string) ([]models.AnnualSummary, error) {
-	// var dtoAgmi dto.AgencyMonthlyInfoDTO
 	var dtoAmis []dto.AnnualSummaryDTO
 	agency = strings.ToLower(agency)
 
