@@ -18,7 +18,7 @@ type AnnualSummaryDTO struct {
 	RemunerationsPerCapita      float64     `gorm:"column:remuneracoes_membro"`
 	NumMonthsWithData           int         `gorm:"column:meses_com_dados"`
 	ItemSummary                 ItemSummary `gorm:"embedded"`
-	Inconsistent                bool        `gorm:"column:inconsistente"`
+	Inconsistent                bool        `gorm:"column:inconsistente;<-:false"`
 }
 
 func NewAnnualSummaryDTO(ami models.AnnualSummary) *AnnualSummaryDTO {

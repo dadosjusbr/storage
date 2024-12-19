@@ -31,8 +31,8 @@ type AgencyMonthlyInfoDTO struct {
 	Duration       float64        `gorm:"column:duracao_segundos"` // Tempo de execução da coleta em segundos
 	Meta
 	Score
-	ManualCollection bool `gorm:"column:manual"` // Tempo de execução da coleta em segundos
-	Inconsistent     bool `gorm:"column:inconsistente"`
+	ManualCollection bool `gorm:"column:manual"` // A coleta foi realizada manualmente?
+	Inconsistent     bool `gorm:"column:inconsistente;<-:false"`
 }
 
 func (AgencyMonthlyInfoDTO) TableName() string {
