@@ -788,6 +788,7 @@ func (g getMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 			Month:             1,
 			CrawlingTimestamp: timestamppb.Now(),
 			ManualCollection:  false,
+			Inconsistent:      false,
 		},
 		{
 			AgencyID:          "tjsp",
@@ -795,6 +796,7 @@ func (g getMonthlyInfo) testWhenMonthlyInfoExists(t *testing.T) {
 			Month:             1,
 			CrawlingTimestamp: timestamppb.Now(),
 			ManualCollection:  true,
+			Inconsistent:      false,
 		},
 	}
 	if err := insertMonthlyInfos(agmis); err != nil {
@@ -1142,6 +1144,8 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 	assert.Equal(t, amis[1].ItemSummary.Vacation, returnedAmis[1].ItemSummary.Vacation)
 	assert.Equal(t, 1000.0, returnedAmis[2].BaseRemunerationPerCapita)
 	assert.Equal(t, 1200.0, returnedAmis[2].OtherRemunerationsPerCapita)
+	assert.Equal(t, amis[0].Inconsistent, returnedAmis[0].Inconsistent)
+	assert.Equal(t, false, returnedAmis[0].Inconsistent)
 	truncateTables()
 }
 
@@ -1189,6 +1193,7 @@ func (g getOMA) testWhenDataExists(t *testing.T) {
 	assert.Equal(t, agmi.Month, returnedAgmi.Month)
 	assert.Equal(t, agmi.Year, returnedAgmi.Year)
 	assert.Equal(t, agencies[0], *agency)
+	assert.Equal(t, returnedAgmi.Inconsistent, false)
 	truncateTables()
 }
 

@@ -37,6 +37,7 @@ type AgencyMonthlyInfo struct {
 	Score             *Score                 `json:"score,omitempty"`
 	Duration          float64                `json:"duration,omitempty"`      // Crawling duration (seconds)
 	ManualCollection  bool                   `json:"coleta_manual,omitempty"` // If the data was collected manually
+	Inconsistent      bool                   `json:"inconsistent"`            // If the data is inconsistent
 }
 
 type Meta struct {
@@ -94,6 +95,7 @@ type AnnualSummary struct {
 	NumMonthsWithData           int         `json:"months_with_data,omitempty"`
 	Package                     *Backup     `json:"package,omitempty"`
 	ItemSummary                 ItemSummary `json:"item_summary,omitempty"`
+	Inconsistent                bool        `json:"inconsistent,omitempty"` // If the data is inconsistent
 }
 
 type RemmunerationSummary struct {

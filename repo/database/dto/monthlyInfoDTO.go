@@ -31,7 +31,8 @@ type AgencyMonthlyInfoDTO struct {
 	Duration       float64        `gorm:"column:duracao_segundos"` // Tempo de execução da coleta em segundos
 	Meta
 	Score
-	ManualCollection bool `gorm:"column:manual"` // Tempo de execução da coleta em segundos
+	ManualCollection bool `gorm:"column:manual"` // A coleta foi realizada manualmente?
+	Inconsistent     bool `gorm:"column:inconsistente;<-:false"`
 }
 
 func (AgencyMonthlyInfoDTO) TableName() string {
@@ -133,6 +134,7 @@ func (a AgencyMonthlyInfoDTO) ConvertToModel() (*models.AgencyMonthlyInfo, error
 		Package:          &pkg,
 		Duration:         a.Duration,
 		ManualCollection: a.ManualCollection,
+		Inconsistent:     a.Inconsistent,
 	}, nil
 }
 
@@ -212,6 +214,7 @@ func NewAgencyMonthlyInfoDTO(agmi models.AgencyMonthlyInfo) (*AgencyMonthlyInfoD
 		Package:          pkg,
 		Duration:         agmi.Duration,
 		ManualCollection: agmi.ManualCollection,
+		Inconsistent:     agmi.Inconsistent,
 	}, nil
 }
 
