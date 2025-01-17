@@ -18,7 +18,7 @@ jobs:
               run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "REFRESH MATERIALIZED VIEW media_por_membro;"
 
     Dump:
-        if: github.event.schedule == '0 3 17 * *'
+        if: github.event.schedule == '0 3 17 * *' || github.event_name == 'workflow_dispatch'
         runs-on: ubuntu-20.04
         env:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
