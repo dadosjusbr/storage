@@ -38,6 +38,7 @@ type AgencyMonthlyInfo struct {
 	Duration          float64                `json:"duration,omitempty"`      // Crawling duration (seconds)
 	ManualCollection  bool                   `json:"coleta_manual,omitempty"` // If the data was collected manually
 	Inconsistent      bool                   `json:"inconsistent"`            // If the data is inconsistent
+	Notices           string                 `json:"notices"`                 // If the data has notices
 }
 
 type Meta struct {
