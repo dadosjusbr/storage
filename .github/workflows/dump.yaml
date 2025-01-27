@@ -8,14 +8,14 @@ on:
         - cron: "0 3 2 * *"
 
 jobs:
-    Atualizar-media-por-membro:
+    Atualizar-views-materializadas:
         runs-on: ubuntu-20.04
-        name: Atualizando view media_por_membro
+        name: Atualizando views materializadas
         steps:
             - uses: actions/checkout@v3
 
-            - name: Atualizando view
-              run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "REFRESH MATERIALIZED VIEW media_por_membro;"
+            - name: Atualizando views
+              run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "SELECT atualizar_views_materializadas();"
 
     Dump:
         if: github.event.schedule == '0 3 17 * *' || github.event_name == 'workflow_dispatch'
