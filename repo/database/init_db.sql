@@ -122,3 +122,40 @@ AS SELECT media_por_membro.orgao,
   WHERE media_por_membro.num_meses > 1
   GROUP BY media_por_membro.orgao, media_por_membro.ano
 WITH DATA;
+
+CREATE MATERIALIZED VIEW orgao_mes_ano_inconsistentes AS 
+WITH remuneracoes_inconsistentes AS (
+			SELECT DISTINCT orgao, ano, mes
+			FROM remuneracoes
+			WHERE inconsistente = TRUE
+			)
+			SELECT c.id_orgao, c.ano, c.mes, 
+				CASE 
+					WHEN ri.orgao IS NOT NULL THEN TRUE 
+					ELSE FALSE 
+				END AS inconsistente
+			FROM coletas c
+			LEFT JOIN remuneracoes_inconsistentes ri
+				ON ri.orgao = c.id_orgao
+				AND ri.ano = c.ano
+				AND ri.mes = c.mes
+			WHERE c.atual = TRUE
+			AND (c.procinfo::text = 'null' OR c.procinfo IS NULL);
+
+CREATE MATERIALIZED VIEW orgao_ano_inconsistentes AS 
+WITH remuneracoes_inconsistentes AS (
+			SELECT DISTINCT orgao, ano
+			FROM remuneracoes
+			WHERE inconsistente = TRUE
+			)
+			SELECT distinct c.id_orgao, c.ano, 
+				CASE 
+					WHEN ri.orgao IS NOT NULL THEN TRUE 
+					ELSE FALSE 
+				END AS inconsistente
+			FROM coletas c
+			LEFT JOIN remuneracoes_inconsistentes ri
+				ON ri.orgao = c.id_orgao
+				AND ri.ano = c.ano
+			WHERE c.atual = true
+			AND (c.procinfo::text = 'null' OR c.procinfo IS NULL);
