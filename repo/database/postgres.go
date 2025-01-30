@@ -283,36 +283,21 @@ func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[str
 	//Mapeando os órgãos
 	for _, agency := range agencies {
 		var dtoAgmis []dto.AgencyMonthlyInfoDTO
-		// Pegando as coletas do postgres, filtrando por órgão, ano e a coleta atual.
-		// GORM não suporta diretamente expressões como CTEs (WITH), mas é possível integrar a query bruta.
-		// Estamos utilizando essa estratégia a fim de não comprometer o desempenho da query
-		// devido a junção com a tabela de remuneracoes
-		query := `
-			WITH remuneracoes_inconsistentes AS (
-			SELECT DISTINCT orgao, ano, mes
-			FROM remuneracoes
-			WHERE inconsistente = TRUE
-			)
-			SELECT c.*, 
-				CASE 
-					WHEN ri.orgao IS NOT NULL THEN TRUE 
-					ELSE FALSE 
-				END AS inconsistente
-			FROM coletas c
-			LEFT JOIN remuneracoes_inconsistentes ri
-				ON ri.orgao = c.id_orgao
-				AND ri.ano = c.ano
-				AND ri.mes = c.mes
-			WHERE c.id_orgao = ?
-			AND c.ano = ?
-			AND c.atual = TRUE
-			AND (c.procinfo::text = 'null' OR c.procinfo IS NULL)
-			ORDER BY c.mes ASC;
-		`
 
-		if err := p.db.Raw(query, agency.ID, year).Scan(&dtoAgmis).Error; err != nil {
+		mi := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Select("coletas.*, oma.inconsistente")
+		mi = mi.Joins(`LEFT JOIN orgao_mes_ano_inconsistentes oma 
+						ON oma.id_orgao = coletas.id_orgao 
+						AND oma.ano = coletas.ano 
+						AND oma.mes = coletas.mes`)
+		mi = mi.Where(`coletas.id_orgao = ? AND coletas.ano = ? 
+						AND coletas.atual = TRUE 
+						AND (coletas.procinfo::text = 'null' OR coletas.procinfo IS NULL)`, agency.ID, year)
+		mi = mi.Order("coletas.mes ASC")
+
+		if err := mi.Scan(&dtoAgmis).Error; err != nil {
 			return nil, fmt.Errorf("error getting monthly info: %q", err)
 		}
+
 		//Convertendo os DTO's para modelos
 		for _, dtoAgmi := range dtoAgmis {
 			agmi, err := dtoAgmi.ConvertToModel()
@@ -329,92 +314,35 @@ func (p *PostgresDB) GetAnnualSummary(agency string) ([]models.AnnualSummary, er
 	var dtoAmis []dto.AnnualSummaryDTO
 	agency = strings.ToLower(agency)
 
-	// GORM não suporta diretamente expressões como CTEs (WITH), mas é possível integrar a query bruta.
-	// Estamos utilizando essa estratégia a fim de não comprometer o desempenho da query
-	// devido a junção com a tabela de remuneracoes
 	query := `
-		WITH sumario_processado AS (
-		SELECT 
-			ano,
-			id_orgao,
-			(sumario ->> 'membros')::INT AS num_membros,
-			(sumario -> 'remuneracao_base' ->> 'total')::DECIMAL AS remuneracao_base_total,
-			(sumario -> 'outras_remuneracoes' ->> 'total')::DECIMAL AS outras_remuneracoes_total,
-			(sumario -> 'descontos' ->> 'total')::DECIMAL AS descontos_total,
-			(sumario -> 'remuneracoes' ->> 'total')::DECIMAL AS remuneracoes_total,
-			(sumario -> 'resumo_rubricas' ->> 'auxilio_alimentacao')::DECIMAL AS auxilio_alimentacao,
-			(sumario -> 'resumo_rubricas' ->> 'licenca_premio')::DECIMAL AS licenca_premio,
-			(sumario -> 'resumo_rubricas' ->> 'indenizacao_de_ferias')::DECIMAL AS indenizacao_de_ferias,
-			(sumario -> 'resumo_rubricas' ->> 'gratificacao_natalina')::DECIMAL AS gratificacao_natalina,
-			(sumario -> 'resumo_rubricas' ->> 'licenca_compensatoria')::DECIMAL AS licenca_compensatoria,
-			(sumario -> 'resumo_rubricas' ->> 'auxilio_saude')::DECIMAL AS auxilio_saude,
-			(sumario -> 'resumo_rubricas' ->> 'outras')::DECIMAL AS outras,
-			(sumario -> 'resumo_rubricas' ->> 'ferias')::DECIMAL AS ferias
-		FROM coletas
-		WHERE id_orgao = ? AND atual = TRUE AND (procinfo::TEXT = 'null' OR procinfo IS NULL)
-		),
-		media_membro AS (
-			SELECT 
-				ano,
-				orgao,
-				MAX(salario) AS remuneracao_base_membro,
-				MAX(beneficios) AS outras_remuneracoes_membro,
-				MAX(descontos) AS descontos_membro,
-				MAX(remuneracao) AS remuneracoes_membro
-			FROM media_por_membro
-			WHERE orgao = ?
-			GROUP BY ano, orgao
-		),
-		remuneracoes_inconsistentes AS (
-			SELECT DISTINCT orgao, ano
-			FROM remuneracoes
-			WHERE inconsistente = TRUE AND orgao = ?
-		)
-		SELECT 
-			sp.ano,
-			sp.id_orgao,
-			TRUNC(AVG(sp.num_membros)) AS media_num_membros,
-			SUM(sp.num_membros) AS total_num_membros,
-			SUM(sp.remuneracao_base_total) AS remuneracao_base,
-			SUM(sp.outras_remuneracoes_total) AS outras_remuneracoes,
-			SUM(sp.descontos_total) AS descontos,
-			SUM(sp.remuneracoes_total) AS remuneracoes,
-			SUM(sp.auxilio_alimentacao) AS auxilio_alimentacao,
-			SUM(sp.licenca_premio) AS licenca_premio,
-			SUM(sp.indenizacao_de_ferias) AS indenizacao_de_ferias,
-			SUM(sp.gratificacao_natalina) AS gratificacao_natalina,
-			SUM(sp.licenca_compensatoria) AS licenca_compensatoria,
-			SUM(sp.auxilio_saude) AS auxilio_saude,
-			SUM(sp.outras) AS outras,
-			SUM(sp.ferias) AS ferias,
-			COUNT(*) AS meses_com_dados,
-			mm.remuneracao_base_membro,
-			mm.outras_remuneracoes_membro,
-			mm.descontos_membro,
-			mm.remuneracoes_membro,
-			CASE 
-				WHEN ri.orgao IS NOT NULL THEN TRUE
-				ELSE FALSE
-			END AS inconsistente
-		FROM sumario_processado sp
-		LEFT JOIN media_membro mm
-			ON sp.ano = mm.ano
-			AND sp.id_orgao = mm.orgao
-		LEFT JOIN remuneracoes_inconsistentes ri
-			ON sp.ano = ri.ano
-			AND sp.id_orgao = ri.orgao
-		GROUP BY 
-			sp.ano, 
-			sp.id_orgao, 
-			mm.remuneracao_base_membro, 
-			mm.outras_remuneracoes_membro, 
-			mm.descontos_membro, 
-			mm.remuneracoes_membro, 
-			ri.orgao
-		ORDER BY sp.ano ASC;
-	`
+		coletas.ano,
+		coletas.id_orgao,
+		TRUNC(AVG((sumario -> 'membros')::text::int)) AS media_num_membros,
+		SUM((sumario -> 'membros')::text::int) AS total_num_membros,
+		SUM(CAST(sumario -> 'remuneracao_base' ->> 'total' AS DECIMAL)) AS remuneracao_base,
+		SUM(CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)) AS outras_remuneracoes,
+		SUM(CAST(sumario -> 'descontos' ->> 'total' AS DECIMAL)) AS descontos,
+		SUM(CAST(sumario -> 'remuneracoes' ->> 'total' AS DECIMAL)) AS remuneracoes,
+		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'auxilio_alimentacao' AS DECIMAL)) AS auxilio_alimentacao,
+		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'licenca_premio' AS DECIMAL)) AS licenca_premio,
+		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'indenizacao_de_ferias' AS DECIMAL)) AS indenizacao_de_ferias,
+		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'gratificacao_natalina' AS DECIMAL)) AS gratificacao_natalina,
+		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'licenca_compensatoria' AS DECIMAL)) AS licenca_compensatoria,
+		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'auxilio_saude' AS DECIMAL)) AS auxilio_saude,
+		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'outras' AS DECIMAL)) AS outras,
+		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'ferias' AS DECIMAL)) AS ferias,
+		COUNT(*) AS meses_com_dados,
+		MAX(mpm.salario) AS remuneracao_base_membro,
+		MAX(mpm.beneficios) AS outras_remuneracoes_membro,
+		MAX(mpm.descontos) AS descontos_membro,
+		MAX(mpm.remuneracao) AS remuneracoes_membro,
+		oa.inconsistente`
 
-	m := p.db.Raw(query, agency, agency, agency)
+	join := `LEFT JOIN media_por_membro mpm ON coletas.ano = mpm.ano AND coletas.id_orgao = mpm.orgao
+			 LEFT JOIN orgao_ano_inconsistentes oa ON coletas.id_orgao = oa.id_orgao AND coletas.ano = oa.ano`
+	m := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Select(query).Joins(join)
+	m = m.Where("coletas.id_orgao = ? AND atual = TRUE AND (procinfo::text = 'null' OR procinfo IS NULL) ", agency)
+	m = m.Group("coletas.ano, coletas.id_orgao, oa.inconsistente").Order("coletas.ano ASC")
 	if err := m.Scan(&dtoAmis).Error; err != nil {
 		return nil, fmt.Errorf("error getting annual monthly info: %q", err)
 	}
@@ -428,14 +356,12 @@ func (p *PostgresDB) GetAnnualSummary(agency string) ([]models.AnnualSummary, er
 func (p *PostgresDB) GetOMA(month int, year int, agency string) (*models.AgencyMonthlyInfo, *models.Agency, error) {
 	var dtoAgmi dto.AgencyMonthlyInfoDTO
 	id := fmt.Sprintf("%s/%s/%d", strings.ToLower(agency), dto.AddZeroes(month), year)
-	m := p.db.Model(dto.AgencyMonthlyInfoDTO{}).Select(`coletas.*, EXISTS (
-		SELECT 1
-		FROM remuneracoes r
-		WHERE inconsistente = TRUE 
-		  AND r.orgao = coletas.id_orgao 
-		  AND r.ano = coletas.ano
-		  and r.mes = coletas.mes 
-	) AS inconsistente`)
+	m := p.db.Model(dto.AgencyMonthlyInfoDTO{}).Select(`coletas.*, oma.inconsistente`)
+	m = m.Joins(`LEFT JOIN orgao_mes_ano_inconsistentes oma
+				 ON oma.id_orgao = coletas.id_orgao
+				 AND oma.ano = coletas.ano
+				 and oma.mes = coletas.mes`)
+
 	m = m.Where("id = ? AND atual = true", id).First(&dtoAgmi)
 	if err := m.Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
