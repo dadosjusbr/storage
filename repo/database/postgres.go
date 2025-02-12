@@ -582,3 +582,32 @@ func (p *PostgresDB) GetAveragePerCapita(agency string, ano int) (*models.PerCap
 	avg := dtoAvg.ConvertToModel()
 	return avg, nil
 }
+
+func (p *PostgresDB) GetNotices(agency string, year int, month int) ([]*string, error) {
+	var notices []*string
+	params := []interface{}{}
+
+	query := "atual = true AND avisos IS NOT NULL AND id_orgao = ?"
+
+	if agency != "" {
+		params = append(params, agency)
+	} else {
+		return nil, fmt.Errorf("error agency cannot be empty")
+	}
+
+	if year != 0 {
+		query = query + " AND ano = ?"
+		params = append(params, year)
+		if month != 0 {
+			query = query + " AND mes = ?"
+			params = append(params, month)
+		}
+	}
+
+	result := p.db.Model(&dto.AgencyMonthlyInfoDTO{}).Distinct("avisos").Where(query, params...)
+	if err := result.Find(&notices).Error; err != nil {
+		return nil, fmt.Errorf("error getting notices: %w", err)
+	}
+
+	return notices, nil
+}
