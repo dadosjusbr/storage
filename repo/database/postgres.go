@@ -588,7 +588,12 @@ func (p *PostgresDB) GetNotices(agency string, year int, month int) ([]*string, 
 	params := []interface{}{}
 
 	query := "atual = true AND avisos IS NOT NULL AND id_orgao = ?"
-	params = append(params, agency)
+
+	if agency != "" {
+		params = append(params, agency)
+	} else {
+		return nil, fmt.Errorf("error agency cannot be empty")
+	}
 
 	if year != 0 {
 		query = query + " AND ano = ?"
