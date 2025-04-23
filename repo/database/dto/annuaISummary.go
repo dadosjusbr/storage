@@ -5,20 +5,20 @@ import (
 )
 
 type AnnualSummaryDTO struct {
-	Year                        int         `gorm:"column:ano"`
-	AverageCount                int         `gorm:"column:media_num_membros"`
-	TotalCount                  int         `gorm:"column:total_num_membros"`
-	BaseRemuneration            float64     `gorm:"column:remuneracao_base"`
-	OtherRemunerations          float64     `gorm:"column:outras_remuneracoes"`
-	Discounts                   float64     `gorm:"column:descontos"`
-	Remunerations               float64     `gorm:"column:remuneracoes"`
-	BaseRemunerationPerCapita   float64     `gorm:"column:remuneracao_base_membro"`
-	OtherRemunerationsPerCapita float64     `gorm:"column:outras_remuneracoes_membro"`
-	DiscountsPerCapita          float64     `gorm:"column:descontos_membro"`
-	RemunerationsPerCapita      float64     `gorm:"column:remuneracoes_membro"`
-	NumMonthsWithData           int         `gorm:"column:meses_com_dados"`
-	ItemSummary                 ItemSummary `gorm:"embedded"`
-	Inconsistent                bool        `gorm:"column:inconsistente;<-:false"`
+	Year                        int                `gorm:"column:ano"`
+	AverageCount                int                `gorm:"column:media_num_membros"`
+	TotalCount                  int                `gorm:"column:total_num_membros"`
+	BaseRemuneration            float64            `gorm:"column:remuneracao_base"`
+	OtherRemunerations          float64            `gorm:"column:outras_remuneracoes"`
+	Discounts                   float64            `gorm:"column:descontos"`
+	Remunerations               float64            `gorm:"column:remuneracoes"`
+	BaseRemunerationPerCapita   float64            `gorm:"column:remuneracao_base_membro"`
+	OtherRemunerationsPerCapita float64            `gorm:"column:outras_remuneracoes_membro"`
+	DiscountsPerCapita          float64            `gorm:"column:descontos_membro"`
+	RemunerationsPerCapita      float64            `gorm:"column:remuneracoes_membro"`
+	NumMonthsWithData           int                `gorm:"column:meses_com_dados"`
+	ItemSummary                 map[string]float64 `gorm:"-" json:"item_summary"`
+	Inconsistent                bool               `gorm:"column:inconsistente;<-:false"`
 }
 
 func NewAnnualSummaryDTO(ami models.AnnualSummary) *AnnualSummaryDTO {
@@ -35,17 +35,8 @@ func NewAnnualSummaryDTO(ami models.AnnualSummary) *AnnualSummaryDTO {
 		Discounts:                   ami.Discounts,
 		Remunerations:               ami.Remunerations,
 		NumMonthsWithData:           ami.NumMonthsWithData,
-		ItemSummary: ItemSummary{
-			FoodAllowance:        ami.ItemSummary.FoodAllowance,
-			BonusLicense:         ami.ItemSummary.BonusLicense,
-			VacationCompensation: ami.ItemSummary.VacationCompensation,
-			Vacation:             ami.ItemSummary.Vacation,
-			ChristmasBonus:       ami.ItemSummary.ChristmasBonus,
-			CompensatoryLicense:  ami.ItemSummary.CompensatoryLicense,
-			HealthAllowance:      ami.ItemSummary.HealthAllowance,
-			Others:               ami.ItemSummary.Others,
-		},
-		Inconsistent: ami.Inconsistent,
+		ItemSummary:                 ami.ItemSummary,
+		Inconsistent:                ami.Inconsistent,
 	}
 }
 
@@ -63,16 +54,7 @@ func (ami *AnnualSummaryDTO) ConvertToModel() *models.AnnualSummary {
 		Discounts:                   ami.Discounts,
 		Remunerations:               ami.Remunerations,
 		NumMonthsWithData:           ami.NumMonthsWithData,
-		ItemSummary: models.ItemSummary{
-			FoodAllowance:        ami.ItemSummary.FoodAllowance,
-			BonusLicense:         ami.ItemSummary.BonusLicense,
-			VacationCompensation: ami.ItemSummary.VacationCompensation,
-			Vacation:             ami.ItemSummary.Vacation,
-			ChristmasBonus:       ami.ItemSummary.ChristmasBonus,
-			CompensatoryLicense:  ami.ItemSummary.CompensatoryLicense,
-			HealthAllowance:      ami.ItemSummary.HealthAllowance,
-			Others:               ami.ItemSummary.Others,
-		},
-		Inconsistent: ami.Inconsistent,
+		ItemSummary:                 ami.ItemSummary,
+		Inconsistent:                ami.Inconsistent,
 	}
 }

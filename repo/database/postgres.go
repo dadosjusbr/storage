@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	reflect "reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -310,11 +312,88 @@ func (p *PostgresDB) GetMonthlyInfo(agencies []models.Agency, year int) (map[str
 	return results, nil
 }
 
+// Consultamos os nomes das rubricas que estão no sumário
+// Formatamos a query para que ela retorne o SQL necessário
+// Juntamos tudo na query principal
+func (p *PostgresDB) getItemSummary() (*string, error) {
+	queryRubricas := `SELECT 
+							string_agg(
+								format(
+									'SUM(CAST(sumario -> ''resumo_rubricas'' ->> %L AS DECIMAL)) AS %I',
+									chave, chave
+								),
+								', ' || E'\n'
+							) AS sql
+						FROM (
+							SELECT DISTINCT jsonb_object_keys((sumario -> 'resumo_rubricas')::jsonb) AS chave
+							FROM coletas
+						) sub;`
+
+	var resultRubricas *string
+
+	result := p.db.Raw(queryRubricas)
+	if err := result.Scan(&resultRubricas).Error; err != nil {
+		return nil, fmt.Errorf("error getting sql: %w", err)
+	}
+
+	return resultRubricas, nil
+}
+
+// getColumnName extrai o nome da coluna de uma tag GORM
+func getColumnName(gormTag string) string {
+	parts := strings.Split(gormTag, ";")
+	for _, part := range parts {
+		if strings.HasPrefix(part, "column:") {
+			return strings.TrimPrefix(part, "column:")
+		}
+	}
+	return ""
+}
+
+// Pegando as tags do DTO
+// e criando um mapa com os nomes das colunas predefinidas
+// a fim de não sobrescrever os valores e pegar apenas as rubricas
+// que não estão no DTO
+func getDtoTags(dto interface{}) map[string]interface{} {
+	t := reflect.TypeOf(dto)
+	var tags []string
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		gormTag := field.Tag.Get("gorm")
+		tags = append(tags, getColumnName(gormTag))
+	}
+
+	dtoTags := make(map[string]interface{})
+
+	for _, tag := range tags {
+		dtoTags[tag] = struct{}{}
+	}
+
+	return dtoTags
+}
+
 func (p *PostgresDB) GetAnnualSummary(agency string) ([]models.AnnualSummary, error) {
 	var dtoAmis []dto.AnnualSummaryDTO
 	agency = strings.ToLower(agency)
 
-	query := `
+	resultRubricas, err := p.getItemSummary()
+	if err != nil {
+		return nil, fmt.Errorf("error getting item summary: %w", err)
+	}
+
+	// Checa se o resultado é nulo ou não
+	// Se for nulo, inicializa com uma string vazia
+	// Se não for nulo, adiciona uma vírgula no final
+	// para que a query funcione corretamente
+	if resultRubricas == nil {
+		empty := ""
+		resultRubricas = &empty
+	} else if !strings.HasSuffix(*resultRubricas, ",") {
+		*resultRubricas += ","
+	}
+
+	query := fmt.Sprintf(`
 		coletas.ano,
 		coletas.id_orgao,
 		TRUNC(AVG((sumario -> 'membros')::text::int)) AS media_num_membros,
@@ -323,20 +402,13 @@ func (p *PostgresDB) GetAnnualSummary(agency string) ([]models.AnnualSummary, er
 		SUM(CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)) AS outras_remuneracoes,
 		SUM(CAST(sumario -> 'descontos' ->> 'total' AS DECIMAL)) AS descontos,
 		SUM(CAST(sumario -> 'remuneracoes' ->> 'total' AS DECIMAL)) AS remuneracoes,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'auxilio_alimentacao' AS DECIMAL)) AS auxilio_alimentacao,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'licenca_premio' AS DECIMAL)) AS licenca_premio,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'indenizacao_de_ferias' AS DECIMAL)) AS indenizacao_de_ferias,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'gratificacao_natalina' AS DECIMAL)) AS gratificacao_natalina,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'licenca_compensatoria' AS DECIMAL)) AS licenca_compensatoria,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'auxilio_saude' AS DECIMAL)) AS auxilio_saude,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'outras' AS DECIMAL)) AS outras,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'ferias' AS DECIMAL)) AS ferias,
+		%s
 		COUNT(*) AS meses_com_dados,
 		MAX(mpm.salario) AS remuneracao_base_membro,
 		MAX(mpm.beneficios) AS outras_remuneracoes_membro,
 		MAX(mpm.descontos) AS descontos_membro,
 		MAX(mpm.remuneracao) AS remuneracoes_membro,
-		oa.inconsistente`
+		oa.inconsistente`, *resultRubricas)
 
 	join := `LEFT JOIN media_por_membro mpm ON coletas.ano = mpm.ano AND coletas.id_orgao = mpm.orgao
 			 LEFT JOIN orgao_ano_inconsistentes oa ON coletas.id_orgao = oa.id_orgao AND coletas.ano = oa.ano`
@@ -346,6 +418,71 @@ func (p *PostgresDB) GetAnnualSummary(agency string) ([]models.AnnualSummary, er
 	if err := m.Scan(&dtoAmis).Error; err != nil {
 		return nil, fmt.Errorf("error getting annual monthly info: %q", err)
 	}
+
+	// Pegando as tags do DTO
+	// e criando um mapa com os nomes das colunas predefinidas
+	// a fim de não sobrescrever os valores e pegar apenas as rubricas
+	// que não estão no DTO
+	dtoTags := getDtoTags(dto.AnnualSummaryDTO{})
+
+	// Pegando os nomes das colunas do resultado da query
+	// que inclui os nomes das rubricas
+	rows, err := m.Rows()
+	if err != nil {
+		return nil, fmt.Errorf("error executing query: %w", err)
+	}
+	defer rows.Close()
+
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, fmt.Errorf("error getting column names: %w", err)
+	}
+
+	// Iterando sobre as colunas e criando um slice de valores
+	// Assim, podemos pegar o valor pelo nome da coluna
+	values := make([]interface{}, len(columns))
+	valuePtrs := make([]interface{}, len(columns))
+
+	for i := range columns {
+		valuePtrs[i] = &values[i]
+	}
+
+	rubricasPorAno := make(map[int]map[string]float64)
+
+	for rows.Next() {
+		rows.Scan(valuePtrs...)
+
+		var ano int
+
+		// Checa se o valor é de um field predefinido (não rubrica)
+		// a partir de dtoTags
+		// Se não for, adiciona no mapa de rubricas
+		itemSummary := make(map[string]float64)
+		for i, col := range columns {
+			val := values[i]
+			if _, ok := dtoTags[col]; !ok && col != "id_orgao" {
+				if val != nil {
+					itemSummary[col], _ = strconv.ParseFloat(string(val.([]byte)), 64)
+				} else {
+					itemSummary[col] = 0
+				}
+			} else if col == "ano" {
+				ano = int(val.(int64))
+			}
+		}
+
+		// Adiciona o itemSummary no mapa de rubricas
+		// no respectivo ano
+		rubricasPorAno[ano] = itemSummary
+	}
+
+	for i := range dtoAmis {
+		ano := dtoAmis[i].Year
+		if itemSummary, ok := rubricasPorAno[ano]; ok {
+			dtoAmis[i].ItemSummary = itemSummary
+		}
+	}
+
 	var amis []models.AnnualSummary
 	for _, dtoAmi := range dtoAmis {
 		amis = append(amis, *dtoAmi.ConvertToModel())
@@ -383,27 +520,103 @@ func (p *PostgresDB) GetOMA(month int, year int, agency string) (*models.AgencyM
 func (p *PostgresDB) GetGeneralMonthlyInfosFromYear(year int) ([]models.GeneralMonthlyInfo, error) {
 	var dtoAgmi dto.AgencyMonthlyInfoDTO
 	var dtoGmi []dto.GeneralMonthlyInfoDTO
-	query := `
+
+	resultRubricas, err := p.getItemSummary()
+	if err != nil {
+		return nil, fmt.Errorf("error getting item summary: %w", err)
+	}
+
+	// Checa se o resultado é nulo ou não
+	// Se for nulo, inicializa com uma string vazia
+	// Se não for nulo, adiciona uma vírgula no início
+	// para que a query funcione corretamente
+	if resultRubricas == nil {
+		empty := ""
+		resultRubricas = &empty
+	} else if !strings.HasPrefix(*resultRubricas, ", ") {
+		*resultRubricas = ", " + *resultRubricas
+	}
+
+	query := fmt.Sprintf(`
 		mes,
 		SUM((sumario -> 'membros')::text::int) AS num_membros,
 		SUM(CAST(sumario -> 'remuneracao_base' ->> 'total' AS DECIMAL)) AS remuneracao_base,
 		SUM(CAST(sumario -> 'outras_remuneracoes' ->> 'total' AS DECIMAL)) AS outras_remuneracoes,
 		SUM(CAST(sumario -> 'descontos' ->> 'total' AS DECIMAL)) AS descontos,
-		SUM(CAST(sumario -> 'remuneracoes' ->> 'total' AS DECIMAL)) AS remuneracoes,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'auxilio_alimentacao' AS DECIMAL)) AS auxilio_alimentacao,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'licenca_premio' AS DECIMAL)) AS licenca_premio,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'indenizacao_de_ferias' AS DECIMAL)) AS indenizacao_de_ferias,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'gratificacao_natalina' AS DECIMAL)) AS gratificacao_natalina,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'licenca_compensatoria' AS DECIMAL)) AS licenca_compensatoria,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'auxilio_saude' AS DECIMAL)) AS auxilio_saude,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'ferias' AS DECIMAL)) AS ferias,
-		SUM(CAST(sumario -> 'resumo_rubricas' ->> 'outras' AS DECIMAL)) AS outras`
+		SUM(CAST(sumario -> 'remuneracoes' ->> 'total' AS DECIMAL)) AS remuneracoes
+		%s`, *resultRubricas)
+
 	m := p.db.Model(&dtoAgmi).Select(query)
 	m = m.Where("ano = ? AND atual=true AND (procinfo IS NULL OR procinfo::text = 'null')", year)
 	m = m.Group("mes").Order("mes ASC")
 	if err := m.Scan(&dtoGmi).Error; err != nil {
 		return nil, fmt.Errorf("error getting general remuneration value: %q", err)
 	}
+
+	// Pegando as tags do DTO
+	// e criando um mapa com os nomes das colunas predefinidas
+	// a fim de não sobrescrever os valores e pegar apenas as rubricas
+	// que não estão no DTO
+	dtoTags := getDtoTags(dto.GeneralMonthlyInfoDTO{})
+
+	// Pegando os nomes das colunas do resultado da query
+	// que inclui os nomes das rubricas
+	rows, err := m.Rows()
+	if err != nil {
+		return nil, fmt.Errorf("error executing query: %w", err)
+	}
+	defer rows.Close()
+
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, fmt.Errorf("error getting column names: %w", err)
+	}
+
+	// Iterando sobre as colunas e criando um slice de valores
+	// Assim, podemos pegar o valor pelo nome da coluna
+	values := make([]interface{}, len(columns))
+	valuePtrs := make([]interface{}, len(columns))
+
+	for i := range columns {
+		valuePtrs[i] = &values[i]
+	}
+
+	rubricasPorMes := make(map[int]map[string]float64)
+
+	for rows.Next() {
+		rows.Scan(valuePtrs...)
+
+		var mes int
+
+		// Checa se o valor é de um field predefinido (não rubrica)
+		// a partir de dtoTags
+		// Se não for, adiciona no mapa de rubricas
+		itemSummary := make(map[string]float64)
+		for i, col := range columns {
+			val := values[i]
+			if _, ok := dtoTags[col]; !ok && col != "id_orgao" {
+				if val != nil {
+					itemSummary[col], _ = strconv.ParseFloat(string(val.([]byte)), 64)
+				} else {
+					itemSummary[col] = 0
+				}
+			} else if col == "mes" {
+				mes = int(val.(int64))
+			}
+		}
+
+		// Adiciona o itemSummary no mapa de rubricas
+		// no respectivo mes
+		rubricasPorMes[mes] = itemSummary
+	}
+
+	for i := range dtoGmi {
+		mes := dtoGmi[i].Month
+		if itemSummary, ok := rubricasPorMes[mes]; ok {
+			dtoGmi[i].ItemSummary = itemSummary
+		}
+	}
+
 	var gmis []models.GeneralMonthlyInfo
 	for _, gmi := range dtoGmi {
 		gmis = append(gmis, *gmi.ConvertToModel())
