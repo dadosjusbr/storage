@@ -27,13 +27,18 @@ type DataSummary struct {
 	Total   float64 `json:"total,omitempty"`
 }
 
-type ItemSummary struct {
-	FoodAllowance        float64 `json:"auxilio_alimentacao,omitempty"`
-	BonusLicense         float64 `json:"licenca_premio,omitempty"`
-	VacationCompensation float64 `json:"indenizacao_de_ferias,omitempty"` // indenização
-	Vacation             float64 `json:"ferias,omitempty"`
-	ChristmasBonus       float64 `json:"gratificacao_natalina,omitempty"`
-	CompensatoryLicense  float64 `json:"licenca_compensatoria,omitempty"`
-	HealthAllowance      float64 `json:"auxilio_saude,omitempty"`
-	Others               float64 `json:"outras,omitempty"` // valor agregado de outras rubricas não identificadas
-}
+// DEPRECATED: The ItemSummary struct is deprecated
+// Use the ItemSummary map[string]float64 instead.
+
+// type ItemSummary struct {
+// 	FoodAllowance        float64 `json:"auxilio_alimentacao,omitempty"`
+// 	BonusLicense         float64 `json:"licenca_premio,omitempty"`
+// 	VacationCompensation float64 `json:"indenizacao_de_ferias,omitempty"` // indenização
+// 	Vacation             float64 `json:"ferias,omitempty"`
+// 	ChristmasBonus       float64 `json:"gratificacao_natalina,omitempty"`
+// 	CompensatoryLicense  float64 `json:"licenca_compensatoria,omitempty"`
+// 	HealthAllowance      float64 `json:"auxilio_saude,omitempty"`
+// 	Others               float64 `json:"outras,omitempty"` // valor agregado de outras rubricas não identificadas
+// }
+
+type ItemSummary map[string]float64

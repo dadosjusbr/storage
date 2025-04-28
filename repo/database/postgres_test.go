@@ -953,7 +953,7 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 					Total: 1000,
 				},
 				ItemSummary: models.ItemSummary{
-					Others: 100,
+					"outras": 100,
 				},
 			},
 		},
@@ -998,14 +998,14 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 					Total: 1500,
 				},
 				ItemSummary: models.ItemSummary{
-					Others:               100,
-					FoodAllowance:        150,
-					BonusLicense:         200,
-					ChristmasBonus:       175,
-					CompensatoryLicense:  75,
-					VacationCompensation: 50,
-					HealthAllowance:      125,
-					Vacation:             300,
+					"outras":                100,
+					"auxilio_alimentacao":   150,
+					"licenca_premio":        200,
+					"gratificacao_natalina": 175,
+					"licenca_compensatoria": 75,
+					"indenizacao_de_ferias": 50,
+					"auxilio_saude":         125,
+					"ferias":                300,
 				},
 			},
 		},
@@ -1106,14 +1106,14 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 						Discounts:          agmi.Summary.Discounts.Total + agmi2.Summary.Discounts.Total,
 						Remunerations:      agmi.Summary.Remunerations.Total + agmi2.Summary.Remunerations.Total,
 						ItemSummary: models.ItemSummary{
-							Others:               agmi.Summary.ItemSummary.Others + agmi2.Summary.ItemSummary.Others,
-							BonusLicense:         agmi.Summary.ItemSummary.BonusLicense + agmi2.Summary.ItemSummary.BonusLicense,
-							FoodAllowance:        agmi.Summary.ItemSummary.FoodAllowance + agmi2.Summary.ItemSummary.FoodAllowance,
-							VacationCompensation: agmi.Summary.ItemSummary.VacationCompensation + agmi2.Summary.ItemSummary.VacationCompensation,
-							ChristmasBonus:       agmi.Summary.ItemSummary.ChristmasBonus + agmi2.Summary.ItemSummary.ChristmasBonus,
-							CompensatoryLicense:  agmi.Summary.ItemSummary.CompensatoryLicense + agmi2.Summary.ItemSummary.CompensatoryLicense,
-							HealthAllowance:      agmi.Summary.ItemSummary.HealthAllowance + agmi2.Summary.ItemSummary.HealthAllowance,
-							Vacation:             agmi.Summary.ItemSummary.Vacation + agmi2.Summary.ItemSummary.Vacation,
+							"outras":                agmi.Summary.ItemSummary["outras"] + agmi2.Summary.ItemSummary["outras"],
+							"licenca_premio":        agmi.Summary.ItemSummary["licenca_premio"] + agmi2.Summary.ItemSummary["licenca_premio"],
+							"auxilio_alimentacao":   agmi.Summary.ItemSummary["auxilio_alimentacao"] + agmi2.Summary.ItemSummary["auxilio_alimentacao"],
+							"indenizacao_de_ferias": agmi.Summary.ItemSummary["indenizacao_de_ferias"] + agmi2.Summary.ItemSummary["indenizacao_de_ferias"],
+							"gratificacao_natalina": agmi.Summary.ItemSummary["gratificacao_natalina"] + agmi2.Summary.ItemSummary["gratificacao_natalina"],
+							"licenca_compensatoria": agmi.Summary.ItemSummary["licenca_compensatoria"] + agmi2.Summary.ItemSummary["licenca_compensatoria"],
+							"auxilio_saude":         agmi.Summary.ItemSummary["auxilio_saude"] + agmi2.Summary.ItemSummary["auxilio_saude"],
+							"ferias":                agmi.Summary.ItemSummary["ferias"] + agmi2.Summary.ItemSummary["ferias"],
 						},
 					})
 				}
@@ -1134,14 +1134,14 @@ func (g getAnnualSummary) testWhenMonthlyInfoExists(t *testing.T) {
 	assert.Equal(t, amis[0].TotalCount, returnedAmis[0].TotalCount)
 	assert.Equal(t, amis[1].TotalCount, returnedAmis[1].TotalCount)
 	assert.Equal(t, 2, returnedAmis[0].NumMonthsWithData)
-	assert.Equal(t, amis[0].ItemSummary.Others, returnedAmis[0].ItemSummary.Others)
-	assert.Equal(t, amis[1].ItemSummary.BonusLicense, returnedAmis[1].ItemSummary.BonusLicense)
-	assert.Equal(t, amis[1].ItemSummary.FoodAllowance, returnedAmis[1].ItemSummary.FoodAllowance)
-	assert.Equal(t, amis[1].ItemSummary.VacationCompensation, returnedAmis[1].ItemSummary.VacationCompensation)
-	assert.Equal(t, amis[1].ItemSummary.ChristmasBonus, returnedAmis[1].ItemSummary.ChristmasBonus)
-	assert.Equal(t, amis[1].ItemSummary.CompensatoryLicense, returnedAmis[1].ItemSummary.CompensatoryLicense)
-	assert.Equal(t, amis[1].ItemSummary.HealthAllowance, returnedAmis[1].ItemSummary.HealthAllowance)
-	assert.Equal(t, amis[1].ItemSummary.Vacation, returnedAmis[1].ItemSummary.Vacation)
+	assert.Equal(t, amis[0].ItemSummary["outras"], returnedAmis[0].ItemSummary["outras"])
+	assert.Equal(t, amis[1].ItemSummary["licenca_premio"], returnedAmis[1].ItemSummary["licenca_premio"])
+	assert.Equal(t, amis[1].ItemSummary["auxilio_alimentacao"], returnedAmis[1].ItemSummary["auxilio_alimentacao"])
+	assert.Equal(t, amis[1].ItemSummary["indenizacao_de_ferias"], returnedAmis[1].ItemSummary["indenizacao_de_ferias"])
+	assert.Equal(t, amis[1].ItemSummary["gratificacao_natalina"], returnedAmis[1].ItemSummary["gratificacao_natalina"])
+	assert.Equal(t, amis[1].ItemSummary["licenca_compensatoria"], returnedAmis[1].ItemSummary["licenca_compensatoria"])
+	assert.Equal(t, amis[1].ItemSummary["auxilio_saude"], returnedAmis[1].ItemSummary["auxilio_saude"])
+	assert.Equal(t, amis[1].ItemSummary["ferias"], returnedAmis[1].ItemSummary["ferias"])
 	assert.Equal(t, 1000.0, returnedAmis[2].BaseRemunerationPerCapita)
 	assert.Equal(t, 1200.0, returnedAmis[2].OtherRemunerationsPerCapita)
 	assert.Equal(t, amis[0].Inconsistent, returnedAmis[0].Inconsistent)
@@ -1278,7 +1278,7 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 					Total: 1000,
 				},
 				ItemSummary: models.ItemSummary{
-					FoodAllowance: 200,
+					"auxilio_alimentacao": 200,
 				},
 			},
 		},
@@ -1302,13 +1302,13 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 					Total: 3750,
 				},
 				ItemSummary: models.ItemSummary{
-					BonusLicense:         400,
-					FoodAllowance:        100,
-					VacationCompensation: 50,
-					ChristmasBonus:       75,
-					CompensatoryLicense:  175,
-					HealthAllowance:      130,
-					Vacation:             300,
+					"licenca_premio":        400,
+					"auxilio_alimentacao":   100,
+					"indenizacao_de_ferias": 50,
+					"gratificacao_natalina": 75,
+					"licenca_compensatoria": 175,
+					"auxilio_saude":         130,
+					"ferias":                300,
 				},
 			},
 		},
@@ -1341,13 +1341,13 @@ func (g getGeneralMonthlyInfoFromYear) testWhenDataExists(t *testing.T) {
 						Discounts:          agmi.Summary.Discounts.Total + agmi2.Summary.Discounts.Total,
 						Remunerations:      agmi.Summary.Remunerations.Total + agmi2.Summary.Remunerations.Total,
 						ItemSummary: models.ItemSummary{
-							FoodAllowance:        agmi.Summary.ItemSummary.FoodAllowance + agmi2.Summary.ItemSummary.FoodAllowance,
-							BonusLicense:         agmi.Summary.ItemSummary.BonusLicense + agmi2.Summary.ItemSummary.BonusLicense,
-							VacationCompensation: agmi.Summary.ItemSummary.VacationCompensation + agmi2.Summary.ItemSummary.VacationCompensation,
-							ChristmasBonus:       agmi.Summary.ItemSummary.ChristmasBonus + agmi2.Summary.ItemSummary.ChristmasBonus,
-							CompensatoryLicense:  agmi.Summary.ItemSummary.CompensatoryLicense + agmi2.Summary.ItemSummary.CompensatoryLicense,
-							HealthAllowance:      agmi.Summary.ItemSummary.HealthAllowance + agmi2.Summary.ItemSummary.HealthAllowance,
-							Vacation:             agmi.Summary.ItemSummary.Vacation + agmi2.Summary.ItemSummary.Vacation,
+							"auxilio_alimentacao":   agmi.Summary.ItemSummary["auxilio_alimentacao"] + agmi2.Summary.ItemSummary["auxilio_alimentacao"],
+							"licenca_premio":        agmi.Summary.ItemSummary["licenca_premio"] + agmi2.Summary.ItemSummary["licenca_premio"],
+							"indenizacao_de_ferias": agmi.Summary.ItemSummary["indenizacao_de_ferias"] + agmi2.Summary.ItemSummary["indenizacao_de_ferias"],
+							"gratificacao_natalina": agmi.Summary.ItemSummary["gratificacao_natalina"] + agmi2.Summary.ItemSummary["gratificacao_natalina"],
+							"licenca_compensatoria": agmi.Summary.ItemSummary["licenca_compensatoria"] + agmi2.Summary.ItemSummary["licenca_compensatoria"],
+							"auxilio_saude":         agmi.Summary.ItemSummary["auxilio_saude"] + agmi2.Summary.ItemSummary["auxilio_saude"],
+							"ferias":                agmi.Summary.ItemSummary["ferias"] + agmi2.Summary.ItemSummary["ferias"],
 						},
 					})
 				}
@@ -1498,14 +1498,14 @@ func (s store) testWhenDataIsOK(t *testing.T) {
 			},
 			IncomeHistogram: map[int]int{-1: 0, 10000: 0, 20000: 0, 30000: 116, 40000: 546, 50000: 0},
 			ItemSummary: models.ItemSummary{
-				FoodAllowance:        100,
-				BonusLicense:         150,
-				VacationCompensation: 125,
-				ChristmasBonus:       175,
-				CompensatoryLicense:  120,
-				HealthAllowance:      130,
-				Vacation:             300,
-				Others:               200,
+				"auxilio_alimentacao":   100,
+				"licenca_premio":        150,
+				"indenizacao_de_ferias": 125,
+				"gratificacao_natalina": 175,
+				"licenca_compensatoria": 120,
+				"auxilio_saude":         130,
+				"ferias":                300,
+				"outras":                200,
 			},
 		},
 		CrawlerVersion:    "b9ec52df612cda045544543a3b0387842475764d",
@@ -1568,13 +1568,13 @@ func (s store) testWhenDataIsOK(t *testing.T) {
 	assert.Equal(t, agmi.Meta.Extension, result.Meta.Extension)
 	assert.Equal(t, agmi.Score.Score, result.Score.Score)
 	assert.Equal(t, agmi.Duration, result.Duration)
-	assert.Equal(t, agmi.Summary.ItemSummary.FoodAllowance, result.Summary.ItemSummary.FoodAllowance)
-	assert.Equal(t, agmi.Summary.ItemSummary.BonusLicense, result.Summary.ItemSummary.BonusLicense)
-	assert.Equal(t, agmi.Summary.ItemSummary.VacationCompensation, result.Summary.ItemSummary.VacationCompensation)
-	assert.Equal(t, agmi.Summary.ItemSummary.ChristmasBonus, result.Summary.ItemSummary.ChristmasBonus)
-	assert.Equal(t, agmi.Summary.ItemSummary.CompensatoryLicense, result.Summary.ItemSummary.CompensatoryLicense)
-	assert.Equal(t, agmi.Summary.ItemSummary.HealthAllowance, result.Summary.ItemSummary.HealthAllowance)
-	assert.Equal(t, agmi.Summary.ItemSummary.Vacation, result.Summary.ItemSummary.Vacation)
+	assert.Equal(t, agmi.Summary.ItemSummary["auxilio_alimentacao"], result.Summary.ItemSummary["auxilio_alimentacao"])
+	assert.Equal(t, agmi.Summary.ItemSummary["licenca_premio"], result.Summary.ItemSummary["licenca_premio"])
+	assert.Equal(t, agmi.Summary.ItemSummary["indenizacao_de_ferias"], result.Summary.ItemSummary["indenizacao_de_ferias"])
+	assert.Equal(t, agmi.Summary.ItemSummary["gratificacao_natalina"], result.Summary.ItemSummary["gratificacao_natalina"])
+	assert.Equal(t, agmi.Summary.ItemSummary["licenca_compensatoria"], result.Summary.ItemSummary["licenca_compensatoria"])
+	assert.Equal(t, agmi.Summary.ItemSummary["auxilio_saude"], result.Summary.ItemSummary["auxilio_saude"])
+	assert.Equal(t, agmi.Summary.ItemSummary["ferias"], result.Summary.ItemSummary["ferias"])
 	truncateTables()
 }
 

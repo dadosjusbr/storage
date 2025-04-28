@@ -5,13 +5,13 @@ import (
 )
 
 type GeneralMonthlyInfoDTO struct {
-	Month              int         `gorm:"column:mes"`
-	Count              int         `gorm:"column:num_membros"`
-	BaseRemuneration   float64     `gorm:"column:remuneracao_base"`
-	OtherRemunerations float64     `gorm:"column:outras_remuneracoes"`
-	Discounts          float64     `gorm:"column:descontos"`
-	Remunerations      float64     `gorm:"column:remuneracoes"`
-	ItemSummary        ItemSummary `gorm:"embedded"`
+	Month              int                `gorm:"column:mes"`
+	Count              int                `gorm:"column:num_membros"`
+	BaseRemuneration   float64            `gorm:"column:remuneracao_base"`
+	OtherRemunerations float64            `gorm:"column:outras_remuneracoes"`
+	Discounts          float64            `gorm:"column:descontos"`
+	Remunerations      float64            `gorm:"column:remuneracoes"`
+	ItemSummary        map[string]float64 `gorm:"-" json:"item_summary"`
 }
 
 type ItemSummary struct {
@@ -33,16 +33,7 @@ func NewGeneralMonthlyInfoDTO(gmi models.GeneralMonthlyInfo) *GeneralMonthlyInfo
 		OtherRemunerations: gmi.OtherRemunerations,
 		Discounts:          gmi.Discounts,
 		Remunerations:      gmi.Remunerations,
-		ItemSummary: ItemSummary{
-			FoodAllowance:        gmi.ItemSummary.FoodAllowance,
-			BonusLicense:         gmi.ItemSummary.BonusLicense,
-			VacationCompensation: gmi.ItemSummary.VacationCompensation,
-			Vacation:             gmi.ItemSummary.Vacation,
-			ChristmasBonus:       gmi.ItemSummary.ChristmasBonus,
-			CompensatoryLicense:  gmi.ItemSummary.CompensatoryLicense,
-			HealthAllowance:      gmi.ItemSummary.HealthAllowance,
-			Others:               gmi.ItemSummary.Others,
-		},
+		ItemSummary:        gmi.ItemSummary,
 	}
 }
 
@@ -54,15 +45,6 @@ func (gmi *GeneralMonthlyInfoDTO) ConvertToModel() *models.GeneralMonthlyInfo {
 		OtherRemunerations: gmi.OtherRemunerations,
 		Discounts:          gmi.Discounts,
 		Remunerations:      gmi.Remunerations,
-		ItemSummary: models.ItemSummary{
-			FoodAllowance:        gmi.ItemSummary.FoodAllowance,
-			BonusLicense:         gmi.ItemSummary.BonusLicense,
-			VacationCompensation: gmi.ItemSummary.VacationCompensation,
-			Vacation:             gmi.ItemSummary.Vacation,
-			ChristmasBonus:       gmi.ItemSummary.ChristmasBonus,
-			CompensatoryLicense:  gmi.ItemSummary.CompensatoryLicense,
-			HealthAllowance:      gmi.ItemSummary.HealthAllowance,
-			Others:               gmi.ItemSummary.Others,
-		},
+		ItemSummary:        gmi.ItemSummary,
 	}
 }
