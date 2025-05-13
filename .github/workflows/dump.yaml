@@ -9,6 +9,7 @@ on:
     push:
         branches:
             - atualiza-versao-maquina-e-query
+            
 
 jobs:
     Atualizar-views-materializadas:
