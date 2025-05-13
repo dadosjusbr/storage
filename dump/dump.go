@@ -47,8 +47,8 @@ func main() {
 	defer pgS3Client.Db.Disconnect()
 
 	// Criando o pacote
-	year, month, _ := time.Now().Date()
-	pkgName := fmt.Sprintf("dadosjusbr-%d-%d.zip", year, month)
+	year, _, _ := time.Now().Date()
+	pkgName := fmt.Sprintf("dadosjusbr-%d-%d.zip", year, 4)
 	desc, err := datapackage.DescriptorMapV2()
 
 	if err != nil {
