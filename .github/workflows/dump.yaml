@@ -6,10 +6,13 @@ on:
     schedule:
         - cron: "0 3 17 * *"
         - cron: "0 3 2 * *"
+    push:
+        branches:
+            - atualiza-versao-maquina-e-query
 
 jobs:
     Atualizar-views-materializadas:
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-latest
         name: Atualizando views materializadas
         steps:
             - uses: actions/checkout@v3
@@ -18,8 +21,8 @@ jobs:
               run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "SELECT atualizar_views_materializadas();"
 
     Dump:
-        if: github.event.schedule == '0 3 17 * *' || github.event_name == 'workflow_dispatch'
-        runs-on: ubuntu-20.04
+        if: github.event.schedule == '0 3 17 * *' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+        runs-on: ubuntu-latest
         env:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -38,7 +41,7 @@ jobs:
               run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "\copy (SELECT  id as id_contracheque, orgao, mes, ano, nome, matricula, funcao, local_trabalho, replace(salario::text, '.', ',') as salario, replace(beneficios::text, '.', ',') as beneficios, replace(descontos::text, '.', ',') as descontos, replace(remuneracao::text, '.', ',') as remuneracao, situacao FROM contracheques) TO 'dump/contracheque.csv' csv header delimiter ';';"
                
             - name: Criando remuneracao.csv...
-              run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "\copy (SELECT id_contracheque, orgao, mes, ano, tipo, categoria, item, replace(valor::text, '.', ',') as valor FROM remuneracoes) TO 'dump/remuneracao.csv' csv header delimiter ';';"
+              run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "\copy (SELECT id_contracheque, orgao, mes, ano, tipo, categoria, item, replace((CASE WHEN tipo = 'D' THEN (valor * -1)::text ELSE valor::text END), '.', ',') as valor, CASE WHEN tipo = 'R/O' THEN r.desambiguacao_micro ELSE NULL END AS desambiguacao_micro, CASE WHEN tipo = 'R/O' THEN r.desambiguacao_macro ELSE NULL END AS desambiguacao_macro FROM remuneracoes left join rubricas r on remuneracoes.item_sanitizado = r.rubrica) TO 'dump/remuneracao.csv' csv header delimiter ';';"
 
             - name: Realizando dump...
               run: |

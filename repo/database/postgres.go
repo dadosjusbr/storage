@@ -326,7 +326,7 @@ func (p *PostgresDB) getItemSummary() (*string, error) {
 							) AS sql
 						FROM (
 							SELECT DISTINCT jsonb_object_keys((sumario -> 'resumo_rubricas')::jsonb) AS chave
-							FROM coletas
+							FROM coletas WHERE atual = true
 						) sub;`
 
 	var resultRubricas *string
