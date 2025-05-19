@@ -3,7 +3,7 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: golang:1.19
+    container: golang:1.23
     services:
       postgres_test:
         image: postgres
