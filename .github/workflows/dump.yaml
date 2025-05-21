@@ -2,45 +2,45 @@
 name: DUMP
 
 on:
-    workflow_dispatch:
-    schedule:
-        - cron: "0 3 17 * *"
-        - cron: "0 3 2 * *"
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 17 * *"
+    - cron: "0 3 2 * *"
 
 jobs:
-    Atualizar-views-materializadas:
-        runs-on: ubuntu-20.04
-        name: Atualizando views materializadas
-        steps:
-            - uses: actions/checkout@v3
+  Atualizar-views-materializadas:
+    runs-on: ubuntu-24.04
+    name: Atualizando views materializadas
+    steps:
+      - uses: actions/checkout@v3
 
-            - name: Atualizando views
-              run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "SELECT atualizar_views_materializadas();"
+      - name: Atualizando views
+        run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "SELECT atualizar_views_materializadas();"
 
-    Dump:
-        if: github.event.schedule == '0 3 17 * *' || github.event_name == 'workflow_dispatch'
-        runs-on: ubuntu-20.04
-        env:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  Dump:
+    if: github.event.schedule == '0 3 17 * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-        name: Dump do banco de dados
-        steps:
-            - uses: actions/checkout@v3
+    name: Dump do banco de dados
+    steps:
+      - uses: actions/checkout@v3
 
-            - name: Criando coleta.csv...
-              run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "\copy (SELECT id as chave_coleta, id_orgao as orgao, mes, ano, TO_CHAR(timestamp, 'YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') as timestampb_coleta, repositorio_coletor, versao_coletor, repositorio_parser, versao_parser FROM coletas WHERE (procinfo is null or procinfo::text = 'null') and atual=true) TO 'dump/coleta.csv' csv header delimiter ';';"
-              
-            - name: Criando metadados.csv...
-              run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "\copy (SELECT id_orgao as orgao, mes, ano, formato_aberto, acesso, extensao, estritamente_tabular, formato_consistente, tem_matricula, tem_lotacao, tem_cargo, detalhamento_receita_base, detalhamento_outras_receitas, detalhamento_descontos, replace(indice_completude::text, '.', ',') as indice_completude, replace(indice_facilidade::text, '.', ',') as indice_facilidade, replace(indice_transparencia::text, '.', ',') as indice_transparencia FROM coletas WHERE (procinfo is null or procinfo::text = 'null') and atual=true) TO 'dump/metadados.csv' csv header delimiter ';';"
-            
-            - name: Criando contracheque.csv...
-              run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "\copy (SELECT  id as id_contracheque, orgao, mes, ano, nome, matricula, funcao, local_trabalho, replace(salario::text, '.', ',') as salario, replace(beneficios::text, '.', ',') as beneficios, replace(descontos::text, '.', ',') as descontos, replace(remuneracao::text, '.', ',') as remuneracao, situacao FROM contracheques) TO 'dump/contracheque.csv' csv header delimiter ';';"
-               
-            - name: Criando remuneracao.csv...
-              run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "\copy (SELECT id_contracheque, orgao, mes, ano, tipo, categoria, item, replace(valor::text, '.', ',') as valor FROM remuneracoes) TO 'dump/remuneracao.csv' csv header delimiter ';';"
+      - name: Criando coleta.csv...
+        run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "\copy (SELECT id as chave_coleta, id_orgao as orgao, mes, ano, TO_CHAR(timestamp, 'YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') as timestampb_coleta, repositorio_coletor, versao_coletor, repositorio_parser, versao_parser FROM coletas WHERE (procinfo is null or procinfo::text = 'null') and atual=true) TO 'dump/coleta.csv' csv header delimiter ';';"
 
-            - name: Realizando dump...
-              run: |
-               cd dump
-               POSTGRES_USER="${{ secrets.POSTGRES_USER }}" POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" POSTGRES_DB="${{ secrets.POSTGRES_DB }}" POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}" POSTGRES_PORT="${{ secrets.POSTGRES_PORT }}" AWS_REGION="${{ secrets.AWS_REGION }}" S3_BUCKET="${{ secrets.S3_BUCKET }}" go run .
+      - name: Criando metadados.csv...
+        run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "\copy (SELECT id_orgao as orgao, mes, ano, formato_aberto, acesso, extensao, estritamente_tabular, formato_consistente, tem_matricula, tem_lotacao, tem_cargo, detalhamento_receita_base, detalhamento_outras_receitas, detalhamento_descontos, replace(indice_completude::text, '.', ',') as indice_completude, replace(indice_facilidade::text, '.', ',') as indice_facilidade, replace(indice_transparencia::text, '.', ',') as indice_transparencia FROM coletas WHERE (procinfo is null or procinfo::text = 'null') and atual=true) TO 'dump/metadados.csv' csv header delimiter ';';"
+
+      - name: Criando contracheque.csv...
+        run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "\copy (SELECT  id as id_contracheque, orgao, mes, ano, nome, matricula, funcao, local_trabalho, replace(salario::text, '.', ',') as salario, replace(beneficios::text, '.', ',') as beneficios, replace(descontos::text, '.', ',') as descontos, replace(remuneracao::text, '.', ',') as remuneracao, situacao FROM contracheques) TO 'dump/contracheque.csv' csv header delimiter ';';"
+
+      - name: Criando remuneracao.csv...
+        run: PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h "${{ secrets.POSTGRES_HOST }}" -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "\copy (SELECT id_contracheque, orgao, mes, ano, tipo, categoria, item, replace((CASE WHEN tipo = 'D' THEN (valor * -1)::text ELSE valor::text END), '.', ',') as valor, CASE WHEN tipo = 'R/O' THEN r.desambiguacao_micro ELSE NULL END AS desambiguacao_micro, CASE WHEN tipo = 'R/O' THEN r.desambiguacao_macro ELSE NULL END AS desambiguacao_macro FROM remuneracoes left join rubricas r on remuneracoes.item_sanitizado = r.rubrica) TO 'dump/remuneracao.csv' csv header delimiter ';';"
+
+      - name: Realizando dump...
+        run: |
+          cd dump
+          POSTGRES_USER="${{ secrets.POSTGRES_USER }}" POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" POSTGRES_DB="${{ secrets.POSTGRES_DB }}" POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}" POSTGRES_PORT="${{ secrets.POSTGRES_PORT }}" AWS_REGION="${{ secrets.AWS_REGION }}" S3_BUCKET="${{ secrets.S3_BUCKET }}" go run .
