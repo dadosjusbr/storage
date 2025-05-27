@@ -350,6 +350,21 @@ func (mr *MockInterfaceMockRecorder) GetPaychecks(agency, year interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaychecks", reflect.TypeOf((*MockInterface)(nil).GetPaychecks), agency, year)
 }
 
+// GetPerCapitaData mocks base method.
+func (m *MockInterface) GetPerCapitaData(year int) ([]models.PerCapitaData, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPerCapitaData", year)
+	ret0, _ := ret[0].([]models.PerCapitaData)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPerCapitaData indicates an expected call of GetPerCapitaData.
+func (mr *MockInterfaceMockRecorder) GetPerCapitaData(year interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPerCapitaData", reflect.TypeOf((*MockInterface)(nil).GetPerCapitaData), year)
+}
+
 // GetStateAgencies mocks base method.
 func (m *MockInterface) GetStateAgencies(uf string) ([]models.Agency, error) {
 	m.ctrl.T.Helper()
