@@ -152,6 +152,21 @@ func (mr *MockInterfaceMockRecorder) GetAnnualSummary(agency interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAnnualSummary", reflect.TypeOf((*MockInterface)(nil).GetAnnualSummary), agency)
 }
 
+// GetAveragePerAgency mocks base method.
+func (m *MockInterface) GetAveragePerAgency(year int) ([]models.PerCapitaData, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAveragePerAgency", year)
+	ret0, _ := ret[0].([]models.PerCapitaData)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAveragePerAgency indicates an expected call of GetAveragePerAgency.
+func (mr *MockInterfaceMockRecorder) GetAveragePerAgency(year interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAveragePerAgency", reflect.TypeOf((*MockInterface)(nil).GetAveragePerAgency), year)
+}
+
 // GetAveragePerCapita mocks base method.
 func (m *MockInterface) GetAveragePerCapita(agency string, year int) (*models.PerCapitaData, error) {
 	m.ctrl.T.Helper()
@@ -348,21 +363,6 @@ func (m *MockInterface) GetPaychecks(agency models.Agency, year int) ([]models.P
 func (mr *MockInterfaceMockRecorder) GetPaychecks(agency, year interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaychecks", reflect.TypeOf((*MockInterface)(nil).GetPaychecks), agency, year)
-}
-
-// GetPerCapitaData mocks base method.
-func (m *MockInterface) GetPerCapitaData(year int) ([]models.PerCapitaData, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPerCapitaData", year)
-	ret0, _ := ret[0].([]models.PerCapitaData)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPerCapitaData indicates an expected call of GetPerCapitaData.
-func (mr *MockInterfaceMockRecorder) GetPerCapitaData(year interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPerCapitaData", reflect.TypeOf((*MockInterface)(nil).GetPerCapitaData), year)
 }
 
 // GetStateAgencies mocks base method.

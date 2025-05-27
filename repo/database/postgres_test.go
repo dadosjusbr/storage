@@ -2298,16 +2298,16 @@ func (averagePerCapita) testGetAveragePerCapita(t *testing.T) {
 	assert.Equal(t, 2000.0, avg.Remunerations)
 }
 
-type perCapitaData struct{}
+type averagePerAgency struct{}
 
-func TestPerCapitaData(t *testing.T) {
-	tests := perCapitaData{}
+func TestAveragePerAgency(t *testing.T) {
+	tests := averagePerAgency{}
 
-	t.Run("Test GetPerCapitaData()", tests.TestGetPerCapitaData)
+	t.Run("Test GetaveragePerAgency()", tests.TestGetAveragePerAgency)
 }
 
-func (perCapitaData) TestGetPerCapitaData(t *testing.T) {
-	apcd, err := postgresDb.GetPerCapitaData(2023)
+func (averagePerAgency) TestGetAveragePerAgency(t *testing.T) {
+	apcd, err := postgresDb.GetAveragePerAgency(2023)
 	if err != nil {
 		t.Fatalf("error GetAveragePerCapita(): %v", err)
 	}
