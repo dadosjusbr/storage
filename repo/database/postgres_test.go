@@ -2298,6 +2298,30 @@ func (averagePerCapita) testGetAveragePerCapita(t *testing.T) {
 	assert.Equal(t, 2000.0, avg.Remunerations)
 }
 
+type averagePerAgency struct{}
+
+func TestAveragePerAgency(t *testing.T) {
+	tests := averagePerAgency{}
+
+	t.Run("Test GetaveragePerAgency()", tests.TestGetAveragePerAgency)
+}
+
+func (averagePerAgency) TestGetAveragePerAgency(t *testing.T) {
+	apcd, err := postgresDb.GetAveragePerAgency(2023)
+	if err != nil {
+		t.Fatalf("error GetAveragePerCapita(): %v", err)
+	}
+
+	assert.Nil(t, err)
+	assert.Equal(t, "tjal", apcd[0].AgencyID)
+	assert.Equal(t, 2023, apcd[0].Year)
+	assert.Equal(t, 1000.0, apcd[0].BaseRemuneration)
+	assert.Equal(t, 1200.0, apcd[0].OtherRemunerations)
+	assert.Equal(t, 200.0, apcd[0].Discounts)
+	assert.Equal(t, 2000.0, apcd[0].Remunerations)
+	assert.Equal(t, 1, len(apcd))
+}
+
 func insertAgencies(agencies []models.Agency) error {
 	for _, agency := range agencies {
 		agencyDto, err := dto.NewAgencyDTO(agency)

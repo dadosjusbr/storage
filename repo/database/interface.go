@@ -34,4 +34,5 @@ type Interface interface {
 	GetPaycheckItems(agency models.Agency, year int) ([]models.PaycheckItem, error)
 	GetAveragePerCapita(agency string, year int) (*models.PerCapitaData, error)
 	GetNotices(agency string, year int, month int) ([]*string, error)
+	GetAveragePerAgency(year int) ([]models.PerCapitaData, error)
 }

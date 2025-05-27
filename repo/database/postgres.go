@@ -824,3 +824,21 @@ func (p *PostgresDB) GetNotices(agency string, year int, month int) ([]*string, 
 
 	return notices, nil
 }
+
+// GetAveragePerAgency( retorna os dados per capita para um determinado ano de cada órgão.
+// Isto é, salário, benefícios, descontos e remuneração médio por membro em um ano.
+func (p *PostgresDB) GetAveragePerAgency(year int) ([]models.PerCapitaData, error) {
+	var dtoPerCapitaData []dto.PerCapitaData
+	m := p.db.Model(&dto.PerCapitaData{})
+	m = m.Where("ano = ?", year)
+	if err := m.Find(&dtoPerCapitaData).Error; err != nil {
+		return nil, fmt.Errorf("error getting per capita data: %q", err)
+	}
+
+	var averagePerAgency []models.PerCapitaData
+	for _, dtoData := range dtoPerCapitaData {
+		data := dtoData.ConvertToModel()
+		averagePerAgency = append(averagePerAgency, *data)
+	}
+	return averagePerAgency, nil
+}
