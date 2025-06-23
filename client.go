@@ -95,6 +95,14 @@ func (c *Client) GetNumberOfMonthsCollected() (int, error) {
 	return count, nil
 }
 
+func (c *Client) GetNumberOfPaychecksCollected() (int, error) {
+	count, err := c.Db.GetNumberOfPaychecksCollected()
+	if err != nil {
+		return count, fmt.Errorf("GetNumberOfPaychecksCollected() error: %q", err)
+	}
+	return count, nil
+}
+
 // GetLastDateWithMonthlyInfo return the latest year and month with collected data
 func (c *Client) GetLastDateWithMonthlyInfo() (int, int, error) {
 	month, year, err := c.Db.GetLastDateWithMonthlyInfo()
