@@ -304,6 +304,21 @@ func (mr *MockInterfaceMockRecorder) GetNumberOfMonthsCollected() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNumberOfMonthsCollected", reflect.TypeOf((*MockInterface)(nil).GetNumberOfMonthsCollected))
 }
 
+// GetNumberOfPaychecksCollected mocks base method.
+func (m *MockInterface) GetNumberOfPaychecksCollected() (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNumberOfPaychecksCollected")
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNumberOfPaychecksCollected indicates an expected call of GetNumberOfPaychecksCollected.
+func (mr *MockInterfaceMockRecorder) GetNumberOfPaychecksCollected() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNumberOfPaychecksCollected", reflect.TypeOf((*MockInterface)(nil).GetNumberOfPaychecksCollected))
+}
+
 // GetOMA mocks base method.
 func (m *MockInterface) GetOMA(month, year int, agency string) (*models.AgencyMonthlyInfo, *models.Agency, error) {
 	m.ctrl.T.Helper()

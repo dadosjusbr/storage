@@ -267,6 +267,35 @@ func (g getNumberOfMonthsCollected) testWhenMonthlyInfosNotExists(t *testing.T) 
 	assert.Equal(t, 0, count)
 }
 
+func TestGetNumberOfPaychecksCollected(t *testing.T) {
+	tests := getNumberOfPaychecksCollected{}
+	t.Run("Test GetNumberOfPaychecksCollected when paychecks exists", tests.testGetNumberOfPaychecksCollected)
+	t.Run("Test GetNumberOfPaychecksCollected when paychecks not exists", tests.testGetNumberOfPaychecksCollectedWhenNotExists)
+}
+
+type getNumberOfPaychecksCollected struct{}
+
+func (g getNumberOfPaychecksCollected) testGetNumberOfPaychecksCollected(t *testing.T) {
+	p, pi := paychecks()
+	if err := postgresDb.StorePaychecks(p, pi); err != nil {
+		t.Fatalf("error storing paychecks: %q", err)
+	}
+
+	count, err := postgresDb.GetNumberOfPaychecksCollected()
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(p), count)
+	truncateTables()
+
+}
+
+func (g getNumberOfPaychecksCollected) testGetNumberOfPaychecksCollectedWhenNotExists(t *testing.T) {
+	truncateTables()
+	count, err := postgresDb.GetNumberOfPaychecksCollected()
+	assert.Nil(t, err)
+	assert.Equal(t, 0, count)
+}
+
 func TestGetAgency(t *testing.T) {
 	tests := getAgency{}
 	t.Run("Test GetAgency when agency exists", tests.testWhenAgencyExists)

@@ -234,6 +234,14 @@ func (p *PostgresDB) GetNumberOfMonthsCollected() (int, error) {
 	return int(count), nil
 }
 
+func (p *PostgresDB) GetNumberOfPaychecksCollected() (int, error) {
+	var count int64
+	if err := p.db.Model(&dto.PaycheckDTO{}).Count(&count).Error; err != nil {
+		return 0, fmt.Errorf("error getting paychecks count: %q", err)
+	}
+	return int(count), nil
+}
+
 func (p *PostgresDB) GetAgenciesByUF(uf string) ([]models.Agency, error) {
 	var dtoOrgaos []dto.AgencyDTO
 	uf = strings.ToUpper(uf)
