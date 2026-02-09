@@ -850,3 +850,30 @@ func (p *PostgresDB) GetAveragePerAgency(year int) ([]models.PerCapitaData, erro
 	}
 	return averagePerAgency, nil
 }
+
+func (p *PostgresDB) GetRetroactivePayments(agency models.Agency, year int, month int) ([]models.RetroactivePayments, error) {
+	var results []models.RetroactivePayments
+	var dtoRetroactivePayments []dto.RetroactivePaymentsDTO
+
+	query := "orgao = ? AND ano = ? AND id_contracheque IS NOT NULL"
+	params := []interface{}{}
+	params = append(params, agency.ID, year)
+
+	if month != 0 {
+		query = query + " AND mes = ?"
+		params = append(params, month)
+	}
+	//Pegando os contracheques do postgres, filtrando por órgão e ano
+	m := p.db.Model(&dto.RetroactivePaymentsDTO{})
+	m = m.Where(query, params...)
+	m = m.Order("mes, id ASC")
+	if err := m.Find(&dtoRetroactivePayments).Error; err != nil {
+		return nil, fmt.Errorf("error getting retroactive payments: %q", err)
+	}
+	//Convertendo os DTO's para modelos
+	for _, dtoRetroactivePayment := range dtoRetroactivePayments {
+		p := dtoRetroactivePayment.ConvertToModel()
+		results = append(results, *p)
+	}
+	return results, nil
+}

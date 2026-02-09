@@ -380,6 +380,21 @@ func (mr *MockInterfaceMockRecorder) GetPaychecks(agency, year interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaychecks", reflect.TypeOf((*MockInterface)(nil).GetPaychecks), agency, year)
 }
 
+// GetRetroactivePayments mocks base method.
+func (m *MockInterface) GetRetroactivePayments(agency models.Agency, year, month int) ([]models.RetroactivePayments, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRetroactivePayments", agency, year, month)
+	ret0, _ := ret[0].([]models.RetroactivePayments)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRetroactivePayments indicates an expected call of GetRetroactivePayments.
+func (mr *MockInterfaceMockRecorder) GetRetroactivePayments(agency, year, month interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRetroactivePayments", reflect.TypeOf((*MockInterface)(nil).GetRetroactivePayments), agency, year, month)
+}
+
 // GetStateAgencies mocks base method.
 func (m *MockInterface) GetStateAgencies(uf string) ([]models.Agency, error) {
 	m.ctrl.T.Helper()
