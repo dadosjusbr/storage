@@ -262,7 +262,9 @@ func (p *PostgresDB) GetAgenciesByUF(uf string) ([]models.Agency, error) {
 func (p *PostgresDB) GetAgency(aid string) (*models.Agency, error) {
 	var dtoOrgao dto.AgencyDTO
 	aid = strings.ToLower(aid)
-	if err := p.db.Model(&dto.AgencyDTO{}).Where("id = ?", aid).First(&dtoOrgao).Error; err != nil {
+	m := p.db.Model(&dto.AgencyDTO{}).Select("orgaos.*, max(coletas.timestamp) as ultima_coleta")
+	m = m.Joins("INNER JOIN coletas ON atual = true AND coletas.id_orgao = orgaos.id AND orgaos.id = ?", aid)
+	if err := m.Group("orgaos.id").First(&dtoOrgao).Error; err != nil {
 		return nil, fmt.Errorf("error getting agency '%s': %q", aid, err)
 	}
 	orgao, err := dtoOrgao.ConvertToModel()
