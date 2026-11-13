@@ -141,34 +141,61 @@ func (p *PostgresDB) Store(agmi models.AgencyMonthlyInfo) error {
 	return nil
 }
 
+// StorePaychecks substitui, numa única transação, os contracheques e os itens de cada mês
+// (órgão, mês e ano) presente em paychecks. Os ids gravados são a posição na folha, então um
+// upsert sem exclusão deixaria linhas da coleta anterior quando a nova tem menos contracheques,
+// menos itens ou outra ordem. Se qualquer gravação falhar, o mês continua como estava.
 func (p *PostgresDB) StorePaychecks(paychecks []models.Paycheck, remunerations []models.PaycheckItem) error {
-	// Armazenando contracheques
 	var payc []*dto.PaycheckDTO
 	for _, pc := range paychecks {
 		payc = append(payc, dto.NewPaycheckDTO(pc))
 	}
-	if err := p.db.Model(dto.PaycheckDTO{}).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "orgao"}, {Name: "mes"}, {Name: "ano"}, {Name: "id"}},
-		UpdateAll: true,
-	}).Create(payc).Error; err != nil {
-		return fmt.Errorf("error inserting 'contracheques': %w", err)
+	var rem []*dto.PaycheckItemDTO
+	for _, r := range remunerations {
+		rem = append(rem, dto.NewPaycheckItemDTO(r))
 	}
 
-	// Armazenando o detalhamento das remunerações
-	if len(remunerations) != 0 {
-		var rem []*dto.PaycheckItemDTO
-		for _, r := range remunerations {
-			rem = append(rem, dto.NewPaycheckItemDTO(r))
+	return p.db.Transaction(func(tx *gorm.DB) error {
+		type mes struct {
+			orgao    string
+			mes, ano int
 		}
-		if err := p.db.Model(dto.PaycheckItemDTO{}).Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "orgao"}, {Name: "mes"}, {Name: "ano"}, {Name: "id"}, {Name: "id_contracheque"}},
+		apagados := map[mes]bool{}
+		for _, pc := range paychecks {
+			m := mes{pc.Agency, pc.Month, pc.Year}
+			if apagados[m] {
+				continue
+			}
+			apagados[m] = true
+			// Os itens são apagados explicitamente: o banco de produção não tem a chave
+			// estrangeira com cascata de init_db.sql.
+			if err := tx.Where("orgao = ? AND mes = ? AND ano = ?", m.orgao, m.mes, m.ano).Delete(&dto.PaycheckItemDTO{}).Error; err != nil {
+				return fmt.Errorf("error deleting 'remuneracoes' of %s/%d/%d: %w", m.orgao, m.mes, m.ano, err)
+			}
+			if err := tx.Where("orgao = ? AND mes = ? AND ano = ?", m.orgao, m.mes, m.ano).Delete(&dto.PaycheckDTO{}).Error; err != nil {
+				return fmt.Errorf("error deleting 'contracheques' of %s/%d/%d: %w", m.orgao, m.mes, m.ano, err)
+			}
+		}
+
+		// Armazenando contracheques
+		if err := tx.Model(dto.PaycheckDTO{}).Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "orgao"}, {Name: "mes"}, {Name: "ano"}, {Name: "id"}},
 			UpdateAll: true,
-		}).CreateInBatches(rem, 5000).Error; err != nil {
-			return fmt.Errorf("error inserting 'remuneracoes': %w", err)
+		}).Create(payc).Error; err != nil {
+			return fmt.Errorf("error inserting 'contracheques': %w", err)
 		}
-	}
 
-	return nil
+		// Armazenando o detalhamento das remunerações
+		if len(rem) != 0 {
+			if err := tx.Model(dto.PaycheckItemDTO{}).Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "orgao"}, {Name: "mes"}, {Name: "ano"}, {Name: "id"}, {Name: "id_contracheque"}},
+				UpdateAll: true,
+			}).CreateInBatches(rem, 5000).Error; err != nil {
+				return fmt.Errorf("error inserting 'remuneracoes': %w", err)
+			}
+		}
+		return nil
+	})
 }
 
 func (p *PostgresDB) GetStateAgencies(uf string) ([]models.Agency, error) {

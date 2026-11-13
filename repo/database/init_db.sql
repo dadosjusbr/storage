@@ -101,6 +101,11 @@ create table remuneracoes
     constraint fk_remuneracoes foreign key (id_contracheque, orgao, mes, ano) references contracheques(id, orgao, mes, ano) on delete cascade
 );
 
+-- O armazenador substitui os contracheques e itens de um mês inteiro (StorePaychecks).
+-- Sem estes índices, a exclusão por mês varre as tabelas inteiras.
+create index idx_contracheques_orgao_ano_mes on contracheques (orgao, ano, mes);
+create index idx_remuneracoes_orgao_ano_mes on remuneracoes (orgao, ano, mes);
+
 CREATE MATERIALIZED VIEW public.media_por_membro
 TABLESPACE pg_default
 AS SELECT media_por_membro.orgao,

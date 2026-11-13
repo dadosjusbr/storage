@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -2509,4 +2510,71 @@ func paychecks() ([]models.Paycheck, []models.PaycheckItem) {
 	}
 
 	return p, pi
+}
+
+// folhaTeste monta n contracheques do mês, cada um com k itens, numerados como o armazenador faz.
+func folhaTeste(orgao string, mes, n, k int, item string) ([]models.Paycheck, []models.PaycheckItem) {
+	var ps []models.Paycheck
+	var is []models.PaycheckItem
+	for i := 1; i <= n; i++ {
+		ps = append(ps, models.Paycheck{ID: i, Agency: orgao, Month: mes, Year: 2023, CollectKey: fmt.Sprintf("%s/%02d/2023", orgao, mes), Name: fmt.Sprintf("nome %d", i)})
+		for j := 1; j <= k; j++ {
+			is = append(is, models.PaycheckItem{ID: j, PaycheckID: i, Agency: orgao, Month: mes, Year: 2023, Type: "R/B", Category: "contracheque", Item: item, Value: 100})
+		}
+	}
+	return ps, is
+}
+
+func contaMes(t *testing.T, orgao string, mes int) (int64, int64) {
+	t.Helper()
+	var nc, ni int64
+	if err := postgresDb.db.Model(dto.PaycheckDTO{}).Where("orgao = ? AND mes = ? AND ano = 2023", orgao, mes).Count(&nc).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := postgresDb.db.Model(dto.PaycheckItemDTO{}).Where("orgao = ? AND mes = ? AND ano = 2023", orgao, mes).Count(&ni).Error; err != nil {
+		t.Fatal(err)
+	}
+	return nc, ni
+}
+
+// Uma recoleta com menos contracheques ou menos itens não pode deixar linhas da coleta anterior.
+func TestStorePaychecksSubstituiMes(t *testing.T) {
+	truncateTables()
+	p, i := folhaTeste("tjal", 5, 3, 3, "subsidio")
+	outroP, outroI := folhaTeste("tjal", 4, 1, 2, "subsidio")
+	if err := postgresDb.StorePaychecks(append(p, outroP...), append(i, outroI...)); err != nil {
+		t.Fatal(err)
+	}
+	p, i = folhaTeste("tjal", 5, 2, 1, "subsidio")
+	if err := postgresDb.StorePaychecks(p, i); err != nil {
+		t.Fatal(err)
+	}
+	nc, ni := contaMes(t, "tjal", 5)
+	assert.Equal(t, int64(2), nc)
+	assert.Equal(t, int64(2), ni)
+	nc, ni = contaMes(t, "tjal", 4)
+	assert.Equal(t, int64(1), nc, "outro mês não pode ser alterado")
+	assert.Equal(t, int64(2), ni, "outro mês não pode ser alterado")
+}
+
+// Se a gravação falha no meio, o mês fica como estava, sem contracheques novos com itens antigos.
+func TestStorePaychecksFalhaNaoMistura(t *testing.T) {
+	truncateTables()
+	p, i := folhaTeste("tjal", 5, 3, 3, "subsidio")
+	if err := postgresDb.StorePaychecks(p, i); err != nil {
+		t.Fatal(err)
+	}
+	p, i = folhaTeste("tjal", 5, 2, 1, strings.Repeat("x", 1000)) // maior que a coluna item
+	p[0].Name = "nome da coleta que falhou"
+	if err := postgresDb.StorePaychecks(p, i); err == nil {
+		t.Fatal("gravação com item longo demais deveria falhar")
+	}
+	nc, ni := contaMes(t, "tjal", 5)
+	assert.Equal(t, int64(3), nc)
+	assert.Equal(t, int64(9), ni)
+	var nome string
+	if err := postgresDb.db.Model(dto.PaycheckDTO{}).Where("orgao = 'tjal' AND mes = 5 AND ano = 2023 AND id = 1").Select("nome").Scan(&nome).Error; err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, "nome 1", nome)
 }
